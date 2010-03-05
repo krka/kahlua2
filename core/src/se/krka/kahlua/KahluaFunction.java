@@ -1,4 +1,5 @@
 package se.krka.kahlua;
 
-public class KahluaFunction {
+public interface KahluaFunction {
+    int invoke(CallFrame frame);
 }
