@@ -32,8 +32,8 @@ import java.io.InputStream;
 
 import org.luaj.kahluafork.compiler.LexState;
 
-import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.JavaFunction;
+import se.krka.kahlua.vm.KahluaUtil;
 import se.krka.kahlua.vm.LuaCallFrame;
 import se.krka.kahlua.vm.LuaClosure;
 import se.krka.kahlua.vm.KahluaTable;
@@ -80,9 +80,9 @@ public class LuaCompiler implements JavaFunction {
 	
 	private int loadstream(LuaCallFrame callFrame, int nArguments) {
 		try {
-			BaseLib.luaAssert(nArguments >= 2, "not enough arguments");
+			KahluaUtil.luaAssert(nArguments >= 2, "not enough arguments");
 			InputStream is = (InputStream) callFrame.get(0);
-			BaseLib.luaAssert(is != null, "No inputstream given");
+			KahluaUtil.luaAssert(is != null, "No inputstream given");
 			String name = (String) callFrame.get(1);
 			return callFrame.push(loadis(is, name, callFrame.getEnvironment()));
 		} catch (RuntimeException e) {
@@ -94,9 +94,9 @@ public class LuaCompiler implements JavaFunction {
 
 	private int loadstring(LuaCallFrame callFrame, int nArguments) {
 		try {
-			BaseLib.luaAssert(nArguments >= 1, "not enough arguments");
+			KahluaUtil.luaAssert(nArguments >= 1, "not enough arguments");
 			String source = (String) callFrame.get(0);
-			BaseLib.luaAssert(source != null, "No source given");
+			KahluaUtil.luaAssert(source != null, "No source given");
 			String name = (String) callFrame.get(1);
 			if (name == null) {
 				name = "<stdin>";
@@ -114,7 +114,7 @@ public class LuaCompiler implements JavaFunction {
 	}
 	
 	public static LuaClosure loadis(Reader reader, String name, KahluaTable environment) throws IOException {
-		BaseLib.luaAssert(name != null, "no name given the compilation unit");
+		KahluaUtil.luaAssert(name != null, "no name given the compilation unit");
 		return new LuaClosure(LexState.compile(reader.read(), reader, name), environment);		
 	}
 	

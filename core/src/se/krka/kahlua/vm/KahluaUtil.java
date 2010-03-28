@@ -47,4 +47,14 @@ public class KahluaUtil {
 			throw new RuntimeException(e.getMessage());
 		}
 	}
+
+	public static void luaAssert(boolean b, String msg) {
+		if (!b) {
+			fail(msg);
+		}
+	}
+
+	public static void fail(String msg) {
+		throw new RuntimeException(msg);
+	}
 }

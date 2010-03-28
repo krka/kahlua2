@@ -134,7 +134,7 @@ public final class StringLib implements JavaFunction {
 			char c = f.charAt(i);
 			if (c == '%') {
 				i++;
-				BaseLib.luaAssert(i < len, "incomplete option to 'format'");
+				KahluaUtil.luaAssert(i < len, "incomplete option to 'format'");
 				c = f.charAt(i);
 				if (c == '%') {
 					result.append('%');
@@ -166,7 +166,7 @@ public final class StringLib implements JavaFunction {
 							break flagLoop;
 						}
 						i++;
-						BaseLib.luaAssert(i < len, "incomplete option to 'format'");
+						KahluaUtil.luaAssert(i < len, "incomplete option to 'format'");
 						c = f.charAt(i);
 					}
 
@@ -175,7 +175,7 @@ public final class StringLib implements JavaFunction {
 					while (c >= '0' && c <= '9') {
 						width = 10 * width + (int) (c - '0');
 						i++;
-						BaseLib.luaAssert(i < len, "incomplete option to 'format'");
+						KahluaUtil.luaAssert(i < len, "incomplete option to 'format'");
 						c = f.charAt(i);
 					}
 					
@@ -185,13 +185,13 @@ public final class StringLib implements JavaFunction {
 					if (c == '.') {
 						hasPrecision = true;
 						i++;
-						BaseLib.luaAssert(i < len, "incomplete option to 'format'");
+						KahluaUtil.luaAssert(i < len, "incomplete option to 'format'");
 						c = f.charAt(i);
 
 						while (c >= '0' && c <= '9') {
 							precision = 10 * precision + (int) (c - '0');
 							i++;
-							BaseLib.luaAssert(i < len, "incomplete option to 'format'");
+							KahluaUtil.luaAssert(i < len, "incomplete option to 'format'");
 							c = f.charAt(i);
 						}
 					}
@@ -673,7 +673,7 @@ public final class StringLib implements JavaFunction {
 	}
 
 	private int lower(LuaCallFrame callFrame, int nArguments) {
-		BaseLib.luaAssert(nArguments >= 1, "not enough arguments");
+		KahluaUtil.luaAssert(nArguments >= 1, "not enough arguments");
 		String s = getStringArg(callFrame,1,names[LOWER]);
 		
 		callFrame.push(s.toLowerCase());
@@ -681,7 +681,7 @@ public final class StringLib implements JavaFunction {
 	}
 
 	private int upper(LuaCallFrame callFrame, int nArguments) {
-		BaseLib.luaAssert(nArguments >= 1, "not enough arguments");
+		KahluaUtil.luaAssert(nArguments >= 1, "not enough arguments");
 		String s = getStringArg(callFrame,1,names[UPPER]);
 
 		callFrame.push(s.toUpperCase());
@@ -689,7 +689,7 @@ public final class StringLib implements JavaFunction {
 	}
 
 	private int reverse(LuaCallFrame callFrame, int nArguments) {
-		BaseLib.luaAssert(nArguments >= 1, "not enough arguments");
+		KahluaUtil.luaAssert(nArguments >= 1, "not enough arguments");
 		String s = getStringArg(callFrame, 1, names[REVERSE]);
 		s = new StringBuffer(s).reverse().toString();
 		callFrame.push(s);
@@ -697,7 +697,7 @@ public final class StringLib implements JavaFunction {
 	}
 
 	private int stringByte(LuaCallFrame callFrame, int nArguments) {
-		BaseLib.luaAssert(nArguments >= 1, "not enough arguments");
+		KahluaUtil.luaAssert(nArguments >= 1, "not enough arguments");
 		String s = getStringArg(callFrame, 1, names[BYTE]);
 
 		Double di = null;
@@ -939,7 +939,7 @@ public final class StringLib implements JavaFunction {
 
 	private static int push_captures ( MatchState ms, StringPointer s, StringPointer e ) {
 		int nlevels = ( ms.level == 0 && s != null ) ? 1 : ms.level;
-		BaseLib.luaAssert(nlevels <= LUA_MAXCAPTURES, "too many captures");
+		KahluaUtil.luaAssert(nlevels <= LUA_MAXCAPTURES, "too many captures");
 		for (int i = 0; i < nlevels; i++) {
 			push_onecapture (ms, i, s, e);
 		}
@@ -1016,7 +1016,7 @@ public final class StringLib implements JavaFunction {
 	private static StringPointer startCapture ( MatchState ms, StringPointer s, StringPointer p, int what ) {
 		StringPointer res;
 		int level = ms.level;
-		BaseLib.luaAssert(level < LUA_MAXCAPTURES, "too many captures");
+		KahluaUtil.luaAssert(level < LUA_MAXCAPTURES, "too many captures");
 
 		ms.capture[level].init = s.getClone();
 		ms.capture[level].init.setIndex ( s.getIndex () );
@@ -1050,7 +1050,7 @@ public final class StringLib implements JavaFunction {
 
 	private static int checkCapture ( MatchState ms, int l ) {
 		l -= '1'; // convert chars 1-9 to actual ints 1-9
-		BaseLib.luaAssert(l < 0 || l >= ms.level || ms.capture[l].len == CAP_UNFINISHED,
+		KahluaUtil.luaAssert(l < 0 || l >= ms.level || ms.capture[l].len == CAP_UNFINISHED,
 		"invalid capture index");
 		return l;
 	}
@@ -1071,7 +1071,7 @@ public final class StringLib implements JavaFunction {
 
 	private static StringPointer matchBalance ( MatchState ms, StringPointer ss, StringPointer p ) {
 
-		BaseLib.luaAssert(!(p.getChar () == 0 || p.getChar ( 1 ) == 0), "unbalanced pattern");
+		KahluaUtil.luaAssert(!(p.getChar () == 0 || p.getChar ( 1 ) == 0), "unbalanced pattern");
 
 		StringPointer s = ss.getClone();
 		if ( s.getChar () != p.getChar () ) {
@@ -1100,7 +1100,7 @@ public final class StringLib implements JavaFunction {
 		StringPointer p = pp.getClone();
 		switch ( p.postIncrString ( 1 ) ) {
 		case L_ESC: {
-			BaseLib.luaAssert(p.getChar () != '\0', "malformed pattern (ends with '%')");
+			KahluaUtil.luaAssert(p.getChar () != '\0', "malformed pattern (ends with '%')");
 			p.postIncrString ( 1 );
 			return p;
 		}
@@ -1109,7 +1109,7 @@ public final class StringLib implements JavaFunction {
 				p.postIncrString ( 1 );
 			}
 			do { // look for a `]' 
-				BaseLib.luaAssert(p.getChar () != '\0', "malformed pattern (missing ']')");
+				KahluaUtil.luaAssert(p.getChar () != '\0', "malformed pattern (missing ']')");
 
 				if ( p.postIncrString ( 1 ) == L_ESC && p.getChar () != '\0' ) {
 					p.postIncrString ( 1 );  // skip escapes (e.g. `%]')
@@ -1244,7 +1244,7 @@ public final class StringLib implements JavaFunction {
 				}
 				case 'f': { // frontier?
 					p.postIncrString (2);
-					BaseLib.luaAssert(p.getChar() == '[' , "missing '[' after '%%f' in pattern");
+					KahluaUtil.luaAssert(p.getChar() == '[' , "missing '[' after '%%f' in pattern");
 
 					StringPointer ep = classEnd(ms, p);  // points to what is next
 					char previous = (s.getIndex() == ms.src_init.getIndex()) ? '\0' : s.getChar(-1);
@@ -1398,7 +1398,7 @@ public final class StringLib implements JavaFunction {
 		if (!(replType == BaseLib.TYPE_FUNCTION ||
 						replType == BaseLib.TYPE_STRING || 
 						replType == BaseLib.TYPE_TABLE)) {
-			BaseLib.fail(("string/function/table expected, got "+replType));
+			KahluaUtil.fail(("string/function/table expected, got "+replType));
 		}
 
 		MatchState ms = new MatchState ();
@@ -1444,7 +1444,7 @@ public final class StringLib implements JavaFunction {
 			}
 			Object res = null;
 			if (type == BaseLib.TYPE_FUNCTION) {
-				res = ms.callFrame.thread.state.call(repl, match, null, null);
+				res = ms.callFrame.coroutine.state.call(repl, match, null, null);
 			} else if (type == BaseLib.TYPE_TABLE) {
 				res = ((KahluaTable)repl).rawget(match);
 			}
@@ -1456,7 +1456,7 @@ public final class StringLib implements JavaFunction {
 	}
 
 	private static String addString(MatchState ms, Object repl, StringPointer s, StringPointer e) {
-		String replTemp = BaseLib.tostring(repl, ms.callFrame.thread.state);
+		String replTemp = BaseLib.tostring(repl, ms.callFrame.coroutine.state);
 		StringPointer replStr = new StringPointer (replTemp);
 		StringBuffer buf = new StringBuffer();
 		for (int i = 0; i < replTemp.length(); i++) {

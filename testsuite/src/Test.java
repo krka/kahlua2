@@ -26,7 +26,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
-import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.stdlib.OsLib;
 import se.krka.kahlua.test.UserdataArray;
 import se.krka.kahlua.vm.*;
@@ -59,11 +58,11 @@ public class Test {
 		LuaState state = getState(dir);
 		
 		Object runTest = state.getEnvironment().rawget("testCall");
-		BaseLib.luaAssert(runTest != null, "Could not find testCall");
+		KahluaUtil.luaAssert(runTest != null, "Could not find testCall");
 		Object generateReportClosure = state.getEnvironment().rawget("generatereport");
-		BaseLib.luaAssert(generateReportClosure != null, "Could not find generatereport");
+		KahluaUtil.luaAssert(generateReportClosure != null, "Could not find generatereport");
 		Object mergeTestsClosure = state.getEnvironment().rawget("mergetests");
-		BaseLib.luaAssert(mergeTestsClosure != null, "Could not find mergetests");
+		KahluaUtil.luaAssert(mergeTestsClosure != null, "Could not find mergetests");
 
 		File[] children = null;
 		for (int i = 1; i < args.length; i++) {
@@ -102,7 +101,7 @@ public class Test {
 					}
 				} else {
 					if (!(results[1] instanceof KahluaTable)) {
-						BaseLib.fail(("Did not get a table back from " + child + ", got a " + results[1] + " instead."));
+						KahluaUtil.fail(("Did not get a table back from " + child + ", got a " + results[1] + " instead."));
 					}
 					testsuites.rawset(new Double(testsuites.len() + 1.0), results[1]);
 				}
@@ -110,7 +109,7 @@ public class Test {
 		}
 		Object[] results = state.pcall(mergeTestsClosure, new Object[] {"Kahlua", testsuites});
 		if (results[0] != Boolean.TRUE) {
-			BaseLib.fail("" + results[1] + ", " + results[2]);
+			KahluaUtil.fail("" + results[1] + ", " + results[2]);
 		}
 		Object testParent = results[1];
 		

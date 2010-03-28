@@ -328,7 +328,7 @@ public final class KahluaTableImpl implements KahluaTable {
 	public final Object rawget(Object key) {
 		checkKey(key);
 		if (key instanceof Double) {
-			BaseLib.luaAssert(!((Double) key).isNaN(), "table index is NaN");
+			KahluaUtil.luaAssert(!((Double) key).isNaN(), "table index is NaN");
 		}
 		return rawgetHash(key);
 	}
@@ -355,7 +355,7 @@ public final class KahluaTableImpl implements KahluaTable {
 	}
 
 	public static void checkKey(Object key) {
-		BaseLib.luaAssert(key != null, "table index is nil");
+		KahluaUtil.luaAssert(key != null, "table index is nil");
 	}
 
 	private Object nextHash(Object key) {
@@ -363,7 +363,7 @@ public final class KahluaTableImpl implements KahluaTable {
 		if (key != null) {
 			index = 1 + getHashIndex(key);
 			if (index <= 0) {
-				BaseLib.fail("invalid key to 'next'");
+				KahluaUtil.fail("invalid key to 'next'");
 				return null;
 			}
 		}

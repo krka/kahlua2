@@ -22,7 +22,6 @@ THE SOFTWARE.
 package se.krka.kahlua.vm;
 
 import java.util.Vector;
-import se.krka.kahlua.stdlib.BaseLib;
 
 public class Coroutine {
 	public KahluaTable environment;
@@ -72,7 +71,7 @@ public class Coroutine {
 		callFrame.returnBase = returnBase;
 		callFrame.nArguments = nArguments;
 		callFrame.fromLua = fromLua;
-		callFrame.insideCoroutine = insideCoroutine;
+		callFrame.canYield = insideCoroutine;
 		callFrame.closure = closure;
 		callFrame.javaFunction = javaFunction;
 		return callFrame;
@@ -213,9 +212,9 @@ public class Coroutine {
 	}
 
 	public LuaCallFrame getParent(int level) {
-		BaseLib.luaAssert(level >= 0, "Level must be non-negative");
+		KahluaUtil.luaAssert(level >= 0, "Level must be non-negative");
 		int index = callFrameTop - level - 1;
-		BaseLib.luaAssert(index >= 0, "Level too high");
+		KahluaUtil.luaAssert(index >= 0, "Level too high");
 		return callFrameStack[index];
 	}
 	
@@ -300,7 +299,7 @@ public class Coroutine {
 						s2 = s2 + lines[0] + " (not started)";
 					}
 				}
-				s = s + String.format("%s %4d: %s %s %s\n", indent(level), i, (callFrame.fromLua ? " [from lua]" : "[from java]"), (callFrame.insideCoroutine ? "[can yield]" : "         []"), s2);
+				s = s + String.format("%s %4d: %s %s %s\n", indent(level), i, (callFrame.fromLua ? " [from lua]" : "[from java]"), (callFrame.canYield ? "[can yield]" : "         []"), s2);
 			}
 			s = s + indent(level) + "Stack:\n";
 			int stackIndex = 0;

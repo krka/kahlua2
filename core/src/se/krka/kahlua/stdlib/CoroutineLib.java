@@ -25,6 +25,7 @@ import se.krka.kahlua.vm.Coroutine;
 import se.krka.kahlua.vm.JavaFunction;
 import se.krka.kahlua.vm.KahluaTable;
 import se.krka.kahlua.vm.KahluaTableImpl;
+import se.krka.kahlua.vm.KahluaUtil;
 import se.krka.kahlua.vm.LuaCallFrame;
 import se.krka.kahlua.vm.LuaClosure;
 import se.krka.kahlua.vm.LuaState;
@@ -97,10 +98,10 @@ public class CoroutineLib implements JavaFunction {
 	}
 
 	private int running(LuaCallFrame callFrame, int nArguments) {
-		Coroutine t = callFrame.thread;
+		Coroutine t = callFrame.coroutine;
 		
 		// same behaviour as in original lua,
-		// return nil if it's the root thread 
+		// return nil if it's the root coroutine
 		if (t.parent == null) {
 			t = null;
 		}
@@ -112,7 +113,7 @@ public class CoroutineLib implements JavaFunction {
 	private int status(LuaCallFrame callFrame, int nArguments) {
 		Coroutine t = getCoroutine(callFrame, nArguments);
 		
-		String status = getStatus(t, callFrame.thread);
+		String status = getStatus(t, callFrame.coroutine);
 		callFrame.push(status);
 		return 1;
 	}
@@ -139,13 +140,13 @@ public class CoroutineLib implements JavaFunction {
 	private int resume(LuaCallFrame callFrame, int nArguments) {
 		Coroutine t = getCoroutine(callFrame, nArguments);
 		
-		String status = getStatus(t, callFrame.thread);
+		String status = getStatus(t, callFrame.coroutine);
 		// equals on strings works because they are both constants
 		if (!(status == "suspended")) {
-			BaseLib.fail(("Can not resume thread that is in status: " + status));
+			KahluaUtil.fail(("Can not resume coroutine that is in status: " + status));
 		}
 
-		Coroutine parent = callFrame.thread;
+		Coroutine parent = callFrame.coroutine;
 		t.parent = parent;
 		
 		LuaCallFrame nextCallFrame = t.currentCallFrame();
@@ -166,16 +167,16 @@ public class CoroutineLib implements JavaFunction {
 			nextCallFrame.init();
 		}
 
-		callFrame.thread.state.currentThread = t;
+		callFrame.coroutine.state.currentThread = t;
 		
 		return 0;
 	}
 
 	public static int yield(LuaCallFrame callFrame, int nArguments) {
-		Coroutine t = callFrame.thread;
+		Coroutine t = callFrame.coroutine;
 		Coroutine parent = t.parent;
 
-		BaseLib.luaAssert(parent != null, "Can not yield outside of a coroutine");
+		KahluaUtil.luaAssert(parent != null, "Can not yield outside of a coroutine");
 		
 		LuaCallFrame realCallFrame = t.callFrameStack[t.callFrameTop - 2];
 		yieldHelper(realCallFrame, callFrame, nArguments);
@@ -183,9 +184,9 @@ public class CoroutineLib implements JavaFunction {
 	}
 	
 	public static void yieldHelper(LuaCallFrame callFrame, LuaCallFrame argsCallFrame, int nArguments) {
-		BaseLib.luaAssert(callFrame.insideCoroutine, "Can not yield outside of a coroutine");
+		KahluaUtil.luaAssert(callFrame.canYield, "Can not yield outside of a coroutine");
 		
-		Coroutine t = callFrame.thread;
+		Coroutine t = callFrame.coroutine;
 		Coroutine parent = t.parent;
 		t.parent = null;
 
@@ -204,24 +205,24 @@ public class CoroutineLib implements JavaFunction {
 	private int create(LuaCallFrame callFrame, int nArguments) {
 		LuaClosure c = getFunction(callFrame, nArguments);
 
-		Coroutine newThread = new Coroutine(callFrame.thread.state, callFrame.thread.environment);
+		Coroutine newThread = new Coroutine(callFrame.coroutine.state, callFrame.coroutine.environment);
 		newThread.pushNewCallFrame(c, null, 0, 0, -1, true, true);
 		callFrame.push(newThread);
 		return 1;
 	}
 
 	private LuaClosure getFunction(LuaCallFrame callFrame, int nArguments) {
-		BaseLib.luaAssert(nArguments >= 1, "not enough arguments");
+		KahluaUtil.luaAssert(nArguments >= 1, "not enough arguments");
 		Object o = callFrame.get(0);
-		BaseLib.luaAssert(o instanceof LuaClosure, "argument 1 must be a lua function");
+		KahluaUtil.luaAssert(o instanceof LuaClosure, "argument 1 must be a lua function");
 		LuaClosure c = (LuaClosure) o;
 		return c;
 	}
 
 	private Coroutine getCoroutine(LuaCallFrame callFrame, int nArguments) {
-		BaseLib.luaAssert(nArguments >= 1, "not enough arguments");
+		KahluaUtil.luaAssert(nArguments >= 1, "not enough arguments");
 		Object o = callFrame.get(0);
-		BaseLib.luaAssert(o instanceof Coroutine, "argument 1 must be a coroutine");
+		KahluaUtil.luaAssert(o instanceof Coroutine, "argument 1 must be a coroutine");
 		Coroutine t = (Coroutine) o;
 		return t;
 	}

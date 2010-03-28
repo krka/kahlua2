@@ -23,7 +23,6 @@ package se.krka.kahlua.test;
 
 import java.util.Vector;
 
-import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.JavaFunction;
 import se.krka.kahlua.vm.KahluaUtil;
 import se.krka.kahlua.vm.LuaCallFrame;
@@ -78,7 +77,7 @@ public class UserdataArray implements JavaFunction {
 	}
 
 	private int push(LuaCallFrame callFrame, int nArguments) {
-		BaseLib.luaAssert(nArguments >= 2, "not enough parameters");
+		KahluaUtil.luaAssert(nArguments >= 2, "not enough parameters");
 		Vector v = (Vector) callFrame.get(0);
 		Object value = callFrame.get(1);
 
@@ -93,7 +92,7 @@ public class UserdataArray implements JavaFunction {
 	}
 
 	private int newindex(LuaCallFrame callFrame, int nArguments) {
-		BaseLib.luaAssert(nArguments >= 3, "not enough parameters");
+		KahluaUtil.luaAssert(nArguments >= 3, "not enough parameters");
 		Vector v = (Vector) callFrame.get(0);
 		Object key = callFrame.get(1);
 		Object value = callFrame.get(2);
@@ -103,7 +102,7 @@ public class UserdataArray implements JavaFunction {
 	}
 
 	private int index(LuaCallFrame callFrame, int nArguments) {
-		BaseLib.luaAssert(nArguments >= 2, "not enough parameters");
+		KahluaUtil.luaAssert(nArguments >= 2, "not enough parameters");
 		Vector v = (Vector) callFrame.get(0);
 
 		Object key = callFrame.get(1);
@@ -118,7 +117,7 @@ public class UserdataArray implements JavaFunction {
 	}
 
 	private int length(LuaCallFrame callFrame, int nArguments) {
-		BaseLib.luaAssert(nArguments >= 1, "not enough parameters");
+		KahluaUtil.luaAssert(nArguments >= 1, "not enough parameters");
 		Vector v = (Vector) callFrame.get(0);
 		double size = v.size();
 		callFrame.push(KahluaUtil.toDouble(size));

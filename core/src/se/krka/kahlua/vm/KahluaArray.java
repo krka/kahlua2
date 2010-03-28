@@ -1,7 +1,5 @@
 package se.krka.kahlua.vm;
 
-import se.krka.kahlua.stdlib.BaseLib;
-
 public class KahluaArray implements KahluaTable {
 
 	private KahluaTable metatable;
@@ -41,7 +39,7 @@ public class KahluaArray implements KahluaTable {
 
     public void rawset(int index, Object value) {
         if (index <= 0) {
-            BaseLib.fail("Index out of range: " + index);
+            KahluaUtil.fail("Index out of range: " + index);
         }
         if (index >= len) {
 	        if (value == null) {
@@ -81,7 +79,7 @@ public class KahluaArray implements KahluaTable {
         KahluaTableImpl.checkKey(key);
         int index = getKeyIndex(key);
         if (index == -1) {
-            BaseLib.fail("Invalid table key: " + key);
+            KahluaUtil.fail("Invalid table key: " + key);
         }
         rawset(index, value);
     }
@@ -93,7 +91,7 @@ public class KahluaArray implements KahluaTable {
 		} else {
             index = getKeyIndex(key);
             if (index <= 0 || index > len) {
-                BaseLib.fail("invalid key to 'next'");
+                KahluaUtil.fail("invalid key to 'next'");
                 return null;
             }
 		}
@@ -115,6 +113,6 @@ public class KahluaArray implements KahluaTable {
 	}
 
 	public void updateWeakSettings(boolean weakKeys, boolean weakValues) {
-		BaseLib.fail("Can't set weakness on arrays");
+		KahluaUtil.fail("Can't set weakness on arrays");
 	}
 }

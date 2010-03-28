@@ -11,4 +11,7 @@ public interface KahluaThread {
 	Object[] pcall(Object fun);
 
 	KahluaTable getEnvironment();
+
+	void setmetatable(Object o, KahluaTable metatable);
+	Object getmetatable(Object o, boolean raw);
 }

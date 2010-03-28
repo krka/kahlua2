@@ -186,7 +186,7 @@ public class LuaState implements KahluaThread {
 		LuaClosure closure = KahluaUtil.loadByteCodeFromResource("/stdlib",
 				getEnvironment());
 		if (closure == null) {
-			BaseLib.fail("Could not load /stdlib.lbc");
+			KahluaUtil.fail("Could not load /stdlib.lbc");
 		}
 		call(closure, null, null, null);
 	}
@@ -404,7 +404,7 @@ public class LuaState implements KahluaThread {
 
 						Object metafun = getBinMetaOp(bo, co, meta_op);
 						if (!(metafun != null)) {
-							BaseLib.fail((meta_op + " not defined for operands"));
+							KahluaUtil.fail((meta_op + " not defined for operands"));
 						}
 						res = call(metafun, bo, co, null);
 					} else {
@@ -451,7 +451,7 @@ public class LuaState implements KahluaThread {
 						res = KahluaUtil.toDouble(s.length());
 					} else {
 						Object f = getMetaOp(o, "__len");
-						BaseLib.luaAssert(f != null, "__len not defined for operand");
+						KahluaUtil.luaAssert(f != null, "__len not defined for operand");
 						res = call(f, o, null, null);
 					}
 					callFrame.set(a, res);
@@ -507,7 +507,7 @@ public class LuaState implements KahluaThread {
 							Object metafun = getBinMetaOp(leftConcat, res,
 									"__concat");
 							if (!(metafun != null)) {
-								BaseLib.fail(("__concat not defined for operands: " + leftConcat + " and " + res));
+								KahluaUtil.fail(("__concat not defined for operands: " + leftConcat + " and " + res));
 							}
 							res = call(metafun, leftConcat, res, null);
 							last--;
@@ -600,7 +600,7 @@ public class LuaState implements KahluaThread {
 								resBool = KahluaUtil.luaEquals(bo, co);
 							} else {
 								if (!(metafun != null)) {
-									BaseLib.fail((meta_op + " not defined for operand"));
+									KahluaUtil.fail((meta_op + " not defined for operand"));
 								}
 								Object res = call(metafun, bo, co, null);
 								resBool = KahluaUtil.boolEval(res);
@@ -661,10 +661,10 @@ public class LuaState implements KahluaThread {
 					int returnBase2 = base + a;
 
 					Object funObject = callFrame.get(a);
-					BaseLib.luaAssert(funObject != null, "Tried to call nil");
+					KahluaUtil.luaAssert(funObject != null, "Tried to call nil");
 					Object fun = prepareMetatableCall(funObject);
 					if (!(fun != null)) {
-						BaseLib.fail(("Object " + funObject + " did not have __call metatable set"));
+						KahluaUtil.fail(("Object " + funObject + " did not have __call metatable set"));
 					}
 
 					// If it's a metatable __call, prepend the caller as the
@@ -678,7 +678,7 @@ public class LuaState implements KahluaThread {
 						LuaCallFrame newCallFrame = currentThread
 								.pushNewCallFrame((LuaClosure) fun, null, localBase2,
 										returnBase2, nArguments2, true,
-										callFrame.insideCoroutine);
+										callFrame.canYield);
 						newCallFrame.init();
 
 						callFrame = newCallFrame;
@@ -728,10 +728,10 @@ public class LuaState implements KahluaThread {
 					callFrame.restoreTop = false;
 
 					Object funObject = callFrame.get(a);
-					BaseLib.luaAssert(funObject != null, "Tried to call nil");
+					KahluaUtil.luaAssert(funObject != null, "Tried to call nil");
 					Object fun = prepareMetatableCall(funObject);
 					if (!(fun != null)) {
-						BaseLib.fail(("Object " + funObject + " did not have __call metatable set"));
+						KahluaUtil.fail(("Object " + funObject + " did not have __call metatable set"));
 					}
 
 					int localBase2 = returnBase + 1;
@@ -754,7 +754,7 @@ public class LuaState implements KahluaThread {
 						callFrame.init();
 					} else {
 						if (!(fun instanceof JavaFunction)) {
-							BaseLib.fail(("Tried to call a non-function: " + fun));
+							KahluaUtil.fail(("Tried to call a non-function: " + fun));
 						}
 						Coroutine oldThread = currentThread;
 						callJava((JavaFunction) fun, localBase2, returnBase,
@@ -817,14 +817,14 @@ public class LuaState implements KahluaThread {
 					currentThread.setTop(returnBase + b);
 
 					if (callFrame.fromLua) {
-						if (callFrame.insideCoroutine
+						if (callFrame.canYield
 								&& currentThread.callFrameTop == 1) {
 							callFrame.localBase = callFrame.returnBase;
 							Coroutine thread = currentThread;
 							CoroutineLib.yieldHelper(callFrame, callFrame, b);
 							thread.popCallFrame();
 
-							// If this thread is called from a java function,
+							// If this coroutine is called from a java function,
 							// return immediately
 							callFrame = currentThread.currentCallFrame();
 							if (callFrame.isJava()) {
@@ -1207,7 +1207,7 @@ public class LuaState implements KahluaThread {
 				}
 			} else {
 				metaOp = getMetaOp(curObj, "__newindex");
-				BaseLib.luaAssert(metaOp != null,	"attempted index of non-table");
+				KahluaUtil.luaAssert(metaOp != null,	"attempted index of non-table");
 			}
 			if (metaOp instanceof JavaFunction || metaOp instanceof LuaClosure) {
 				call(metaOp, table, key, value);
@@ -1223,8 +1223,8 @@ public class LuaState implements KahluaThread {
         classMetatables.rawset(clazz, metatable);
     }
 
-    public void setmetatable(Object o, KahluaTable metatable) {
-        BaseLib.luaAssert(o != null, "Can't set metatable for nil");
+	public void setmetatable(Object o, KahluaTable metatable) {
+        KahluaUtil.luaAssert(o != null, "Can't set metatable for nil");
         if (o instanceof KahluaTable) {
             KahluaTable t = (KahluaTable) o;
             t.setMetatable(metatable);
@@ -1271,7 +1271,7 @@ public class LuaState implements KahluaThread {
 					nArgs);
 		}
 		int nRet = pcall(nArgs);
-		BaseLib.luaAssert(thread == currentThread, "Internal Kahlua error - thread changed in pcall");
+		KahluaUtil.luaAssert(thread == currentThread, "Internal Kahlua error - coroutine changed in pcall");
 		Object[] ret = new Object[nRet];
 		System.arraycopy(thread.objectStack, oldTop, ret, 0, nRet);
 		thread.setTop(oldTop);
@@ -1305,7 +1305,7 @@ public class LuaState implements KahluaThread {
 			exception = e;
 			errorMessage = e.getMessage();
 		}
-		BaseLib.luaAssert(thread == currentThread, "Internal Kahlua error - thread changed in pcall");
+		KahluaUtil.luaAssert(thread == currentThread, "Internal Kahlua error - coroutine changed in pcall");
 		if (currentCallFrame != null) {
 			currentCallFrame.closeUpvalues(0);
 		}

@@ -113,7 +113,7 @@ public final class TableLib implements JavaFunction {
 	}
 
 	private static int concat (LuaCallFrame callFrame, int nArguments) {
-		BaseLib.luaAssert(nArguments >= 1, "expected table, got no arguments");
+		KahluaUtil.luaAssert(nArguments >= 1, "expected table, got no arguments");
 		KahluaTable table = (KahluaTable)callFrame.get(0);
 
 		String separator = "";
@@ -187,7 +187,7 @@ public final class TableLib implements JavaFunction {
 	}
 
 	private static int insert (LuaCallFrame callFrame, int nArguments) {
-		BaseLib.luaAssert(nArguments >= 2, "Not enough arguments");
+		KahluaUtil.luaAssert(nArguments >= 2, "Not enough arguments");
 		KahluaTable t = (KahluaTable)callFrame.get(0);
 		int pos = t.len() + 1;
 		Object elem = null;
@@ -197,7 +197,7 @@ public final class TableLib implements JavaFunction {
 		} else {
 			elem = callFrame.get(1);
 		}
-		insert(callFrame.thread.state, t, pos, elem);
+		insert(callFrame.coroutine.state, t, pos, elem);
 		return 0;
 	}
 	
@@ -216,18 +216,18 @@ public final class TableLib implements JavaFunction {
 	}
 	
 	private static int remove (LuaCallFrame callFrame, int nArguments) {
-		BaseLib.luaAssert(nArguments >= 1, "expected table, got no arguments");
+		KahluaUtil.luaAssert(nArguments >= 1, "expected table, got no arguments");
 		KahluaTable t = (KahluaTable)callFrame.get(0);
 		int pos = t.len();
 		if (nArguments > 1) {
 			pos = BaseLib.rawTonumber(callFrame.get(1)).intValue();
 		}
-		callFrame.push(remove(callFrame.thread.state, t, pos));
+		callFrame.push(remove(callFrame.coroutine.state, t, pos));
 		return 1;
 	}
 	
 	private static int maxn (LuaCallFrame callFrame, int nArguments) {
-		BaseLib.luaAssert(nArguments >= 1, "expected table, got no arguments");
+		KahluaUtil.luaAssert(nArguments >= 1, "expected table, got no arguments");
 		KahluaTable t = (KahluaTable)callFrame.get(0);
 		Object key = null;
 		int max = 0;
