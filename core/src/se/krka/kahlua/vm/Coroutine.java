@@ -24,10 +24,10 @@ package se.krka.kahlua.vm;
 import java.util.Vector;
 import se.krka.kahlua.stdlib.BaseLib;
 
-public class LuaThread {
+public class Coroutine {
 	public LuaTable environment;
 
-	public LuaThread parent;
+	public Coroutine parent;
 	
 	public String stackTrace = "";
 
@@ -49,7 +49,7 @@ public class LuaThread {
 
 	public int expectedResults;
 	
-	public LuaThread(LuaState state, LuaTable environment) {
+	public Coroutine(LuaState state, LuaTable environment) {
 		this.state = state;
 		this.environment = environment;
 		
@@ -57,7 +57,7 @@ public class LuaThread {
 		callFrameStack = new LuaCallFrame[INITIAL_CALL_FRAME_STACK_SIZE];
 		liveUpvalues = new Vector();		
 	}
-	
+
 	public final LuaCallFrame pushNewCallFrame(LuaClosure closure,
 											   JavaFunction javaFunction,
 											   int localBase,

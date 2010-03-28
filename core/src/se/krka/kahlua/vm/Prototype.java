@@ -29,12 +29,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public final class LuaPrototype {
+public final class Prototype {
 	public int[] code;
 
 	// Constants
 	public Object[] constants;
-	public LuaPrototype[] prototypes;
+	public Prototype[] prototypes;
 
     public int numParams;
 
@@ -48,10 +48,10 @@ public final class LuaPrototype {
 
 	public int maxStacksize;
 	
-	public LuaPrototype() {
+	public Prototype() {
 	}
 
-	public LuaPrototype(DataInputStream in, boolean littleEndian, String parentName, int size_t) throws IOException {
+	public Prototype(DataInputStream in, boolean littleEndian, String parentName, int size_t) throws IOException {
 		int tmp;
 
 		name = readLuaString(in, size_t, littleEndian);
@@ -107,9 +107,9 @@ public final class LuaPrototype {
 		}
 
 		int prototypesLen = toInt(in.readInt(), littleEndian);
-		prototypes = new LuaPrototype[prototypesLen];
+		prototypes = new Prototype[prototypesLen];
 		for (int i = 0; i < prototypesLen; i++) {
-			prototypes[i] = new LuaPrototype(in, littleEndian, name, size_t);
+			prototypes[i] = new Prototype(in, littleEndian, name, size_t);
 		}
 
 		// DEBUGGING INFORMATION
@@ -223,7 +223,7 @@ public final class LuaPrototype {
 	}
 
 
-	public static LuaClosure loadByteCode(DataInputStream in, LuaTable env)
+	public static LuaClosure loadByteCode(DataInputStream in, KahluaTable env)
 	throws IOException {
 		int tmp;
 
@@ -272,7 +272,7 @@ public final class LuaPrototype {
 		loadAssert(tmp == 0, "Integral");
 
 //		Done with header, start reading functions
-		LuaPrototype mainPrototype = new LuaPrototype(in, littleEndian, null, size_t);
+		Prototype mainPrototype = new Prototype(in, littleEndian, null, size_t);
 		LuaClosure closure = new LuaClosure(mainPrototype, env);
 		return closure;
 	}
@@ -283,7 +283,7 @@ public final class LuaPrototype {
 		}
 	}
 
-	public static LuaClosure loadByteCode(InputStream in, LuaTable env) throws IOException {
+	public static LuaClosure loadByteCode(InputStream in, KahluaTable env) throws IOException {
 		if (!(in instanceof DataInputStream)) {
 			in = new DataInputStream(in);
 		}

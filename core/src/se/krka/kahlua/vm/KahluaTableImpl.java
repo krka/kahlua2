@@ -27,7 +27,7 @@ import java.lang.ref.WeakReference;
 import se.krka.kahlua.stdlib.BaseLib;
 
 
-public final class LuaTableImpl implements LuaTable {
+public final class KahluaTableImpl implements KahluaTable {
 	private boolean weakKeys, weakValues;
 
 	// Hash part
@@ -70,7 +70,7 @@ public final class LuaTableImpl implements LuaTable {
 		return p;
 	}
 
-	public LuaTableImpl() {
+	public KahluaTableImpl() {
 		int capacity = 1;
 
 		keys = new Object[capacity];
@@ -297,7 +297,7 @@ public final class LuaTableImpl implements LuaTable {
 		updateWeakSettings(oldWeakKeys, oldWeakValues);
 	}
 
-	private LuaTable metatable;
+	private KahluaTable metatable;
 
 	public final void rawset(Object key, Object value) {
 		checkKey(key);	    	
@@ -444,11 +444,11 @@ public final class LuaTableImpl implements LuaTable {
 		}
 	}
 
-	public LuaTable getMetatable() {
+	public KahluaTable getMetatable() {
 		return metatable;
 	}
 
-	public void setMetatable(LuaTable metatable) {
+	public void setMetatable(KahluaTable metatable) {
 		this.metatable = metatable;
         boolean weakKeys = false, weakValues = false;
         if (metatable != null) {

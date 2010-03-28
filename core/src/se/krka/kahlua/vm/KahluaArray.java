@@ -2,16 +2,16 @@ package se.krka.kahlua.vm;
 
 import se.krka.kahlua.stdlib.BaseLib;
 
-public class LuaArray implements LuaTable {
+public class KahluaArray implements KahluaTable {
 
-	private LuaTable metatable;
+	private KahluaTable metatable;
 	
 	private Object[] data;
 	private int len;
 
     private boolean recalculateLen;
 
-	public LuaArray() {
+	public KahluaArray() {
 		data = new Object[16];
 		len = 0;
 	}
@@ -72,13 +72,13 @@ public class LuaArray implements LuaTable {
     }
 
     public Object rawget(Object key) {
-        LuaTableImpl.checkKey(key);
+        KahluaTableImpl.checkKey(key);
         int index = getKeyIndex(key);
         return rawget(index);
     }
 
     public void rawset(Object key, Object value) {
-        LuaTableImpl.checkKey(key);
+        KahluaTableImpl.checkKey(key);
         int index = getKeyIndex(key);
         if (index == -1) {
             BaseLib.fail("Invalid table key: " + key);
@@ -106,11 +106,11 @@ public class LuaArray implements LuaTable {
 		return null;
 	}
 
-    public LuaTable getMetatable() {
+    public KahluaTable getMetatable() {
 		return metatable;
 	}
 
-	public void setMetatable(LuaTable metatable) {
+	public void setMetatable(KahluaTable metatable) {
 		this.metatable = metatable;
 	}
 

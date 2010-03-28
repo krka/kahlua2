@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 package se.krka.kahlua.vm;
 
-public class LuaException extends RuntimeException {
+public class KahluaException extends RuntimeException {
 	/**
 	 *
 	 */
@@ -29,7 +29,7 @@ public class LuaException extends RuntimeException {
 
 	public Object errorMessage;
 
-	public LuaException(Object errorMessage) {
+	public KahluaException(Object errorMessage) {
 		this.errorMessage = errorMessage;
 	}
 
