@@ -4,7 +4,7 @@
 
 	<property name="emma.dir" value="/usr/share/java" />
 
-	<property name="src.dir"       value="${basedir}/src"/>
+	<property name="core.src.dir"       value="${basedir}/core/src"/>
 	<property name="build.dir"     value="${basedir}/bin"/>
 	<property name="classes.dir"     value="${build.dir}/classes"/>
 
@@ -24,7 +24,7 @@
 	</path>
 
 	<path id="main.classpath">
-		<pathelement path="${classes.dir}"/>
+		<pathelement path="${classes.dir}/core"/>
 	</path>
 
 	<path id="test.classpath">
@@ -52,26 +52,22 @@
 
 	<target name="setup">
 		<mkdir dir="${build.dir}"/>
-		<mkdir dir="${classes.dir}"/>
+		<mkdir dir="${classes.dir}/core"/>
 
 		<mkdir dir="${test.build.dir}"/>
 		<mkdir dir="${test.classes.dir}"/>
 		<mkdir dir="${test.lua.output.dir}"/>
 	</target>
 
-	<target name="j2se" description="Build with j2se-settings">
-		<property name="j2se" value="true" />
-	</target>
-
-	<target name="compile" depends="setup, compile-cldc, compile-j2se" description="Compiles Kahlua">
+	<target name="compile" depends="setup, compile-core" description="Compiles Kahlua">
 	</target>
 	
 	<target name="build" depends="compile, build-stdlib" description="Compiles Kahlua">
 	</target>
 	
-	<target name="compile-cldc" unless="j2se">
+	<target name="compile-core">
 		<javac
-			destdir="${classes.dir}"
+			destdir="${classes.dir}/core"
 			debug="true"
 			target="1.4"
 			source="1.4"
@@ -80,17 +76,7 @@
 			<compilerarg value="-bootclasspath" />
 			<compilerarg value="" />
 
-			<src path="${src.dir}"/>
-		</javac>
-	</target>
-
-	<target name="compile-j2se" if="j2se">
-		<javac
-			destdir="${classes.dir}"
-			debug="true"
-			classpathref="main.dependencies"
-		>
-			<src path="${src.dir}"/>
+			<src path="${core.src.dir}"/>
 		</javac>
 	</target>
 
@@ -143,8 +129,8 @@
 			<classpath location="${instrumented.dir}" />
 			<classpath refid="test.classpath" />
 			
-			<arg value="${basedir}/resources/stdlib.lua" />
-			<arg value="${classes.dir}/stdlib.lbc" />
+			<arg value="${basedir}/core/resources/stdlib.lua" />
+			<arg value="${classes.dir}/core/stdlib.lbc" />
 		</java>
 	</target>
 	
