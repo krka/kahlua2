@@ -57,7 +57,7 @@ public final class StringLib implements JavaFunction {
 	private static final int CAP_POSITION = ( -2 );
 
 	private static final String[] names;
-	private static StringLib[] functions;  
+	private static final StringLib[] functions;  
 
 	// NOTE: String.class won't work in J2ME - so this is used as a workaround
 	public static final Class STRING_CLASS = "".getClass();
@@ -81,20 +81,20 @@ public final class StringLib implements JavaFunction {
 		}
 	}
 
-	private int methodId;       
+	private final int methodId;
 	public StringLib(int index) {
 		this.methodId = index;
 	}
 
 	public static void register(LuaState state) {
 		KahluaTable string = new KahluaTableImpl();
-		state.getEnvironment().rawset("string", string);
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
 			string.rawset(names[i], functions[i]);
 		}
 
 		string.rawset("__index", string);
 		state.setClassMetatable(STRING_CLASS, string);
+		state.getEnvironment().rawset("string", string);
 	}
 
 	public String toString() {
@@ -512,8 +512,8 @@ public final class StringLib implements JavaFunction {
 	 * @param sb the stringbuffer to append to
 	 * @param value the value to append
 	 * @param base the base to use when formatting (typically 8, 10 or 16)
-	 * @param minDigits 
-	 * @param zeroIsEmpty if the value is 0, should the zero be printed or not?
+	 * @param printZero
+	 * @param minDigits
 	 */
 	private static void stringBufferAppend(StringBuffer sb, double value, int base, boolean printZero, int minDigits) {
 		int startPos = sb.length();

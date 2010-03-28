@@ -36,7 +36,7 @@ public class Test {
 
 		LuaState state = new LuaState(System.out);
 		UserdataArray.register(state);
-		OsLib.register(state);
+		OsLib.register(state.getEnvironment());
 		LuaCompiler.register(state.getEnvironment());
 
         state.getEnvironment().rawset("newobject", new JavaFunction(){

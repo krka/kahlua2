@@ -68,6 +68,8 @@ public final class BaseLib implements JavaFunction {
 	public static final String TYPE_THREAD = "thread";
 	public static final String TYPE_USERDATA = "userdata";
 
+	private static final BaseLib[] functions;
+
 	static {
 		names = new String[NUM_FUNCTIONS];
 		names[PCALL] = "pcall";
@@ -89,29 +91,23 @@ public final class BaseLib implements JavaFunction {
 		names[COLLECTGARBAGE] = "collectgarbage";
 		names[DEBUGSTACKTRACE] = "debugstacktrace";
 		names[BYTECODELOADER] = "bytecodeloader";
+
+		functions = new BaseLib[NUM_FUNCTIONS];
+		for (int i = 0; i < NUM_FUNCTIONS; i++) {
+			functions[i] = new BaseLib(i);
+		}
+
 	}
 
-	private int index;
-	private static BaseLib[] functions;
+	private final int index;
 
 	public BaseLib(int index) {
 		this.index = index;
 	}
 
-	public static void register(LuaState state) {
-		initFunctions();
-
+	public static void register(KahluaTable environment) {
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
-			state.getEnvironment().rawset(names[i], functions[i]);
-		}
-	}
-
-	private static synchronized void initFunctions() {
-		if (functions == null) {
-			functions = new BaseLib[NUM_FUNCTIONS];
-			for (int i = 0; i < NUM_FUNCTIONS; i++) {
-				functions[i] = new BaseLib(i);
-			}
+			environment.rawset(names[i], functions[i]);
 		}
 	}
 

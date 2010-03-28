@@ -41,7 +41,7 @@ public final class TableLib implements JavaFunction {
 	private static final int NUM_FUNCTIONS = 5;
 
 	private static final String[] names;
-	private static TableLib[] functions;
+	private static final TableLib[] functions;
 	
 	static {
 		names = new String[NUM_FUNCTIONS];
@@ -50,31 +50,25 @@ public final class TableLib implements JavaFunction {
 		names[REMOVE] = "remove";
 		names[MAXN] = "maxn";
 		names[NEWARRAY] = "newarray";
+		functions = new TableLib[NUM_FUNCTIONS];
+		for (int i = 0; i < NUM_FUNCTIONS; i++) {
+			functions[i] = new TableLib(i);
+		}
 	}
 	
-	private int index;
+	private final int index;
 
 	public TableLib (int index) {
 		this.index = index;
 	}
 
-	public static void register (LuaState state) {
-		initFunctions();
+	public static void register(KahluaTable environment) {
 		KahluaTable table = new KahluaTableImpl();
-		state.getEnvironment().rawset("table", table);
 
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
 			table.rawset(names[i], functions[i]);
 		}
-	}
-
-	private static synchronized void initFunctions () {
-		if (functions == null) {
-			functions = new TableLib[NUM_FUNCTIONS];
-			for (int i = 0; i < NUM_FUNCTIONS; i++) {
-				functions[i] = new TableLib(i);
-			}
-		}
+		environment.rawset("table", table);
 	}
 
 	public String toString () {

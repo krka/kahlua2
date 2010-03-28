@@ -54,8 +54,8 @@ public class CoroutineLib implements JavaFunction {
 		names[RUNNING] = "running";
 	}
 
-	private int index;
-	private static CoroutineLib[] functions;	
+	private final int index;
+	private static final CoroutineLib[] functions;
 	static {
 		functions = new CoroutineLib[NUM_FUNCTIONS];
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
@@ -73,13 +73,13 @@ public class CoroutineLib implements JavaFunction {
 
 	public static void register(LuaState state) {
 		KahluaTable coroutine = new KahluaTableImpl();
-		state.getEnvironment().rawset("coroutine", coroutine);
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
 			coroutine.rawset(names[i], functions[i]);
 		}
 		
 		coroutine.rawset("__index", coroutine);
 		state.setClassMetatable(LUA_THREAD_CLASS, coroutine);
+		state.getEnvironment().rawset("coroutine", coroutine);
 	}
 	
 	public int call(LuaCallFrame callFrame, int nArguments) {

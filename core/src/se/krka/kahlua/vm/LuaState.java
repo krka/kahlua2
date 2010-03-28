@@ -176,12 +176,12 @@ public class LuaState implements KahluaThread {
 		getEnvironment().rawset("_G", getEnvironment());
 		getEnvironment().rawset("_VERSION", "Lua 5.1 for CLDC 1.1");
 
-		BaseLib.register(this);
+		BaseLib.register(this.getEnvironment());
 		StringLib.register(this);
 		MathLib.register(this);
 		CoroutineLib.register(this);
-		OsLib.register(this);
-		TableLib.register(this);
+		OsLib.register(this.getEnvironment());
+		TableLib.register(this.getEnvironment());
 		
 		LuaClosure closure = KahluaUtil.loadByteCodeFromResource("/stdlib",
 				getEnvironment());

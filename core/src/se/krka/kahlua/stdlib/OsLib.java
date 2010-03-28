@@ -30,7 +30,6 @@ import se.krka.kahlua.vm.JavaFunction;
 import se.krka.kahlua.vm.KahluaTable;
 import se.krka.kahlua.vm.KahluaUtil;
 import se.krka.kahlua.vm.LuaCallFrame;
-import se.krka.kahlua.vm.LuaState;
 import se.krka.kahlua.vm.KahluaTableImpl;
 
 public class OsLib implements JavaFunction {
@@ -40,8 +39,8 @@ public class OsLib implements JavaFunction {
 
 	private static final int NUM_FUNCS = 3;
 	
-	private static String[] funcnames;
-	private static OsLib[] funcs;
+	private static final String[] funcnames;
+	private static final OsLib[] funcs;
 
 	static {
 		funcnames = new String[NUM_FUNCS];
@@ -55,13 +54,12 @@ public class OsLib implements JavaFunction {
 		}
 	}
 
-	public static void register(LuaState state) {
+	public static void register(KahluaTable environment) {
 		KahluaTable os = new KahluaTableImpl();
-		state.getEnvironment().rawset("os", os);
-
 		for (int i = 0; i < NUM_FUNCS; i++) {
 			os.rawset(funcnames[i], funcs[i]);
 		}
+		environment.rawset("os", os);
 	}
 
 	private static final String TABLE_FORMAT = "*t";
