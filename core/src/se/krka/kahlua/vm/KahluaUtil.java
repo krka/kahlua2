@@ -1,5 +1,8 @@
 package se.krka.kahlua.vm;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 public class KahluaUtil {
 	public static boolean luaEquals(Object a, Object b) {
 		if (a == null || b == null) {
@@ -31,5 +34,17 @@ public class KahluaUtil {
 
 	public static boolean boolEval(Object o) {
 		return (o != null) && (o != Boolean.FALSE);
+	}
+
+	public static LuaClosure loadByteCodeFromResource(String name, KahluaTable environment) {
+		InputStream stream = environment.getClass().getResourceAsStream(name + ".lbc");
+		if (stream == null) {
+			return null;
+		}
+		try {
+			return Prototype.loadByteCode(stream, environment);
+		} catch (IOException e) {
+			throw new RuntimeException(e.getMessage());
+		}
 	}
 }

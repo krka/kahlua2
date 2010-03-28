@@ -21,8 +21,6 @@
  */
 package se.krka.kahlua.vm;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Random;
 import se.krka.kahlua.stdlib.BaseLib;
@@ -185,7 +183,7 @@ public class LuaState implements KahluaThread {
 		OsLib.register(this);
 		TableLib.register(this);
 		
-		LuaClosure closure = loadByteCodeFromResource("/stdlib",
+		LuaClosure closure = KahluaUtil.loadByteCodeFromResource("/stdlib",
 				getEnvironment());
 		if (closure == null) {
 			BaseLib.fail("Could not load /stdlib.lbc");
@@ -1329,31 +1327,7 @@ public class LuaState implements KahluaThread {
 		return currentThread.environment;
 	}
 
-	public LuaClosure loadByteCodeFromResource(String name, KahluaTable environment) {
-		InputStream stream = getClass().getResourceAsStream(name + ".lbc");
-		if (stream == null) {
-			return null;
-		}
-		try {
-			return Prototype.loadByteCode(stream, environment);
-		} catch (IOException e) {
-			throw new RuntimeException(e.getMessage());
-		}
-	}
-	
-	/**
-	 * Not thread safe by default, so this does nothing.
-	 */
-	public void lock() {
-	}
-
-	/**
-	 * Not thread safe by default, so this does nothing.
-	 */
-	public void unlock() {
-	}
-
-    public PrintStream getOut() {
+	public PrintStream getOut() {
         return out;
     }
 

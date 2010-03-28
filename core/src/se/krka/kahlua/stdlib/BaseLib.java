@@ -690,7 +690,7 @@ public final class BaseLib implements JavaFunction {
 				if (!path.endsWith("/")) {
 					path = path + "/";
 				}
-				LuaClosure closure = callFrame.thread.state.loadByteCodeFromResource(path + modname, callFrame.getEnvironment());
+				LuaClosure closure = KahluaUtil.loadByteCodeFromResource(path + modname, callFrame.getEnvironment());
 				if (closure != null) {
 					return callFrame.push(closure);
 				}

@@ -36,7 +36,6 @@ import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.JavaFunction;
 import se.krka.kahlua.vm.LuaCallFrame;
 import se.krka.kahlua.vm.LuaClosure;
-import se.krka.kahlua.vm.LuaState;
 import se.krka.kahlua.vm.KahluaTable;
 
 public class LuaCompiler implements JavaFunction {
@@ -61,13 +60,10 @@ public class LuaCompiler implements JavaFunction {
 		this.index = index;		
 	}
 	
-	public static void register(LuaState state) {
-		state.lock();
-		KahluaTable env = state.getEnvironment();
+	public static void register(KahluaTable env) {
 		for (int i = 0; i < names.length; i++) {
 			env.rawset(names[i], functions[i]);
 		}
-		state.unlock();
 		/*
 		KahluaTable packageTable = (KahluaTable) env.rawget("package");
 		KahluaTable loadersTable = (KahluaTable) packageTable.rawget("loaders");
