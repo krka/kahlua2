@@ -1,0 +1,11 @@
+testAssert(not pcall(collectgarbage, "invalid string"))
+testAssert(not pcall(collectgarbage, {}))
+testAssert(not pcall(collectgarbage, true))
+testAssert(not pcall(collectgarbage, false))
+testAssert(not pcall(collectgarbage, 7))
+testAssert(pcall(collectgarbage))
+testAssert(pcall(collectgarbage, "collect"))
+testAssert(pcall(collectgarbage, "step"))
+testAssert(pcall(collectgarbage, "count"))
+testAssert(collectgarbage("count") > 0)
+

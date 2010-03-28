@@ -1,0 +1,16 @@
+* Implement LUA_PATH for require
+* Add the compiler to require
+* Implement a getfile(path)
+
+MAYBE
+* Implement array part, to avoid creating so many doubles!
+
+* Speed up the report building
+
+* Create a proper manual
+* Add array part of lua table
+
+* Major change: Implement metatables per object instead of per class for userdata.
+* Major change: Implement a LuaUserdata class, that contains environment, metatable
+and a reference to a real java object.
+

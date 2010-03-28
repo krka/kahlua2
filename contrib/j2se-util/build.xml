@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Kahlua J2SE util" basedir="." default="all">
+	<property file="local.properties" />
+
+	<property name="kahlua.classes.dir"       value="${basedir}/../../bin/classes"/>
+	<property name="luaj.jar" value="${basedir}/../../lib/luaj-j2me-0.96.jar" />	
+
+	<property name="src.dir"       value="${basedir}/src"/>
+	<property name="test.src.dir"       value="${basedir}/test"/>
+	<property name="build.dir"     value="${basedir}/bin"/>
+	<property name="classes.dir"     value="${build.dir}/classes"/>
+	<property name="classes.dir.tmp"     value="${build.dir}/classes-tmp"/>
+	<property name="test.classes.dir"     value="${build.dir}/test/classes"/>
+	<property name="test.result.dir"     value="${build.dir}/test/result"/>
+	<property name="libs.dir"     value="${basedir}/../../lib"/>
+
+	<path id="kahlua.classpath">
+		<pathelement path="${kahlua.classes.dir}"/>
+	</path>
+
+	<path id="test.build.classpath">
+		<fileset file="${luaj.jar}" />
+		<path refid="kahlua.classpath"/>
+		<pathelement path="${classes.dir}"/>
+		
+		<fileset dir="${libs.dir}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<path id="test.run.classpath">
+		<fileset file="${luaj.jar}" />
+		<path refid="test.build.classpath"/>
+		<pathelement path="${test.classes.dir}"/>
+		<fileset dir="${libs.dir}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<!-- Main targets -->
+	<target name="all" depends="run-test, package" />
+	
+	<target name="clean" description="Removes old build files">
+		<delete dir="${build.dir}" failonerror="false"/>
+	</target>
+
+	<target name="setup">
+		<mkdir dir="${build.dir}"/>
+		<mkdir dir="${classes.dir}"/>
+		<mkdir dir="${test.classes.dir}"/>
+		<mkdir dir="${test.result.dir}"/>
+	</target>
+
+    <target name="package" depends="compile" description="Package into a binary jar">
+    	<jar jarfile="${build.dir}/kahlua-j2se-util.jar">
+    		<fileset dir="${classes.dir}" />
+    	</jar>
+    </target>
+
+
+	<target name="pre-compile" depends="setup">
+	</target>
+
+	<target name="compile" depends="setup, pre-compile" description="Compiles main src">
+		<mkdir dir="${classes.dir.tmp}"/>
+		<javac
+			destdir="${classes.dir.tmp}"
+			debug="true"
+			target="1.5"
+			source="1.5"
+			classpathref="kahlua.classpath">
+			<src path="${src.dir}">
+			</src>
+		</javac>
+		<javac
+			destdir="${classes.dir}"
+			debug="true"
+			target="1.5"
+			source="1.5"
+			classpathref="kahlua.classpath">
+			    <compilerarg value="-processor" />
+			    <compilerarg value="se.krka.kahlua.integration.processor.LuaDebugDataProcessor" />
+			<src path="${src.dir}"/>
+			<classpath path="${classes.dir.tmp}" />
+		</javac>
+		<delete dir="${classes.dir.tmp}"/>
+	</target>
+
+	<target name="compile-test" depends="compile" description="Compiles tests">
+		<javac
+			destdir="${test.classes.dir}" debug="true" target="1.5" source="1.5" classpathref="test.build.classpath">
+			    <compilerarg value="-processor" />
+			    <compilerarg value="se.krka.kahlua.integration.processor.LuaDebugDataProcessor" />
+			<src path="${test.src.dir}"/>
+		</javac>
+	</target>
+
+
+    <target name="test-depend" depends="setup, compile, compile-test">
+    </target>
+
+    <target name="run-test" depends="test-depend" description="Run the test-suite">
+			<echo>Running tests...</echo>
+		<junit printsummary="yes" haltonfailure="no" haltonerror="no" failureproperty="tests.failed" fork="yes">
+			<classpath>
+				<path refid="test.run.classpath" />
+			</classpath>
+
+			<formatter type="plain"/>
+
+			  <batchtest fork="yes" haltonfailure="no" todir="${test.result.dir}">
+			    <fileset dir="${test.src.dir}">
+			      <include name="**/*Test*.java"/>
+			      <exclude name="**/AllTests.java"/>
+			    </fileset>
+			    <formatter type="xml"/>
+			  </batchtest>
+		</junit>
+			<echo>Generating html</echo>
+		<junitreport todir="${test.result.dir}">
+		  <fileset dir="${test.result.dir}">
+		    <include name="TEST-*.xml"/>
+		  </fileset>
+		  <report format="frames" todir="${test.result.dir}/html"/>
+		</junitreport>
+		<fail if="tests.failed" />
+    </target>
+</project>
+

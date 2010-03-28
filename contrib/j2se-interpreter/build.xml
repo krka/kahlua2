@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+
+<project default="build" basedir="." name="j2se-interpreter">
+	<property file="local.properties" />
+	
+	<!-- Default properties - please change this to what you want to use, or predefine them in a file called local.properties -->
+
+	<property name="luaj.jar" value="${basedir}/../../lib/luaj-j2me-0.96.jar" />	
+	<property name="kahlua.jar" value="${basedir}/../../bin/kahlua.jar" />
+	<available property="required.kahlua" file="${kahlua.jar}" />
+	<fail unless="required.kahlua" message="You must package kahlua first" />	
+
+	<path id="include.classpath">
+		<fileset file="${luaj.jar}" />
+		<fileset file="${kahlua.jar}" />
+	</path>	
+
+	<path id="compile.classpath">
+		<path refid="include.classpath" />
+	</path>
+
+	<path id="run.classpath">
+		<path refid="compile.classpath" />
+		<pathelement path="${basedir}/build/classes" />
+	</path>
+
+	<target name="clean" description="Removes old build files">
+		<delete dir="${basedir}/build/" failonerror="false"/>
+		<mkdir dir="${basedir}/build"/>
+		<mkdir dir="${basedir}/build/classes"/>
+	</target>
+
+	<!--
+	*************
+	*** BUILD ***
+	*************
+	-->
+	<target name="compile">
+		<javac
+			destdir="${basedir}/build/classes"
+			optimize="true"
+			debug="true"
+			verbose="false">
+			<src path="${basedir}/src"/>
+			<classpath refid="compile.classpath" />			
+		</javac>
+	</target>
+
+	<target name="package" depends="compile">
+		<jar
+			basedir="${basedir}/build/classes"
+			jarfile="${basedir}/build/kahlua-j2se-interpreter.jar"
+			compress="true"
+			>
+			<!--zipfileset src="${luaj.jar}" excludes="META-INF/*" /-->
+			<zipfileset src="${kahlua.jar}" excludes="META-INF/*" />
+			<manifest>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="build" depends="clean, compile, package" />
+
+</project>

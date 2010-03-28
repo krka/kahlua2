@@ -1,0 +1,6 @@
+Changes since rev 48
+* Fixed an "off by one" bug in the random function. Thanks Vlad for bug report.
+
+Changes since rev 46
+* Removed Java 1.5 features and made the project fully compatible with Java 1.4
+* Removed all asserts and replaced some asserts with runtime exceptions

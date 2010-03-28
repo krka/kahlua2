@@ -1,0 +1,249 @@
+#summary User manual for J2SE Util
+=Contents=
+<wiki:toc max_depth="3" />
+
+Kahlua J2SE Util is a package of various tools for making the usage of Kahlua
+easier to use in J2SE environment. These tools all use parts of Java not available in J2ME,
+which is why it is separated into its own package.
+
+=Conversions=
+
+Using the class `LuaConverterManager` it's possible to convert objects between Lua and Java.
+This is mostly useful through the Integration system described below, but it may be useful on its own too.
+Since Kahlua handles all numeric operations internally with doubles,
+it can be useful to convert back and forth to Java number types, such as Integer or int.
+This and more is easy to with the conversion tool.
+
+==Setup==
+Create an instance of `LuaConverterManager` like this:
+{{{
+LuaConverterManager manager = new LuaConverterManager();
+}}}
+and add all the converters you want, by calling these methods:
+{{{
+manager.addLuaConverter(LuaToJavaConverter converter);
+manager.addJavaConverter(JavaToLuaConverter converter);
+}}}
+There are already built in converters to handle all the common cases with the lua built in types.
+
+To add all converters related to numbers and boolean, use:
+{{{
+LuaNumberConverter.install(manager);
+}}}
+This installs several converters, to handle all the cases for converting between Java numbers and Lua double, as well as booleans.
+
+To add all converters related to tables, use:
+{{{
+LuaTableConverter.install(manager);
+}}}
+This adds conversions between the Java interfaces `List` and `Map` to `LuaTable`.
+
+==Lua to Java==
+To perform a conversion from Lua to Java, you simply call this method on the manager.
+{{{
+		Long result = manager.fromLuaToJava(new Double(123.45), long.class);
+}}}
+
+Parameters:
+ # The object to convert.
+ # The class it should convert to.
+
+Returns
+ * An object of the wanted type.
+
+It throws an exception if it can't find a suitable conversion.
+The conversion will automatically succeed if the input object is already of the wanted type.
+The first parameter can be any object, and the second is the class you want to convert it to.
+
+The manager will try to find a suitable converter, and it will match a given converter
+if the class of the first parameter extends the input class in the converter,
+and if the second parameter is an exact match for the output class in the converter.
+I.e. if you have a converter installed that goes from `LuaTable` to `List` it will match against
+an object of the type `LuaTableImpl` and `List.class`, but not for `Collection.class` or `ArrayList.class`.
+
+==Java to Lua==
+Converting from a Java object to a Lua object is much more simple.
+There is only one parameter, since variables and parameters in Lua lack type information (only values have types).
+Thus, the converters only care about the input type, and choose output type themselves.
+{{{
+		Object result = manager.fromJavaToLua(123);
+}}}
+In this example, there is a converter installed that converts any java `Number` to a `Double`.
+Since 123 gets autoboxed to `Integer` which extends `Number`, it will match.
+If no match is found, the object is returned as it is.
+
+=Integration=
+Using reflection, annotations, processors and the conversions described above,
+it's possible to construct an easy to use integration mechanism.
+This means that Lua can call Java code and vice versa.
+
+==LuaCaller==
+The `LuaCaller` class is used to call functions in Lua from Java.
+It's simply a wrapper around `LuaState.pcall`, which also performs conversions from Java objects to Lua.
+Note that it does not convert the results back to Java objects, since the wanted types are not known.
+
+==Calling Java code from Lua==
+Using the `LuaJavaClassExposer` class, you can expose Java methods and constructors to Lua.
+Methods can be exposed either as global functions or object methods.
+
+===Global functions===
+Global functions are plain functions that are bound to the `LuaState` environment.
+If you expose a specific object to Lua, and you have defined a method has a global function,
+you can access it through Lua with:
+{{{
+	methodName(arg1, arg2, ...)
+}}}
+This is equivalent to the following in Java.
+{{{
+	obj.methodName(arg1, arg2, ...)
+}}}
+
+Global functions can be exposed both from objects and from classes through static methods.
+
+====Example====
+{{{
+public class SimpleLuaApi {
+	@LuaMethod(name="SetColor", global=true)
+	public void setColor(int red, int green, int blue) {
+	}
+}
+...
+	setup(LuaJavaClassExposer exposer) {
+		Object obj = new SimpleLuaApi();
+		exposer.exposeGlobalFunctions(obj);
+	}
+}}}
+From the Lua context, you can now do:
+{{{
+SetColor(100.0, 50.0, 25.0)
+}}}
+which would trigger a call to
+{{{
+obj.setColor(100, 50, 25)
+}}}
+The conversion mechanism will convert the doubles from Lua to the required integers.
+
+===Object methods===
+Object methods are equivalent to regular java methods.
+If you send a plain Java object to Lua, and expose the objects class, you can allow the lua code to do
+things such as:
+{{{
+obj:method(arg1, arg2, ...)
+}}}
+This will be equivalent to this in Java:
+{{{
+obj.method(arg1, arg2, ...)
+}}}
+
+====Example====
+{{{
+@LuaClass
+public class SimpleLuaClass {
+	private int mycolor;
+	
+	@LuaConstructor(name="NewSimple")
+	@Desc("returns a new SimpleLuaClass object")
+	public SimpleLuaClass(@Desc("range 0-255") int red, @Desc("range 0-255") int green, @Desc("range 0-255") int blue) {
+		mycolor = red + green + blue;
+	}
+
+	@LuaMethod(name="SetColor", global=false)
+	public void setColor(@Desc("range 0-255") int red, @Desc("range 0-255") int green, @Desc("range 0-255") int blue) {
+		mycolor = red + green + blue;
+	}
+}
+	setup(LuaJavaClassExposer exposer) {
+		exposer.exposeClass(SimpleLuaClass.class)
+	}
+}}}
+In the Lua context you can do:
+{{{
+	obj = NewSimple(1, 2, 3)
+	obj:SetColor(100, 50, 25)
+}}}
+
+===Annotations===
+
+====LuaClass====
+This annotation is used on the class level, and is used to denote that Lua should be able to
+manage objects of that class.
+
+====LuaMethod====
+LuaMethod should be applied to all methods that you want available in Lua.
+There are two available options to set.
+
+ * `global` decides if the method should be exposed as a method or a global function. It's optional, and defaults to false, i.e. a method.
+ * `name` sets the name to be used in Lua. It's optional and default is the same as the method name in Java.
+
+====LuaConstructor====
+LuaConstructor should be applied to all constructors that you want available in Lua.
+ * `name` is required, and is the name of the function in Lua which calls the constructor in Java
+
+====Desc====
+Desc is an optional annotation that can be applied to methods and parameters.
+They are used as a description of the return value. This is used when generating API documentation or introspecting the method.
+
+===Manual exposing===
+If you need to expose classes not defined by yourself,
+you can call the relevant expose methods directly from the exposer class, and supply the relevant attributes manually.
+
+===ReturnValues===
+Since Lua has support from multiple return values, and Java does not,
+there exists a simple workaround in Kahlua J2SE util for returning multiple values from a method.
+
+Simply set ReturnValues as the first parameter in your method and set the return type to void.
+Using ReturnValues is only allowed on methods if the return type is void and not for constructors,
+since constructors always only return one value.
+
+====Example====
+{{{
+@LuaClass
+public class SimpleLuaClass {
+	private int red, green, blue;
+	@LuaMethod(name="GetAndSetColor", global=false)
+	public void getColor(ReturnValues returnValues, int red, int green, int blue) {
+		returnValues.push(this.red, this.green, this.blue);
+		this.red = red;
+		this.green = green;
+		this.blue = blue;
+	}
+}
+}}}
+
+From Lua:
+{{{
+	local r, g, b = obj:GetAndSetColor(10, 20, 30)
+}}}
+
+===Properties===
+Objects of exposed classes have built in support for properties.
+You can set properties on an exposed object as if it were a table.
+obj.methodName will resolve to the Java method if it is exposed and the property has not been overridden.
+
+==Processor==
+There exists a processor for generating debugdata for annotated classes.
+It runs alongside the compiler and places .luadebugdata-files next to the classfiles.
+These can be used in runtime to get debugdata about functions, such as parameter names and description fields.
+
+To generate your own debug data, add this when compiling your classes, and make sure to
+link to the `kahlua-j2se-util.jar`: `-processor se.krka.kahlua.integration.processor.LuaDebugDataProcessor`.
+
+Or if you're compiling with ant, you can add this to the `javac` task:
+{{{
+			    <compilerarg value="-processor" />
+
+			    <compilerarg value="se.krka.kahlua.integration.processor.LuaDebugDataProcessor" />
+
+}}}
+
+==Generating documentation==
+Using this data you can also generate documentation from all the exposed classes in a `LuaState`.
+Included in the source is an example generator for DokuWiki and it should be easy to add support for other types of output.
+
+==Built in expose classes==
+Two classes in this package are already set up with exposed methods.
+ * `LuaJavaClassExposer`
+ * `LuaMethodDebugInformation`
+
+These contain methods useful for extracting method information from functions that have been been exposed.
+

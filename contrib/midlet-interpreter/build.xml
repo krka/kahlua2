@@ -1,0 +1,171 @@
+<?xml version="1.0"?>
+
+<project default="build" basedir="." name="kahlua-interpreter">
+	<property file="local.properties" />
+	
+	<!-- Default properties - please change this to what you want to use, or predefine them in a file called local.properties -->
+
+	<property name="wtk.home" value="${basedir}/WTK" />
+	<property name="antenna.jar" value="${basedir}/tools/antenna-bin-0.9.13.jar" />
+	
+	<!-- Don't modify below here unless you know what you're doing -->
+	<available property="required.wtk" file="${wtk.home}" />
+	<fail unless="required.wtk" message="You must set up wtk.home to point to a WTK directory: ${wtk.home}" />	
+
+	<available property="required.antenna" file="${antenna.jar}" />
+	<fail unless="required.antenna" message="You must set up antenna.jar to point to the antenna jar" />	
+	
+	<available property="required.cldc" file="${wtk.home}/lib/cldcapi11.jar" />
+	<available property="required.midp" file="${wtk.home}/lib/midpapi20.jar" />
+	<fail unless="required.cldc" message="You must place cldcapi11.jar in ${wtk.home}/lib" />	
+	<fail unless="required.midp" message="You must place midpapi20.jar in ${wtk.home}/lib" />	
+
+	<property name="kahlua.jar" value="${basedir}/../../bin/kahlua.jar" />
+	<available property="required.kahlua" file="${kahlua.jar}" />
+	<fail unless="required.kahlua" message="You must package kahlua first" />	
+
+	<property name="midlet.mainclass" value="KahluaInterpreter" />
+	<property name="midlet.jar.name" value="kahluainterpreter" />
+	<property name="midlet.jar.name.jar" value="${basedir}/build/${midlet.jar.name}.jar" />
+	<property name="midlet.jar.name.jad" value="${basedir}/build/${midlet.jar.name}.jad" />
+
+	<!-- Task definitions -->
+	<taskdef resource="antenna.properties" classpath="${antenna.jar}"/>
+	
+	<path id="build.buildclasspath">
+		<fileset dir="${wtk.home}/lib">
+			<include name="cldcapi11.jar"/>
+			<include name="midpapi20.jar"/>
+		</fileset>
+	</path>	
+		
+	<path id="include.classpath">
+		<fileset file="${kahlua.jar}" />
+	</path>	
+
+	<path id="compile.classpath">
+		<path refid="build.buildclasspath" />
+		<path refid="include.classpath" />
+	</path>
+
+	<target name="clean" description="Removes old build files">
+		<delete dir="${basedir}/build/" failonerror="false"/>
+		<mkdir dir="${basedir}/build"/>
+		<mkdir dir="${basedir}/build/classes"/>
+	</target>
+
+	<!--
+	*************
+	*** BUILD ***
+	*************
+	-->
+	<target name="compile">
+		<javac
+			destdir="${basedir}/build/classes"
+			source="1.4"
+			target="1.4"
+			optimize="true"
+			debug="true"
+			verbose="false"
+			bootclasspathref="build.buildclasspath">
+			<src path="${basedir}/src"/>
+			<classpath refid="compile.classpath" />
+			
+		</javac>
+	</target>
+
+	<target name="package" depends="compile">
+		<jar
+			basedir="${basedir}/build/classes"
+			jarfile="${midlet.jar.name.jar}"
+			compress="true"
+			>
+
+			<manifest>
+				<attribute name="MIDlet-Name" value="KahluaInterpreter"/>
+				<attribute name="MicroEdition-Configuration" value="CLDC-1.1"/>
+				<attribute name="MicroEdition-Configuration_version" value="1.1"/>
+				<attribute name="MIDlet-Vendor" value="krka"/>
+				<attribute name="MIDlet-1" value="KahluaInterpreter, , ${midlet.mainclass}"/>
+				<attribute name="MIDlet-Version" value="1.0.0"/>
+				<attribute name="MicroEdition-Profile" value="MIDP-2.0"/>
+				<attribute name="MicroEdition-Profile_version" value="2.0"/>
+
+				<section name="kahluademo">
+					<attribute name="Implementation-Version" value="1.0"/>
+					<attribute name="Implementation-Vendor" value="krka"/>
+					<attribute name="Implementation-Revision" value="1.0"/>
+				</section>
+			</manifest>
+			
+			
+			<zipfileset src="${kahlua.jar}" excludes="META-INF/*" />
+		</jar>
+	</target>
+		
+	<target name="build" depends="clean, compile, package, perform-obfuscation" description="Compiles a version of the game" >        
+		<property name="wtk.cldc.version" value="1.1" />
+		<property name="wtk.midp.version" value="2.0" />
+
+		<exec executable="${wtk.home}/bin/preverify">
+			<arg line="-classpath" />
+			<arg line="${wtk.home}/lib/cldcapi11.jar:${wtk.home}/lib/midpapi20.jar" />
+			<arg line="-target" />
+			<arg line="CLDC1.1" />
+			<arg line="${midlet.jar.name.jar}" />
+		</exec>
+		<move file="${basedir}/output/${midlet.jar.name}.jar" tofile="${midlet.jar.name.jar}" />
+		<delete dir="${basedir}/output" failonerror="false"/>
+		
+		
+		<wtkjad
+		        jadfile="${midlet.jar.name.jad}"
+		        jarfile="${midlet.jar.name.jar}"
+		        name="KahluaInterpreter"
+		        vendor="krka"
+				version="1.0.0">
+		        <midlet name="${midlet.jar.name}" class="${midlet.mainclass}" />
+		</wtkjad>
+	</target>
+	
+	<target name="with-obfuscation">
+		<property name="do.obfuscate" value="true" />
+	</target>
+
+	<target name="obfuscate" depends="with-obfuscation, build" description="Obfuscates the jar for optimal size">
+	</target>
+
+	<target name="perform-obfuscation" if="do.obfuscate">
+		<available property="required.proguard" file="${proguard.jar}" />
+		<fail unless="required.proguard" message="You must set up proguard.jar to point to the proguard jar" />	
+		<taskdef resource="proguard/ant/task.properties" classpath="${proguard.jar}" />
+		
+		<proguard>
+		  -libraryjars ${wtk.home}/lib/midpapi20.jar
+		  -libraryjars ${wtk.home}/lib/cldcapi11.jar
+		  -injars      ${midlet.jar.name.jar}
+		  -outjars     ${midlet.jar.name.jar}.obfuscated.jar
+
+			-overloadaggressively
+			-repackageclasses ''
+			-allowaccessmodification
+			-dontusemixedcaseclassnames            
+			-printmapping obfuscation-map.txt
+			-keep public class * extends javax.microedition.midlet.MIDlet
+			-dontoptimize
+	  
+		</proguard>
+
+		<mkdir dir="${basedir}/build/unobfuscated/" />
+		<move toFile="${basedir}/build/unobfuscated/${midlet.jar.name}.jar" file="${midlet.jar.name.jar}" />
+		<move toFile="${midlet.jar.name.jar}" file="${midlet.jar.name.jar}.obfuscated.jar" />
+	</target>
+
+
+	<target name="run" description="Run in emulator">
+        <wtkrun jadfile="${basedir}/build/kahluainterpreter.jad" 
+        	heapsize="10000000"
+        />
+    </target>
+
+</project>
