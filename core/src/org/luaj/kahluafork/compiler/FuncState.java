@@ -23,21 +23,14 @@ package org.luaj.kahluafork.compiler;
 
 import java.util.Hashtable;
 
-import org.luaj.kahluafork.compiler.LexState.ConsControl;
-import org.luaj.kahluafork.compiler.LexState.expdesc;
+import org.luaj.kahluafork.compiler.ConsControl;
+import org.luaj.kahluafork.compiler.expdesc;
 
 import se.krka.kahlua.vm.LuaException;
 import se.krka.kahlua.vm.LuaPrototype;
 
 
 public class FuncState {
-	static class BlockCnt {
-		  BlockCnt previous;  /* chain */
-		  int breaklist;  /* list of jumps out of this loop */
-		  int nactvar;  /* # active locals outside the breakable structure */
-		  boolean upval;  /* true if some variable in the block is an upvalue */
-		  boolean isbreakable;  /* true if `block' is a loop */
-		}
 
 	private static final Object NULL_OBJECT = new Object();
 	

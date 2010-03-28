@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.Hashtable;
-import org.luaj.kahluafork.compiler.FuncState.BlockCnt;
+import org.luaj.kahluafork.compiler.BlockCnt;
 import se.krka.kahlua.vm.LuaException;
 import se.krka.kahlua.vm.LuaPrototype;
 
@@ -108,20 +108,8 @@ public class LexState {
 	  VNONRELOC = 12,	/* info = result register */
 	  VCALL = 13,	/* info = instruction pc */
 	  VVARARG = 14;	/* info = instruction pc */
-	
-	private static class Token {
-		int token;
 
-		/* semantics information */
-		double r;
-		String ts;
-		
-		public void set(Token other) {
-			this.token = other.token;
-			this.r = other.r;
-			this.ts = other.ts;
-		}
-	};
+	;
 	
 	int current;  /* current character (charint) */
 	int linenumber;  /* input line counter */
@@ -706,48 +694,6 @@ public class LexState {
 	// from lparser.c
 	// =============================================================
 
-	static class expdesc {
-		int k; // expkind, from enumerated list, above
-		
-		int info, aux;
-		private double _nval;
-		private boolean has_nval;
-		public void setNval(double r) {
-			_nval = r;
-			has_nval = true;
-		}
-		public double nval() {
-			return has_nval ? _nval : info;
-		}
-		
-		int t; /* patch list of `exit when true' */
-		int f; /* patch list of `exit when false' */
-		void init( int k, int i ) {
-			this.f = NO_JUMP;
-			this.t = NO_JUMP;
-			this.k = k;
-			this.info = i;
-		}
-
-		boolean hasjumps() {
-			return (t != f);
-		}
-
-		boolean isnumeral() {
-			return (k == VKNUM && t == NO_JUMP && f == NO_JUMP);
-		}
-
-		public void setvalue(expdesc other) {
-			this.k = other.k;
-			this._nval = other._nval;
-			this.has_nval = other.has_nval;
-			this.info = other.info;
-			this.aux = other.aux;
-			this.t = other.t;
-			this.f = other.f;
-		}
-	}
-		
 	boolean hasmultret(int k) {
 		return ((k) == VCALL || (k) == VVARARG);
 	}
@@ -979,15 +925,7 @@ public class LexState {
 	** Rules for Constructors
 	** =======================================================================
 	*/
-
-
-	static class ConsControl {
-		expdesc v = new expdesc(); /* last list item read */
-		expdesc t; /* table descriptor */
-		int nh; /* total number of `record' elements */
-		int na; /* total number of array elements */
-		int tostore; /* number of array elements pending to be stored */
-	};
+	;
 
 
 	void recfield(ConsControl cc) {
@@ -1450,15 +1388,7 @@ public class LexState {
 	}
 
 
-	/*
-	** structure to chain all variables in the left-hand side of an
-	** assignment
-	*/
-	static class LHS_assign {
-		LHS_assign prev;
-		/* variable (global, local, upvalue, or indexed) */
-		expdesc v = new expdesc(); 
-	};
+	;
 
 
 	/*
