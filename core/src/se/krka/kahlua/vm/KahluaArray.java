@@ -99,7 +99,7 @@ public class KahluaArray implements KahluaTable {
 		}
 		while (index < len) {
 			if (data[index] != null) {
-				return LuaState.toDouble(index + 1);
+				return KahluaUtil.toDouble(index + 1);
 			}
 			index++;
 		}

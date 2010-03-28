@@ -22,9 +22,9 @@ THE SOFTWARE.
 package se.krka.kahlua.vm;
 
 public class LuaCallFrame {
-	public LuaThread thread;
+	public Coroutine thread;
 	
-	public LuaCallFrame(LuaThread thread) {
+	public LuaCallFrame(Coroutine thread) {
 		this.thread = thread;
 	}
 	
@@ -45,7 +45,7 @@ public class LuaCallFrame {
 	public final void set(int index, Object o) {
 		/*
 		if (index > getTop()) {
-			throw new LuaException("Tried to access index outside of stack, top: " + getTop() + ", index: " + index);
+			throw new KahluaException("Tried to access index outside of stack, top: " + getTop() + ", index: " + index);
 		}
 		*/
 		thread.objectStack[localBase + index] = o;
@@ -54,7 +54,7 @@ public class LuaCallFrame {
 	public final Object get(int index) {
 		/*
 		if (index > getTop()) {
-			throw new LuaException("Tried to access index outside of stack, top: " + getTop() + ", index: " + index);
+			throw new KahluaException("Tried to access index outside of stack, top: " + getTop() + ", index: " + index);
 		}
 		*/
 		return thread.objectStack[localBase + index];
@@ -156,7 +156,7 @@ public class LuaCallFrame {
 		}
 	}
 
-	public LuaTable getEnvironment() {
+	public KahluaTable getEnvironment() {
 		if (isLua()) {
 			return closure.env;
 		}

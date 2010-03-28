@@ -84,7 +84,7 @@ public class Test {
 			children = dir.listFiles();
 		}
 
-		LuaTable testsuites = new LuaTableImpl();
+		KahluaTable testsuites = new KahluaTableImpl();
 		for (int i = 0; i < children.length; i++) {
 			File child = children[i];
 			if (child != null && !child.getName().contains("testhelper") && child.getName().endsWith(".lua")) {
@@ -101,7 +101,7 @@ public class Test {
 						stacktrace.printStackTrace();
 					}
 				} else {
-					if (!(results[1] instanceof LuaTable)) {
+					if (!(results[1] instanceof KahluaTable)) {
 						BaseLib.fail(("Did not get a table back from " + child + ", got a " + results[1] + " instead."));
 					}
 					testsuites.rawset(new Double(testsuites.len() + 1.0), results[1]);

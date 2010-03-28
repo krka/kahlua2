@@ -25,10 +25,11 @@ import java.util.Vector;
 
 import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.JavaFunction;
+import se.krka.kahlua.vm.KahluaUtil;
 import se.krka.kahlua.vm.LuaCallFrame;
 import se.krka.kahlua.vm.LuaState;
-import se.krka.kahlua.vm.LuaTable;
-import se.krka.kahlua.vm.LuaTableImpl;
+import se.krka.kahlua.vm.KahluaTable;
+import se.krka.kahlua.vm.KahluaTableImpl;
 
 public class UserdataArray implements JavaFunction {
 
@@ -41,11 +42,11 @@ public class UserdataArray implements JavaFunction {
 	// NOTE: Vector.class won't work in J2ME - so this is used as a workaround
 	private static final Class VECTOR_CLASS = new Vector().getClass();
 
-	private static LuaTable metatable;
+	private static KahluaTable metatable;
 
 	public static synchronized void register(LuaState state) {
 		if (metatable == null) {
-			metatable = new LuaTableImpl();
+			metatable = new KahluaTableImpl();
 			metatable.rawset("__metatable", "restricted");
 			metatable.rawset("__len", new UserdataArray(LENGTH));
 			metatable.rawset("__index", new UserdataArray(INDEX));
@@ -97,7 +98,7 @@ public class UserdataArray implements JavaFunction {
 		Object key = callFrame.get(1);
 		Object value = callFrame.get(2);
 
-		v.setElementAt(value, (int) LuaState.fromDouble(key));
+		v.setElementAt(value, (int) KahluaUtil.fromDouble(key));
 		return 0;
 	}
 
@@ -108,7 +109,7 @@ public class UserdataArray implements JavaFunction {
 		Object key = callFrame.get(1);
 		Object res;
 		if (key instanceof Double) {
-			res = v.elementAt((int) LuaState.fromDouble(key));
+			res = v.elementAt((int) KahluaUtil.fromDouble(key));
 		} else {
 			res = metatable.rawget(key);
 		}
@@ -120,7 +121,7 @@ public class UserdataArray implements JavaFunction {
 		BaseLib.luaAssert(nArguments >= 1, "not enough parameters");
 		Vector v = (Vector) callFrame.get(0);
 		double size = v.size();
-		callFrame.push(LuaState.toDouble(size));
+		callFrame.push(KahluaUtil.toDouble(size));
 		return 1;
 	}
 }

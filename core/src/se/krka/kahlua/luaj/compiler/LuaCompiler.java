@@ -37,7 +37,7 @@ import se.krka.kahlua.vm.JavaFunction;
 import se.krka.kahlua.vm.LuaCallFrame;
 import se.krka.kahlua.vm.LuaClosure;
 import se.krka.kahlua.vm.LuaState;
-import se.krka.kahlua.vm.LuaTable;
+import se.krka.kahlua.vm.KahluaTable;
 
 public class LuaCompiler implements JavaFunction {
 
@@ -63,14 +63,14 @@ public class LuaCompiler implements JavaFunction {
 	
 	public static void register(LuaState state) {
 		state.lock();
-		LuaTable env = state.getEnvironment();
+		KahluaTable env = state.getEnvironment();
 		for (int i = 0; i < names.length; i++) {
 			env.rawset(names[i], functions[i]);
 		}
 		state.unlock();
 		/*
-		LuaTable packageTable = (LuaTable) env.rawget("package");
-		LuaTable loadersTable = (LuaTable) packageTable.rawget("loaders");
+		KahluaTable packageTable = (KahluaTable) env.rawget("package");
+		KahluaTable loadersTable = (KahluaTable) packageTable.rawget("loaders");
 		*/
 	}
 	
@@ -113,16 +113,16 @@ public class LuaCompiler implements JavaFunction {
 		}
 	}
 
-	public static LuaClosure loadis(InputStream inputStream, String name, LuaTable environment) throws IOException {
+	public static LuaClosure loadis(InputStream inputStream, String name, KahluaTable environment) throws IOException {
 		return loadis(new InputStreamReader(inputStream), name, environment);
 	}
 	
-	public static LuaClosure loadis(Reader reader, String name, LuaTable environment) throws IOException {
+	public static LuaClosure loadis(Reader reader, String name, KahluaTable environment) throws IOException {
 		BaseLib.luaAssert(name != null, "no name given the compilation unit");
 		return new LuaClosure(LexState.compile(reader.read(), reader, name), environment);		
 	}
 	
-	public static LuaClosure loadstring(String source, String name, LuaTable environment) throws IOException {
+	public static LuaClosure loadstring(String source, String name, KahluaTable environment) throws IOException {
 		return loadis(new ByteArrayInputStream(source.getBytes("UTF-8")), name, environment);
 	}
 }

@@ -23,12 +23,12 @@ package se.krka.kahlua.vm;
 
 
 public final class LuaClosure {
-	public LuaPrototype prototype;
-	public LuaTable env;
+	public Prototype prototype;
+	public KahluaTable env;
 
 	public UpValue[] upvalues;
 	
-	public LuaClosure(LuaPrototype prototype, LuaTable env) {
+	public LuaClosure(Prototype prototype, KahluaTable env) {
 		this.prototype = prototype;
 		this.env = env;
 		upvalues = new UpValue[prototype.numUpvalues];

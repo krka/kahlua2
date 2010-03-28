@@ -22,10 +22,11 @@ THE SOFTWARE.
 package se.krka.kahlua.stdlib;
 
 import se.krka.kahlua.vm.JavaFunction;
+import se.krka.kahlua.vm.KahluaTableImpl;
+import se.krka.kahlua.vm.KahluaUtil;
 import se.krka.kahlua.vm.LuaCallFrame;
 import se.krka.kahlua.vm.LuaState;
-import se.krka.kahlua.vm.LuaTable;
-import se.krka.kahlua.vm.LuaTableImpl;
+import se.krka.kahlua.vm.KahluaTable;
 
 public final class StringLib implements JavaFunction {
 
@@ -86,7 +87,7 @@ public final class StringLib implements JavaFunction {
 	}
 
 	public static void register(LuaState state) {
-		LuaTable string = new LuaTableImpl();
+		KahluaTable string = new KahluaTableImpl();
 		state.getEnvironment().rawset("string", string);
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
 			string.rawset(names[i], functions[i]);
@@ -709,11 +710,11 @@ public final class StringLib implements JavaFunction {
 		}
 		double di2 = 1;
 		if (di != null) {
-			di2 = LuaState.fromDouble(di);
+			di2 = KahluaUtil.fromDouble(di);
 		}
 		double dj2 = di2;
 		if (dj != null) {
-			dj2 = LuaState.fromDouble(dj);
+			dj2 = KahluaUtil.fromDouble(dj);
 		}
 
 		int ii = (int) di2, ij = (int) dj2;
@@ -960,7 +961,7 @@ public final class StringLib implements JavaFunction {
 		String source = (String) BaseLib.getArg(callFrame, 1, BaseLib.TYPE_STRING, f);
 		String pattern = (String) BaseLib.getArg(callFrame, 2, BaseLib.TYPE_STRING, f);
 		Double i = ((Double)(BaseLib.getOptArg(callFrame, 3, BaseLib.TYPE_NUMBER)));
-		boolean plain = LuaState.boolEval(BaseLib.getOptArg(callFrame, 4, BaseLib.TYPE_BOOLEAN));
+		boolean plain = KahluaUtil.boolEval(BaseLib.getOptArg(callFrame, 4, BaseLib.TYPE_BOOLEAN));
 		int init = (i == null ? 0 : i.intValue() - 1);
 
 		if ( init < 0 ) {
@@ -977,7 +978,7 @@ public final class StringLib implements JavaFunction {
 			// do a plain search
 			int pos = source.indexOf(pattern, init);
 			if ( pos > -1 ) {
-				return callFrame.push(LuaState.toDouble(pos + 1), LuaState.toDouble(pos + pattern.length()));
+				return callFrame.push(KahluaUtil.toDouble(pos + 1), KahluaUtil.toDouble(pos + pattern.length()));
 			}
 		} else {
 			StringPointer s = new StringPointer(source);
@@ -1445,7 +1446,7 @@ public final class StringLib implements JavaFunction {
 			if (type == BaseLib.TYPE_FUNCTION) {
 				res = ms.callFrame.thread.state.call(repl, match, null, null);
 			} else if (type == BaseLib.TYPE_TABLE) {
-				res = ((LuaTable)repl).rawget(match);
+				res = ((KahluaTable)repl).rawget(match);
 			}
 			if (res == null) {
 				res = match;

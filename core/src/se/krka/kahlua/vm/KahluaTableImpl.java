@@ -149,10 +149,10 @@ public final class KahluaTableImpl implements KahluaTable {
 		 * java implements equals and hashcode for Double
 		 */
 		if (key instanceof Double) {
-			double dkey = LuaState.fromDouble(key);
+			double dkey = KahluaUtil.fromDouble(key);
 			while (true) {
 				if (currentKey instanceof Double) {
-					double dCurrentKey = LuaState.fromDouble(currentKey);
+					double dCurrentKey = KahluaUtil.fromDouble(currentKey);
 					if (dkey == dCurrentKey) {
 						return index;
 					}
@@ -318,11 +318,11 @@ public final class KahluaTableImpl implements KahluaTable {
 	}
 	
 	public Object rawget(int index) {
-		return rawgetHash(LuaState.toDouble(index));
+		return rawgetHash(KahluaUtil.toDouble(index));
 	}
 
 	public void rawset(int index, Object value) {
-		rawsetHash(LuaState.toDouble(index), value);
+		rawsetHash(KahluaUtil.toDouble(index), value);
 	}
 	
 	public final Object rawget(Object key) {

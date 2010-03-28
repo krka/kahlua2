@@ -26,8 +26,8 @@ import java.util.Hashtable;
 import org.luaj.kahluafork.compiler.ConsControl;
 import org.luaj.kahluafork.compiler.expdesc;
 
-import se.krka.kahlua.vm.LuaException;
-import se.krka.kahlua.vm.LuaPrototype;
+import se.krka.kahlua.vm.KahluaException;
+import se.krka.kahlua.vm.Prototype;
 
 
 public class FuncState {
@@ -43,7 +43,7 @@ public class FuncState {
 	public int lastlinedefined;
 	public int isVararg;
 	
-	LuaPrototype f;  /* current function header */
+	Prototype f;  /* current function header */
 //	LTable h;  /* table to find (and reuse) elements in `k' */
 	Hashtable htable;  /* table to find (and reuse) elements in `k' */
 	FuncState prev;  /* enclosing function */
@@ -437,7 +437,7 @@ public class FuncState {
 		} else {
 			idx = this.nk;
 			this.htable.put(v, new Integer(idx));
-			final LuaPrototype f = this.f;
+			final Prototype f = this.f;
 			if (f.constants == null || nk + 1 >= f.constants.length)
 				f.constants = realloc( f.constants, nk*2 + 1 );
 			if (v == NULL_OBJECT) {
@@ -1029,7 +1029,7 @@ public class FuncState {
 
 
 	int code(int instruction, int line) {
-		LuaPrototype f = this.f;
+		Prototype f = this.f;
 		this.dischargejpc(); /* `pc' will change */
 		/* put new instruction in code array */
 		if (f.code == null || this.pc + 1 > f.code.length)
@@ -1074,7 +1074,7 @@ public class FuncState {
 	
 	protected static void _assert(boolean b) {		
 		if (!b)
-			throw new LuaException("compiler assert failed");
+			throw new KahluaException("compiler assert failed");
 	}
 	
 	public static final int MAXSTACK = 250;
@@ -1143,8 +1143,8 @@ public class FuncState {
 		return a;
 	}
 
-	static LuaPrototype[] realloc(LuaPrototype[] v, int n) {
-		LuaPrototype[] a = new LuaPrototype[n];
+	static Prototype[] realloc(Prototype[] v, int n) {
+		Prototype[] a = new Prototype[n];
 		if ( v != null )
 			System.arraycopy(v, 0, a, 0, Math.min(v.length,n));
 		return a;

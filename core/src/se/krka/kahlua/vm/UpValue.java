@@ -24,7 +24,7 @@ package se.krka.kahlua.vm;
 
 public final class UpValue {
 	// For open upvalues
-	public LuaThread thread;
+	public Coroutine thread;
 	public int index;
 
 	// For closed upvalues

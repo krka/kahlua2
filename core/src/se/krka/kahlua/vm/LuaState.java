@@ -32,7 +32,7 @@ import se.krka.kahlua.stdlib.OsLib;
 import se.krka.kahlua.stdlib.StringLib;
 import se.krka.kahlua.stdlib.TableLib;
 
-public class LuaState {
+public class LuaState implements KahluaThread {
 	public static final int FIELDS_PER_FLUSH = 50;
 
 	public static final int OP_MOVE = 0;
@@ -111,13 +111,13 @@ public class LuaState {
 
 	public static final int OP_VARARG = 37;
 
-	public LuaThread currentThread;
+	public Coroutine currentThread;
 
 	// Needed for Math lib - every state needs its own random
 	public final Random random = new Random();
 
-	private final LuaTable userdataMetatables;
-    private final LuaTable classMetatables;
+	private final KahluaTable userdataMetatables;
+    private final KahluaTable classMetatables;
 
     protected final PrintStream out;
 
@@ -149,12 +149,12 @@ public class LuaState {
 	
 	protected LuaState(PrintStream stream, boolean callReset) {
         // The userdataMetatables must be weak to avoid memory leaks
-        LuaTable weakKeyMetatable = new LuaTableImpl();
+        KahluaTable weakKeyMetatable = new KahluaTableImpl();
         weakKeyMetatable.rawset("__mode", "k");
-        userdataMetatables = new LuaTableImpl();
+        userdataMetatables = new KahluaTableImpl();
         userdataMetatables.setMetatable(weakKeyMetatable);
 
-        classMetatables = new LuaTableImpl();
+        classMetatables = new KahluaTableImpl();
 
 		out = stream;
 		if (callReset) {
@@ -165,7 +165,7 @@ public class LuaState {
 	// For debugging purposes only
 	/*
 	 * public static void main(String[] args) { LuaState s = new LuaState(); try {
-	 * LuaClosure closure = LuaPrototype.loadByteCode(new
+	 * LuaClosure closure = Prototype.loadByteCode(new
 	 * FileInputStream("coroutine.lbc"), s.getEnvironment()); s.pcall(closure,
 	 * null); } catch (FileNotFoundException e) { // TODO Auto-generated catch
 	 * block e.printStackTrace(); } catch (IOException e) { // TODO
@@ -173,7 +173,7 @@ public class LuaState {
 	 */
 
 	protected final void reset() {
-		currentThread = new LuaThread(this, new LuaTableImpl());
+		currentThread = new Coroutine(this, new KahluaTableImpl());
 
 		getEnvironment().rawset("_G", getEnvironment());
 		getEnvironment().rawset("_VERSION", "Lua 5.1 for CLDC 1.1");
@@ -225,7 +225,7 @@ public class LuaState {
 
 	private int callJava(JavaFunction f, int localBase, int returnBase,
 			int nArguments) {
-		LuaThread thread = currentThread;
+		Coroutine thread = currentThread;
 
 		LuaCallFrame callFrame = thread.pushNewCallFrame(null, f, localBase,
 				returnBase, nArguments, false, false);
@@ -257,7 +257,7 @@ public class LuaState {
 	private final void luaMainloop() {
 		LuaCallFrame callFrame = currentThread.currentCallFrame();
 		LuaClosure closure = callFrame.closure;
-		LuaPrototype prototype = closure.prototype;
+		Prototype prototype = closure.prototype;
 		int[] opcodes = prototype.code;
 
 		int returnBase = callFrame.returnBase;
@@ -367,7 +367,7 @@ public class LuaState {
 					// b = getB9(op);
 					// c = getC9(op);
 
-					LuaTable t = new LuaTableImpl();
+					KahluaTable t = new KahluaTableImpl();
 					callFrame.set(a, t);
 					break;
 				}
@@ -423,7 +423,7 @@ public class LuaState {
 					Double aDouble = BaseLib.rawTonumber(aObj);
 					Object res;
 					if (aDouble != null) {
-						res = toDouble(-fromDouble(aDouble));
+						res = KahluaUtil.toDouble(-KahluaUtil.fromDouble(aDouble));
 					} else {
 						Object metafun = getMetaOp(aObj, "__unm");
 						//BaseLib.luaAssert(metafun != null, "__unm not defined for operand");
@@ -436,7 +436,7 @@ public class LuaState {
 					a = getA8(op);
 					b = getB9(op);
 					Object aObj = callFrame.get(b);
-					callFrame.set(a, toBoolean(!boolEval(aObj)));
+					callFrame.set(a, KahluaUtil.toBoolean(!KahluaUtil.boolEval(aObj)));
 					break;
 				}
 				case OP_LEN: {
@@ -445,12 +445,12 @@ public class LuaState {
 
 					Object o = callFrame.get(b);
 					Object res;
-					if (o instanceof LuaTable) {
-						LuaTable t = (LuaTable) o;
-						res = toDouble(t.len());
+					if (o instanceof KahluaTable) {
+						KahluaTable t = (KahluaTable) o;
+						res = KahluaUtil.toDouble(t.len());
 					} else if (o instanceof String) {
 						String s = (String) o;
-						res = toDouble(s.length());
+						res = KahluaUtil.toDouble(s.length());
 					} else {
 						Object f = getMetaOp(o, "__len");
 						BaseLib.luaAssert(f != null, "__len not defined for operand");
@@ -533,8 +533,8 @@ public class LuaState {
 					Object co = getRegisterOrConstant(callFrame, c, prototype);
 
 					if (bo instanceof Double && co instanceof Double) {
-						double bd_primitive = fromDouble(bo);
-						double cd_primitive = fromDouble(co);
+						double bd_primitive = KahluaUtil.fromDouble(bo);
+						double cd_primitive = KahluaUtil.fromDouble(co);
 
 						if (opcode == OP_EQ) {
 							if ((bd_primitive == cd_primitive) == (a == 0)) {
@@ -599,13 +599,13 @@ public class LuaState {
 							}
 
 							if (metafun == null && opcode == OP_EQ) {
-								resBool = LuaState.luaEquals(bo, co);
+								resBool = KahluaUtil.luaEquals(bo, co);
 							} else {
 								if (!(metafun != null)) {
 									BaseLib.fail((meta_op + " not defined for operand"));
 								}
 								Object res = call(metafun, bo, co, null);
-								resBool = boolEval(res);
+								resBool = KahluaUtil.boolEval(res);
 							}
 
 							if (invert) {
@@ -624,7 +624,7 @@ public class LuaState {
 					c = getC9(op);
 
 					Object value = callFrame.get(a);
-					if (boolEval(value) == (c == 0)) {
+					if (KahluaUtil.boolEval(value) == (c == 0)) {
 						callFrame.pc++;
 					}
 
@@ -636,7 +636,7 @@ public class LuaState {
 					c = getC9(op);
 
 					Object value = callFrame.get(b);
-					if (boolEval(value) != (c == 0)) {
+					if (KahluaUtil.boolEval(value) != (c == 0)) {
 						callFrame.set(a, value);
 					} else {
 						callFrame.pc++;
@@ -758,7 +758,7 @@ public class LuaState {
 						if (!(fun instanceof JavaFunction)) {
 							BaseLib.fail(("Tried to call a non-function: " + fun));
 						}
-						LuaThread oldThread = currentThread;
+						Coroutine oldThread = currentThread;
 						callJava((JavaFunction) fun, localBase2, returnBase,
 								nArguments2);
 
@@ -822,7 +822,7 @@ public class LuaState {
 						if (callFrame.insideCoroutine
 								&& currentThread.callFrameTop == 1) {
 							callFrame.localBase = callFrame.returnBase;
-							LuaThread thread = currentThread;
+							Coroutine thread = currentThread;
 							CoroutineLib.yieldHelper(callFrame, callFrame, b);
 							thread.popCallFrame();
 
@@ -855,20 +855,20 @@ public class LuaState {
 					a = getA8(op);
 					b = getSBx(op);
 
-					double iter = fromDouble(callFrame.get(a));
-					double step = fromDouble(callFrame.get(a + 2));
-					callFrame.set(a, toDouble(iter - step));
+					double iter = KahluaUtil.fromDouble(callFrame.get(a));
+					double step = KahluaUtil.fromDouble(callFrame.get(a + 2));
+					callFrame.set(a, KahluaUtil.toDouble(iter - step));
 					callFrame.pc += b;
 					break;
 				}
 				case OP_FORLOOP: {
 					a = getA8(op);
 
-					double iter = fromDouble(callFrame.get(a));
-					double end = fromDouble(callFrame.get(a + 1));
-					double step = fromDouble(callFrame.get(a + 2));
+					double iter = KahluaUtil.fromDouble(callFrame.get(a));
+					double end = KahluaUtil.fromDouble(callFrame.get(a + 1));
+					double step = KahluaUtil.fromDouble(callFrame.get(a + 2));
 					iter += step;
-					Double iterDouble = toDouble(iter);
+					Double iterDouble = KahluaUtil.toDouble(iter);
 					callFrame.set(a, iterDouble);
 
 					if ((step > 0) ? iter <= end : iter >= end) {
@@ -913,9 +913,9 @@ public class LuaState {
 
 					int offset = (c - 1) * FIELDS_PER_FLUSH;
 
-					LuaTable t = (LuaTable) callFrame.get(a);
+					KahluaTable t = (KahluaTable) callFrame.get(a);
 					for (int i = 1; i <= b; i++) {
-						Object key = toDouble(offset + i);
+						Object key = KahluaUtil.toDouble(offset + i);
 						Object value = callFrame.get(a + i);
 						t.rawset(key, value);
 					}
@@ -929,7 +929,7 @@ public class LuaState {
 				case OP_CLOSURE: {
 					a = getA8(op);
 					b = getBx(op);
-					LuaPrototype newPrototype = prototype.prototypes[b];
+					Prototype newPrototype = prototype.prototypes[b];
 					LuaClosure newClosure = new LuaClosure(newPrototype,
 							closure.env);
 					callFrame.set(a, newClosure);
@@ -982,7 +982,7 @@ public class LuaState {
 				while (true) {
 					callFrame = currentThread.currentCallFrame();
 					if (callFrame == null) {
-						LuaThread parent = currentThread.parent;
+						Coroutine parent = currentThread.parent;
 						if (parent != null) {
 							currentThread.parent = null;
 							// Yield and fail
@@ -1026,7 +1026,7 @@ public class LuaState {
 	}
 
 	public Object getMetaOp(Object o, String meta_op) {
-		LuaTable meta = (LuaTable) getmetatable(o, true);
+		KahluaTable meta = (KahluaTable) getmetatable(o, true);
 		if (meta == null) {
 			return null;
 		}
@@ -1034,8 +1034,8 @@ public class LuaState {
 	}
 
 	private final Object getCompMetaOp(Object a, Object b, String meta_op) {
-		LuaTable meta1 = (LuaTable) getmetatable(a, true);
-		LuaTable meta2 = (LuaTable) getmetatable(b, true);
+		KahluaTable meta1 = (KahluaTable) getmetatable(a, true);
+		KahluaTable meta2 = (KahluaTable) getmetatable(b, true);
 		if (meta1 != meta2 || meta1 == null) {
 			return null;
 		}
@@ -1050,11 +1050,11 @@ public class LuaState {
 		return getMetaOp(b, meta_op);
 	}
 
-	private void setUserdataMetatable(Object obj, LuaTable metatable) {
+	private void setUserdataMetatable(Object obj, KahluaTable metatable) {
 		userdataMetatables.rawset(obj, metatable);
 	}
 
-	private final Object getRegisterOrConstant(LuaCallFrame callFrame, int index, LuaPrototype prototype) {
+	private final Object getRegisterOrConstant(LuaCallFrame callFrame, int index, Prototype prototype) {
 		int cindex = index - 256;
 		if (cindex < 0) {
 			return callFrame.get(index);
@@ -1088,8 +1088,8 @@ public class LuaState {
 	}
 
 	private Double primitiveMath(Double x, Double y, int opcode) {
-		double v1 = fromDouble(x);
-		double v2 = fromDouble(y);
+		double v1 = KahluaUtil.fromDouble(x);
+		double v2 = KahluaUtil.fromDouble(y);
 		double res = 0;
 		switch (opcode) {
 		case OP_ADD:
@@ -1119,7 +1119,7 @@ public class LuaState {
 		default:
 			// this should be unreachable
 		}
-		return toDouble(res);
+		return KahluaUtil.toDouble(res);
 	}
 
 	public Object call(Object fun, Object arg1, Object arg2, Object arg3) {
@@ -1164,9 +1164,9 @@ public class LuaState {
 	public Object tableGet(Object table, Object key) {
 		Object curObj = table;
 		for (int i = LuaState.MAX_INDEX_RECURSION; i > 0; i--) {
-			boolean isTable = curObj instanceof LuaTable;
+			boolean isTable = curObj instanceof KahluaTable;
 			if (isTable) {
-				LuaTable t = (LuaTable) curObj;
+				KahluaTable t = (KahluaTable) curObj;
 				Object res = t.rawget(key);
 				if (res != null) {
 					return res;
@@ -1194,8 +1194,8 @@ public class LuaState {
 		Object curObj = table;
 		for (int i = LuaState.MAX_INDEX_RECURSION; i > 0; i--) {
 			Object metaOp;
-			if (curObj instanceof LuaTable) {
-				LuaTable t = (LuaTable) curObj;
+			if (curObj instanceof KahluaTable) {
+				KahluaTable t = (KahluaTable) curObj;
 
 				if (t.rawget(key) != null) {
 					t.rawset(key, value);
@@ -1221,14 +1221,14 @@ public class LuaState {
 		throw new RuntimeException("loop in settable");
 	}
 
-    public void setClassMetatable(Class clazz, LuaTable metatable) {
+    public void setClassMetatable(Class clazz, KahluaTable metatable) {
         classMetatables.rawset(clazz, metatable);
     }
 
-    public void setmetatable(Object o, LuaTable metatable) {
+    public void setmetatable(Object o, KahluaTable metatable) {
         BaseLib.luaAssert(o != null, "Can't set metatable for nil");
-        if (o instanceof LuaTable) {
-            LuaTable t = (LuaTable) o;
+        if (o instanceof KahluaTable) {
+            KahluaTable t = (KahluaTable) o;
             t.setMetatable(metatable);
         } else {
             userdataMetatables.rawset(o, metatable);
@@ -1239,16 +1239,16 @@ public class LuaState {
 		if (o == null) {
 			return null;
 		}
-		LuaTable metatable;
-		if (o instanceof LuaTable) {
-			LuaTable t = (LuaTable) o;
+		KahluaTable metatable;
+		if (o instanceof KahluaTable) {
+			KahluaTable t = (KahluaTable) o;
 			metatable = t.getMetatable();
 		} else {
-			metatable = (LuaTable) userdataMetatables.rawget(o);
+			metatable = (KahluaTable) userdataMetatables.rawget(o);
 		}
 
         if (metatable == null) {
-            metatable = (LuaTable) classMetatables.rawget(o.getClass());
+            metatable = (KahluaTable) classMetatables.rawget(o.getClass());
         }
 
 		if (!raw && metatable != null) {
@@ -1263,7 +1263,7 @@ public class LuaState {
 	public Object[] pcall(Object fun, Object[] args) {
 		int nArgs = args == null ? 0 : args.length;
 
-		LuaThread thread = currentThread;
+		Coroutine thread = currentThread;
 		int oldTop = thread.getTop();
 
 		thread.setTop(oldTop + 1 + nArgs);
@@ -1285,7 +1285,7 @@ public class LuaState {
 	}
 
 	public int pcall(int nArguments) {
-		LuaThread thread = currentThread;
+		Coroutine thread = currentThread;
 		LuaCallFrame currentCallFrame = thread.currentCallFrame();
 		thread.stackTrace = "";
 		int oldBase = thread.getTop() - nArguments - 1;
@@ -1300,7 +1300,7 @@ public class LuaState {
 			thread.objectStack[oldBase] = Boolean.TRUE;
 
 			return 1 + nValues;
-		} catch (LuaException e) {
+		} catch (KahluaException e) {
 			exception = e;
 			errorMessage = e.errorMessage;
 		} catch (Throwable e) {
@@ -1325,49 +1325,17 @@ public class LuaState {
 		return 4;
 	}
 
-	public LuaTable getEnvironment() {
+	public KahluaTable getEnvironment() {
 		return currentThread.environment;
 	}
 
-	public static boolean luaEquals(Object a, Object b) {
-		if (a == null || b == null) {
-			return a == b;
-		}
-		if (a instanceof Double && b instanceof Double) {
-			Double ad = (Double) a;
-			Double bd = (Double) b;
-			return ad.doubleValue() == bd.doubleValue();
-		}
-		return a == b;
-	}
-
-	public static double fromDouble(Object o) {
-		return ((Double) o).doubleValue();
-	}
-
-	public static Double toDouble(double d) {
-		return new Double(d);
-	}
-
-	public static Double toDouble(long d) {
-		return toDouble((double) d);
-	}
-
-	public static boolean boolEval(Object o) {
-		return (o != null) && (o != Boolean.FALSE);
-	}
-
-	public static Boolean toBoolean(boolean b) {
-		return b ? Boolean.TRUE : Boolean.FALSE;
-	}
-
-	public LuaClosure loadByteCodeFromResource(String name, LuaTable environment) {
+	public LuaClosure loadByteCodeFromResource(String name, KahluaTable environment) {
 		InputStream stream = getClass().getResourceAsStream(name + ".lbc");
 		if (stream == null) {
 			return null;
 		}
 		try {
-			return LuaPrototype.loadByteCode(stream, environment);
+			return Prototype.loadByteCode(stream, environment);
 		} catch (IOException e) {
 			throw new RuntimeException(e.getMessage());
 		}
@@ -1389,7 +1357,7 @@ public class LuaState {
         return out;
     }
 
-    public LuaTable getClassMetatable(Class clazz) {
-        return (LuaTable) classMetatables.rawget(clazz);
+    public KahluaTable getClassMetatable(Class clazz) {
+        return (KahluaTable) classMetatables.rawget(clazz);
     }
 }

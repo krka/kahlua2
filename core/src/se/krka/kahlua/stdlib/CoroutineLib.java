@@ -21,13 +21,13 @@ THE SOFTWARE.
 */
 package se.krka.kahlua.stdlib;
 
+import se.krka.kahlua.vm.Coroutine;
 import se.krka.kahlua.vm.JavaFunction;
+import se.krka.kahlua.vm.KahluaTable;
+import se.krka.kahlua.vm.KahluaTableImpl;
 import se.krka.kahlua.vm.LuaCallFrame;
 import se.krka.kahlua.vm.LuaClosure;
 import se.krka.kahlua.vm.LuaState;
-import se.krka.kahlua.vm.LuaTable;
-import se.krka.kahlua.vm.LuaTableImpl;
-import se.krka.kahlua.vm.LuaThread;
 
 public class CoroutineLib implements JavaFunction {
 
@@ -42,8 +42,8 @@ public class CoroutineLib implements JavaFunction {
 	
 	private static final String[] names;
 	
-	// NOTE: LuaThread.class won't work in J2ME - so this is used as a workaround
-	private static final Class LUA_THREAD_CLASS = new LuaThread(null, null).getClass();
+	// NOTE: Coroutine.class won't work in J2ME - so this is used as a workaround
+	private static final Class LUA_THREAD_CLASS = new Coroutine(null, null).getClass();
 	
 	static {
 		names = new String[NUM_FUNCTIONS];
@@ -72,7 +72,7 @@ public class CoroutineLib implements JavaFunction {
 	}
 
 	public static void register(LuaState state) {
-		LuaTable coroutine = new LuaTableImpl();
+		KahluaTable coroutine = new KahluaTableImpl();
 		state.getEnvironment().rawset("coroutine", coroutine);
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
 			coroutine.rawset(names[i], functions[i]);
@@ -97,7 +97,7 @@ public class CoroutineLib implements JavaFunction {
 	}
 
 	private int running(LuaCallFrame callFrame, int nArguments) {
-		LuaThread t = callFrame.thread;
+		Coroutine t = callFrame.thread;
 		
 		// same behaviour as in original lua,
 		// return nil if it's the root thread 
@@ -110,14 +110,14 @@ public class CoroutineLib implements JavaFunction {
 	}
 
 	private int status(LuaCallFrame callFrame, int nArguments) {
-		LuaThread t = getCoroutine(callFrame, nArguments);
+		Coroutine t = getCoroutine(callFrame, nArguments);
 		
 		String status = getStatus(t, callFrame.thread);
 		callFrame.push(status);
 		return 1;
 	}
 
-	private String getStatus(LuaThread t, LuaThread caller) {
+	private String getStatus(Coroutine t, Coroutine caller) {
 		String status = null;
 		if (t.parent == null) {
 			if (t.isDead()) {
@@ -137,7 +137,7 @@ public class CoroutineLib implements JavaFunction {
 	}
 
 	private int resume(LuaCallFrame callFrame, int nArguments) {
-		LuaThread t = getCoroutine(callFrame, nArguments);
+		Coroutine t = getCoroutine(callFrame, nArguments);
 		
 		String status = getStatus(t, callFrame.thread);
 		// equals on strings works because they are both constants
@@ -145,7 +145,7 @@ public class CoroutineLib implements JavaFunction {
 			BaseLib.fail(("Can not resume thread that is in status: " + status));
 		}
 
-		LuaThread parent = callFrame.thread;
+		Coroutine parent = callFrame.thread;
 		t.parent = parent;
 		
 		LuaCallFrame nextCallFrame = t.currentCallFrame();
@@ -172,8 +172,8 @@ public class CoroutineLib implements JavaFunction {
 	}
 
 	public static int yield(LuaCallFrame callFrame, int nArguments) {
-		LuaThread t = callFrame.thread;
-		LuaThread parent = t.parent;
+		Coroutine t = callFrame.thread;
+		Coroutine parent = t.parent;
 
 		BaseLib.luaAssert(parent != null, "Can not yield outside of a coroutine");
 		
@@ -185,8 +185,8 @@ public class CoroutineLib implements JavaFunction {
 	public static void yieldHelper(LuaCallFrame callFrame, LuaCallFrame argsCallFrame, int nArguments) {
 		BaseLib.luaAssert(callFrame.insideCoroutine, "Can not yield outside of a coroutine");
 		
-		LuaThread t = callFrame.thread;
-		LuaThread parent = t.parent;
+		Coroutine t = callFrame.thread;
+		Coroutine parent = t.parent;
 		t.parent = null;
 
 		LuaCallFrame nextCallFrame = parent.currentCallFrame();
@@ -204,7 +204,7 @@ public class CoroutineLib implements JavaFunction {
 	private int create(LuaCallFrame callFrame, int nArguments) {
 		LuaClosure c = getFunction(callFrame, nArguments);
 
-		LuaThread newThread = new LuaThread(callFrame.thread.state, callFrame.thread.environment);
+		Coroutine newThread = new Coroutine(callFrame.thread.state, callFrame.thread.environment);
 		newThread.pushNewCallFrame(c, null, 0, 0, -1, true, true);
 		callFrame.push(newThread);
 		return 1;
@@ -218,11 +218,11 @@ public class CoroutineLib implements JavaFunction {
 		return c;
 	}
 
-	private LuaThread getCoroutine(LuaCallFrame callFrame, int nArguments) {
+	private Coroutine getCoroutine(LuaCallFrame callFrame, int nArguments) {
 		BaseLib.luaAssert(nArguments >= 1, "not enough arguments");
 		Object o = callFrame.get(0);
-		BaseLib.luaAssert(o instanceof LuaThread, "argument 1 must be a coroutine");
-		LuaThread t = (LuaThread) o;
+		BaseLib.luaAssert(o instanceof Coroutine, "argument 1 must be a coroutine");
+		Coroutine t = (Coroutine) o;
 		return t;
 	}
 }

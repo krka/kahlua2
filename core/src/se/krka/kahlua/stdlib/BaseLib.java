@@ -22,12 +22,13 @@ THE SOFTWARE.
 package se.krka.kahlua.stdlib;
 
 import se.krka.kahlua.vm.JavaFunction;
+import se.krka.kahlua.vm.KahluaException;
+import se.krka.kahlua.vm.KahluaTable;
+import se.krka.kahlua.vm.KahluaUtil;
 import se.krka.kahlua.vm.LuaCallFrame;
 import se.krka.kahlua.vm.LuaClosure;
-import se.krka.kahlua.vm.LuaException;
 import se.krka.kahlua.vm.LuaState;
-import se.krka.kahlua.vm.LuaTable;
-import se.krka.kahlua.vm.LuaThread;
+import se.krka.kahlua.vm.Coroutine;
 
 public final class BaseLib implements JavaFunction {
 
@@ -148,7 +149,7 @@ public final class BaseLib implements JavaFunction {
 	}
 	
 	private int debugstacktrace(LuaCallFrame callFrame, int nArguments) {
-		LuaThread thread = (LuaThread) getOptArg(callFrame, 1, BaseLib.TYPE_THREAD);
+		Coroutine thread = (Coroutine) getOptArg(callFrame, 1, BaseLib.TYPE_THREAD);
 		if (thread == null) {
 			thread = callFrame.thread;
 		}
@@ -172,7 +173,7 @@ public final class BaseLib implements JavaFunction {
 
 	private int rawget(LuaCallFrame callFrame, int nArguments) {
         luaAssert(nArguments >= 2, "Not enough arguments");
-        LuaTable t = (LuaTable) callFrame.get(0);
+        KahluaTable t = (KahluaTable) callFrame.get(0);
         Object key = callFrame.get(1);
 
         callFrame.push(t.rawget(key));
@@ -181,7 +182,7 @@ public final class BaseLib implements JavaFunction {
 
 	private int rawset(LuaCallFrame callFrame, int nArguments) {
         luaAssert(nArguments >= 3, "Not enough arguments");
-        LuaTable t = (LuaTable) callFrame.get(0);
+        KahluaTable t = (KahluaTable) callFrame.get(0);
         Object key = callFrame.get(1);
         Object value = callFrame.get(2);
 
@@ -195,21 +196,14 @@ public final class BaseLib implements JavaFunction {
         Object o1 = callFrame.get(0);
         Object o2 = callFrame.get(1);
 
-        callFrame.push(toBoolean(LuaState.luaEquals(o1, o2)));
+        callFrame.push(KahluaUtil.toBoolean(KahluaUtil.luaEquals(o1, o2)));
         return 1;
-	}
-
-	private static final Boolean toBoolean(boolean b) {
-		if (b) {
-			return Boolean.TRUE;
-		}
-		return Boolean.FALSE;
 	}
 
 	private int setfenv(LuaCallFrame callFrame, int nArguments) {
         luaAssert(nArguments >= 2, "Not enough arguments");
 
-        LuaTable newEnv = (LuaTable) callFrame.get(1);
+        KahluaTable newEnv = (KahluaTable) callFrame.get(1);
         luaAssert(newEnv != null, "expected a table");
         
     	LuaClosure closure = null;
@@ -265,7 +259,7 @@ public final class BaseLib implements JavaFunction {
 	private int next(LuaCallFrame callFrame, int nArguments) {
         luaAssert(nArguments >= 1, "Not enough arguments");
 
-        LuaTable t = (LuaTable) callFrame.get(0);
+        KahluaTable t = (KahluaTable) callFrame.get(0);
         Object key = null;
 
         if (nArguments >= 2) {
@@ -290,7 +284,7 @@ public final class BaseLib implements JavaFunction {
 	private int unpack(LuaCallFrame callFrame, int nArguments) {
         luaAssert(nArguments >= 1, "Not enough arguments");
 
-        LuaTable t = (LuaTable) callFrame.get(0);
+        KahluaTable t = (KahluaTable) callFrame.get(0);
 
         Object di = null, dj = null;
         if (nArguments >= 2) {
@@ -302,13 +296,13 @@ public final class BaseLib implements JavaFunction {
 
         int i, j;
         if (di != null) {
-        	i = (int) LuaState.fromDouble(di);
+        	i = (int) KahluaUtil.fromDouble(di);
         } else {
         	i = 1;
         }
 
         if (dj != null) {
-        	j = (int) LuaState.fromDouble(dj);
+        	j = (int) KahluaUtil.fromDouble(dj);
         } else {
         	j = t.len();
         }
@@ -322,7 +316,7 @@ public final class BaseLib implements JavaFunction {
 
         callFrame.setTop(nReturnValues);
         for (int b = 0; b < nReturnValues; b++) {
-        	callFrame.set(b, t.rawget(LuaState.toDouble((i + b))));
+        	callFrame.set(b, t.rawget(KahluaUtil.toDouble((i + b))));
         }
         return nReturnValues;
 	}
@@ -334,7 +328,7 @@ public final class BaseLib implements JavaFunction {
 				stacktrace = "";
 			}
 			callFrame.thread.stackTrace = stacktrace;
-			throw new LuaException(callFrame.get(0));
+			throw new KahluaException(callFrame.get(0));
 		}
 		return 0;
 	}
@@ -345,7 +339,7 @@ public final class BaseLib implements JavaFunction {
 
 	private static int print(LuaCallFrame callFrame, int nArguments) {
 		LuaState state = callFrame.thread.state;
-		LuaTable env = state.getEnvironment();
+		KahluaTable env = state.getEnvironment();
 		Object toStringFun = state.tableGet(env, "tostring");
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < nArguments; i++) {
@@ -366,12 +360,12 @@ public final class BaseLib implements JavaFunction {
 		Object arg1 = callFrame.get(0);
 		if (arg1 instanceof String) {
 			if (((String) arg1).startsWith("#")) {
-				callFrame.push(LuaState.toDouble(nArguments - 1));
+				callFrame.push(KahluaUtil.toDouble(nArguments - 1));
 				return 1;
 			}
 		}
 		Double d_indexDouble = rawTonumber(arg1);
-		double d_index = LuaState.fromDouble(d_indexDouble);
+		double d_index = KahluaUtil.fromDouble(d_indexDouble);
 		int index = (int) d_index;
 		if (index >= 1 && index <= (nArguments - 1)) {
 			int nResults = nArguments - index;
@@ -484,14 +478,14 @@ public final class BaseLib implements JavaFunction {
 
 		Object o = callFrame.get(0);
 
-		LuaTable newMeta = (LuaTable) (callFrame.get(1));
+		KahluaTable newMeta = (KahluaTable) (callFrame.get(1));
 		setmetatable(callFrame.thread.state, o, newMeta, false);
 
 		callFrame.setTop(1);
 		return 1;
 	}
 
-	public static void setmetatable(LuaState state, Object o, LuaTable newMeta, boolean raw) {
+	public static void setmetatable(LuaState state, Object o, KahluaTable newMeta, boolean raw) {
 		luaAssert(o != null, "Expected table, got nil");
 		final Object oldMeta = state.getmetatable(o, raw);
 
@@ -525,10 +519,10 @@ public final class BaseLib implements JavaFunction {
 		if (o instanceof JavaFunction || o instanceof LuaClosure) {
 			return TYPE_FUNCTION;
 		}
-		if (o instanceof LuaTable) {
+		if (o instanceof KahluaTable) {
 			return TYPE_TABLE;
 		}
-		if (o instanceof LuaThread) {
+		if (o instanceof Coroutine) {
 			return TYPE_THREAD;
 		}
 		return TYPE_USERDATA;
@@ -569,7 +563,7 @@ public final class BaseLib implements JavaFunction {
 			return res;
 		}
 
-		if (o instanceof LuaTable) {
+		if (o instanceof KahluaTable) {
 			return "table 0x" + System.identityHashCode(o);
 		}
 		throw new RuntimeException("no __tostring found on object");
@@ -590,7 +584,7 @@ public final class BaseLib implements JavaFunction {
 		Double radixDouble = rawTonumber(radixObj);
 		luaAssert(radixDouble != null, "Argument 2 must be a number");
 
-		double dradix = LuaState.fromDouble(radixDouble);
+		double dradix = KahluaUtil.fromDouble(radixDouble);
 		int radix = (int) dradix;
 		if (radix != dradix) {
 			throw new RuntimeException("base is not an integer");
@@ -613,18 +607,18 @@ public final class BaseLib implements JavaFunction {
 			if (radix == 10) {
 				return Double.valueOf(s);
 			} else {
-				return LuaState.toDouble(Integer.parseInt(s, radix));
+				return KahluaUtil.toDouble(Integer.parseInt(s, radix));
 			}
 		} catch (NumberFormatException e) {
 			s = s.toLowerCase();
 			if (s.endsWith("nan")) {
-				return LuaState.toDouble(Double.NaN);
+				return KahluaUtil.toDouble(Double.NaN);
 			}
 			if (s.endsWith("inf")) {
 				if (s.charAt(0) == '-') {
-					return LuaState.toDouble(Double.NEGATIVE_INFINITY);
+					return KahluaUtil.toDouble(Double.NEGATIVE_INFINITY);
 				}
-				return LuaState.toDouble(Double.POSITIVE_INFINITY);
+				return KahluaUtil.toDouble(Double.POSITIVE_INFINITY);
 			}
 			return null;
 		}
@@ -654,7 +648,7 @@ public final class BaseLib implements JavaFunction {
 	}
 
 	private static Double toKiloBytes(long freeMemory) {
-		return LuaState.toDouble((freeMemory) / 1024.0);
+		return KahluaUtil.toDouble((freeMemory) / 1024.0);
 	}
 
 	public static String rawTostring(Object o) {
@@ -680,7 +674,7 @@ public final class BaseLib implements JavaFunction {
 	private static int bytecodeloader(LuaCallFrame callFrame, int nArguments) {
 		String modname = (String) getArg(callFrame, 1, "string", "loader");
 
-		LuaTable packageTable = (LuaTable) callFrame.getEnvironment().rawget("package");
+		KahluaTable packageTable = (KahluaTable) callFrame.getEnvironment().rawget("package");
 		String classpath = (String) packageTable.rawget("classpath");
 		
 		int index = 0;

@@ -22,13 +22,14 @@ THE SOFTWARE.
  */
 package se.krka.kahlua.stdlib;
 
-import se.krka.kahlua.vm.LuaArray;
+import se.krka.kahlua.vm.KahluaArray;
+import se.krka.kahlua.vm.KahluaTable;
+import se.krka.kahlua.vm.KahluaTableImpl;
 
 import se.krka.kahlua.vm.JavaFunction;
+import se.krka.kahlua.vm.KahluaUtil;
 import se.krka.kahlua.vm.LuaCallFrame;
 import se.krka.kahlua.vm.LuaState;
-import se.krka.kahlua.vm.LuaTable;
-import se.krka.kahlua.vm.LuaTableImpl;
 
 public final class TableLib implements JavaFunction {
 
@@ -59,7 +60,7 @@ public final class TableLib implements JavaFunction {
 
 	public static void register (LuaState state) {
 		initFunctions();
-		LuaTable table = new LuaTableImpl();
+		KahluaTable table = new KahluaTableImpl();
 		state.getEnvironment().rawset("table", table);
 
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
@@ -102,9 +103,9 @@ public final class TableLib implements JavaFunction {
 
 	private int newarray(LuaCallFrame callFrame, int arguments) {
 		Object param = BaseLib.getOptArg(callFrame, 1, null);
-		LuaArray ret = new LuaArray();
-		if (param instanceof LuaTable && arguments == 1) {
-			LuaTable t = (LuaTable) param;
+		KahluaArray ret = new KahluaArray();
+		if (param instanceof KahluaTable && arguments == 1) {
+			KahluaTable t = (KahluaTable) param;
 			int n = t.len();
 			for (int i = n; i >= 1; i--) {
 				ret.rawset(i, t.rawget(i));
@@ -119,7 +120,7 @@ public final class TableLib implements JavaFunction {
 
 	private static int concat (LuaCallFrame callFrame, int nArguments) {
 		BaseLib.luaAssert(nArguments >= 1, "expected table, got no arguments");
-		LuaTable table = (LuaTable)callFrame.get(0);
+		KahluaTable table = (KahluaTable)callFrame.get(0);
 
 		String separator = "";
 		if (nArguments >= 2) {
@@ -146,7 +147,7 @@ public final class TableLib implements JavaFunction {
 				buffer.append(separator);
 			}
 
-			Double key = LuaState.toDouble(i);
+			Double key = KahluaUtil.toDouble(i);
 			Object value = table.rawget(key);
 			buffer.append(BaseLib.rawTostring(value));
 		}
@@ -154,46 +155,46 @@ public final class TableLib implements JavaFunction {
 		return callFrame.push(buffer.toString());
 	}
 	
-	public static void insert (LuaState state, LuaTable table, Object element) {
+	public static void insert (LuaState state, KahluaTable table, Object element) {
 		append(state, table, element);
 	}
 
-	public static void append(LuaState state, LuaTable table, Object element) {
+	public static void append(LuaState state, KahluaTable table, Object element) {
 		int position = 1 + table.len();
-		state.tableSet(table, LuaState.toDouble(position), element);
+		state.tableSet(table, KahluaUtil.toDouble(position), element);
 	}
 
-	public static void rawappend(LuaTable table, Object element) {
+	public static void rawappend(KahluaTable table, Object element) {
 		int position = 1 + table.len();
-		table.rawset(LuaState.toDouble(position), element);
+		table.rawset(KahluaUtil.toDouble(position), element);
 	}
 
-	public static void insert(LuaState state, LuaTable table, int position, Object element) {
+	public static void insert(LuaState state, KahluaTable table, int position, Object element) {
 		int len = table.len();
 		for (int i = len; i >= position; i--) {
-			state.tableSet(table, LuaState.toDouble(i+1), state.tableGet(table, LuaState.toDouble(i)));
+			state.tableSet(table, KahluaUtil.toDouble(i+1), state.tableGet(table, KahluaUtil.toDouble(i)));
 		}
-		state.tableSet(table, LuaState.toDouble(position), element);
+		state.tableSet(table, KahluaUtil.toDouble(position), element);
 	}
 
-	public static void rawinsert(LuaTable table, int position, Object element) {
+	public static void rawinsert(KahluaTable table, int position, Object element) {
 		int len = table.len();
 		if (position <= len) {
-			Double dest = LuaState.toDouble(len + 1);
+			Double dest = KahluaUtil.toDouble(len + 1);
 			for (int i = len; i >= position; i--) {
-				Double src = LuaState.toDouble(i);
+				Double src = KahluaUtil.toDouble(i);
 				table.rawset(dest, table.rawget(src));
 				dest = src;
 			}
 			table.rawset(dest, element);
 		} else {
-			table.rawset(LuaState.toDouble(position), element);
+			table.rawset(KahluaUtil.toDouble(position), element);
 		}
 	}
 
 	private static int insert (LuaCallFrame callFrame, int nArguments) {
 		BaseLib.luaAssert(nArguments >= 2, "Not enough arguments");
-		LuaTable t = (LuaTable)callFrame.get(0);
+		KahluaTable t = (KahluaTable)callFrame.get(0);
 		int pos = t.len() + 1;
 		Object elem = null;
 		if (nArguments > 2) {
@@ -206,23 +207,23 @@ public final class TableLib implements JavaFunction {
 		return 0;
 	}
 	
-	public static Object remove (LuaState state, LuaTable table) {
+	public static Object remove (LuaState state, KahluaTable table) {
 		return remove(state, table, table.len());
 	}
 	
-	public static Object remove (LuaState state, LuaTable table, int position) {
-		Object ret = state.tableGet(table, LuaState.toDouble(position));
+	public static Object remove (LuaState state, KahluaTable table, int position) {
+		Object ret = state.tableGet(table, KahluaUtil.toDouble(position));
 		int len = table.len();
 		for (int i = position; i < len; i++) {
-			state.tableSet(table, LuaState.toDouble(i), state.tableGet(table, LuaState.toDouble(i+1)));
+			state.tableSet(table, KahluaUtil.toDouble(i), state.tableGet(table, KahluaUtil.toDouble(i+1)));
 		}
-		state.tableSet(table, LuaState.toDouble(len), null);
+		state.tableSet(table, KahluaUtil.toDouble(len), null);
 		return ret;
 	}
 	
 	private static int remove (LuaCallFrame callFrame, int nArguments) {
 		BaseLib.luaAssert(nArguments >= 1, "expected table, got no arguments");
-		LuaTable t = (LuaTable)callFrame.get(0);
+		KahluaTable t = (KahluaTable)callFrame.get(0);
 		int pos = t.len();
 		if (nArguments > 1) {
 			pos = BaseLib.rawTonumber(callFrame.get(1)).intValue();
@@ -233,16 +234,16 @@ public final class TableLib implements JavaFunction {
 	
 	private static int maxn (LuaCallFrame callFrame, int nArguments) {
 		BaseLib.luaAssert(nArguments >= 1, "expected table, got no arguments");
-		LuaTable t = (LuaTable)callFrame.get(0);
+		KahluaTable t = (KahluaTable)callFrame.get(0);
 		Object key = null;
 		int max = 0;
 		while ((key = t.next(key)) != null) {
 			if (key instanceof Double) {
-				int what = (int)LuaState.fromDouble(key);
+				int what = (int) KahluaUtil.fromDouble(key);
 				if (what > max) max = what;
 			}
 		}
-		callFrame.push(LuaState.toDouble(max));
+		callFrame.push(KahluaUtil.toDouble(max));
 		return 1;
 	}
 }

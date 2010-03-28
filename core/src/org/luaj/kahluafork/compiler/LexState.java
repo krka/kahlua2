@@ -26,8 +26,8 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.Hashtable;
 import org.luaj.kahluafork.compiler.BlockCnt;
-import se.krka.kahlua.vm.LuaException;
-import se.krka.kahlua.vm.LuaPrototype;
+import se.krka.kahlua.vm.KahluaException;
+import se.krka.kahlua.vm.Prototype;
 
 
 public class LexState {
@@ -175,7 +175,7 @@ public class LexState {
 		return (c <= ' ');
 	}
 	
-	public static LuaPrototype compile(int firstByte, Reader z, String name) {
+	public static Prototype compile(int firstByte, Reader z, String name) {
 		LexState lexstate = new LexState(z);
 		FuncState funcstate = new FuncState();
 		// lexstate.buff = buff;
@@ -257,7 +257,7 @@ public class LexState {
 		} else {
 			errorMessage = cid+":"+linenumber+": "+msg;
 		}
-		throw new LuaException(errorMessage);
+		throw new KahluaException(errorMessage);
 	}
 
 	String chunkid( String source ) {
@@ -839,7 +839,7 @@ public class LexState {
 	
 	void pushclosure(FuncState func, expdesc v) {
 		FuncState fs = this.fs;
-		LuaPrototype f = fs.f;
+		Prototype f = fs.f;
 		if (f.prototypes == null || fs.np + 1 > f.prototypes.length)
 			f.prototypes = FuncState.realloc( f.prototypes, fs.np*2 + 1 );
 		f.prototypes[fs.np++] = func.f;
@@ -852,7 +852,7 @@ public class LexState {
 	}
 	
 	void open_func (FuncState fs) {
-		  LuaPrototype f = new LuaPrototype();
+		  Prototype f = new Prototype();
 		  if ( this.fs!=null )
 			  f.name = this.fs.f.name;
 		  fs.f = f;
@@ -875,7 +875,7 @@ public class LexState {
 
 	void close_func() {
 		FuncState fs = this.fs;
-		LuaPrototype f = fs.f;
+		Prototype f = fs.f;
 		f.isVararg = fs.isVararg != 0;
 		
 		this.removevars(0);
@@ -1021,7 +1021,7 @@ public class LexState {
 	void parlist () {
 	  /* parlist -> [ param { `,' param } ] */
 	  FuncState fs = this.fs;
-	  LuaPrototype f = fs.f;
+	  Prototype f = fs.f;
 	  int nparams = 0;
 	  fs.isVararg = 0;
 	  if (this.t.token != ')') {  /* is `parlist' not empty? */

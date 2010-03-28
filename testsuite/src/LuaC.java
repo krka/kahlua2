@@ -28,8 +28,8 @@ import java.io.IOException;
 
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
 import se.krka.kahlua.vm.LuaClosure;
-import se.krka.kahlua.vm.LuaTable;
-import se.krka.kahlua.vm.LuaTableImpl;
+import se.krka.kahlua.vm.KahluaTable;
+import se.krka.kahlua.vm.KahluaTableImpl;
 
 public class LuaC {
 	
@@ -45,7 +45,7 @@ public class LuaC {
 		File output = new File(args[1]);
 		System.out.println("Output: " + output.getCanonicalPath());
 		
-		LuaTable table = new LuaTableImpl();
+		KahluaTable table = new KahluaTableImpl();
 		LuaClosure closure = LuaCompiler.loadis(new FileInputStream(input), input.getName(), table);
 		closure.prototype.dump(new FileOutputStream(output));
 	}

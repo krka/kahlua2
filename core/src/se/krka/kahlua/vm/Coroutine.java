@@ -25,7 +25,7 @@ import java.util.Vector;
 import se.krka.kahlua.stdlib.BaseLib;
 
 public class Coroutine {
-	public LuaTable environment;
+	public KahluaTable environment;
 
 	public Coroutine parent;
 	
@@ -49,7 +49,7 @@ public class Coroutine {
 
 	public int expectedResults;
 	
-	public Coroutine(LuaState state, LuaTable environment) {
+	public Coroutine(LuaState state, KahluaTable environment) {
 		this.state = state;
 		this.environment = environment;
 		

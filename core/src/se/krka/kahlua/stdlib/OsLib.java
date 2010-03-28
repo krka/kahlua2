@@ -27,10 +27,11 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import se.krka.kahlua.vm.JavaFunction;
+import se.krka.kahlua.vm.KahluaTable;
+import se.krka.kahlua.vm.KahluaUtil;
 import se.krka.kahlua.vm.LuaCallFrame;
 import se.krka.kahlua.vm.LuaState;
-import se.krka.kahlua.vm.LuaTable;
-import se.krka.kahlua.vm.LuaTableImpl;
+import se.krka.kahlua.vm.KahluaTableImpl;
 
 public class OsLib implements JavaFunction {
 	private static final int DATE = 0;
@@ -55,7 +56,7 @@ public class OsLib implements JavaFunction {
 	}
 
 	public static void register(LuaState state) {
-		LuaTable os = new LuaTableImpl();
+		KahluaTable os = new KahluaTableImpl();
 		state.getEnvironment().rawset("os", os);
 
 		for (int i = 0; i < NUM_FUNCS; i++) {
@@ -102,11 +103,11 @@ public class OsLib implements JavaFunction {
 	private int time(LuaCallFrame cf, int nargs) {
 		if (nargs == 0) {
 			double t = (double) System.currentTimeMillis() * TIME_DIVIDEND_INVERTED;
-			cf.push(LuaState.toDouble(t));
+			cf.push(KahluaUtil.toDouble(t));
 		} else {
-			LuaTable table = (LuaTable) BaseLib.getArg(cf, 1, BaseLib.TYPE_TABLE, "time");
+			KahluaTable table = (KahluaTable) BaseLib.getArg(cf, 1, BaseLib.TYPE_TABLE, "time");
 			double t = (double) getDateFromTable(table).getTime() * TIME_DIVIDEND_INVERTED;
-			cf.push(LuaState.toDouble(t));
+			cf.push(KahluaUtil.toDouble(t));
 		}
 		return 1;
 	}
@@ -114,7 +115,7 @@ public class OsLib implements JavaFunction {
 	private int difftime(LuaCallFrame cf, int nargs) {
 		double t2 = BaseLib.rawTonumber(cf.get(0)).doubleValue();
 		double t1 = BaseLib.rawTonumber(cf.get(1)).doubleValue();
-		cf.push(LuaState.toDouble(t2-t1));
+		cf.push(KahluaUtil.toDouble(t2-t1));
 		return 1;
 	}
 
@@ -231,53 +232,53 @@ public class OsLib implements JavaFunction {
         return null; // bad input format.
 	}
 
-	public static LuaTable getTableFromDate(Calendar c) {
-		LuaTable time = new LuaTableImpl();
-		time.rawset(YEAR, LuaState.toDouble(c.get(Calendar.YEAR)));
-		time.rawset(MONTH, LuaState.toDouble(c.get(Calendar.MONTH)+1));
-		time.rawset(DAY, LuaState.toDouble(c.get(Calendar.DAY_OF_MONTH)));
-		time.rawset(HOUR, LuaState.toDouble(c.get(Calendar.HOUR_OF_DAY)));
-		time.rawset(MIN, LuaState.toDouble(c.get(Calendar.MINUTE)));
-		time.rawset(SEC, LuaState.toDouble(c.get(Calendar.SECOND)));
-		time.rawset(WDAY, LuaState.toDouble(c.get(Calendar.DAY_OF_WEEK)));
-		time.rawset(YDAY, LuaState.toDouble(getDayOfYear(c)));
-		time.rawset(MILLISECOND, LuaState.toDouble(c.get(Calendar.MILLISECOND)));
+	public static KahluaTable getTableFromDate(Calendar c) {
+		KahluaTable time = new KahluaTableImpl();
+		time.rawset(YEAR, KahluaUtil.toDouble(c.get(Calendar.YEAR)));
+		time.rawset(MONTH, KahluaUtil.toDouble(c.get(Calendar.MONTH)+1));
+		time.rawset(DAY, KahluaUtil.toDouble(c.get(Calendar.DAY_OF_MONTH)));
+		time.rawset(HOUR, KahluaUtil.toDouble(c.get(Calendar.HOUR_OF_DAY)));
+		time.rawset(MIN, KahluaUtil.toDouble(c.get(Calendar.MINUTE)));
+		time.rawset(SEC, KahluaUtil.toDouble(c.get(Calendar.SECOND)));
+		time.rawset(WDAY, KahluaUtil.toDouble(c.get(Calendar.DAY_OF_WEEK)));
+		time.rawset(YDAY, KahluaUtil.toDouble(getDayOfYear(c)));
+		time.rawset(MILLISECOND, KahluaUtil.toDouble(c.get(Calendar.MILLISECOND)));
 		//time.rawset(ISDST, null);
 		return time;
 	}
 	
 	/**
 	 * converts the relevant fields in the given luatable to a Date object.
-	 * @param time LuaTable with entries for year month and day, and optionally hour/min/sec
+	 * @param time KahluaTable with entries for year month and day, and optionally hour/min/sec
 	 * @return a date object representing the date frim the luatable.
 	 */
-	public static Date getDateFromTable(LuaTable time) {
+	public static Date getDateFromTable(KahluaTable time) {
 		Calendar c = Calendar.getInstance(tzone);
-		c.set(Calendar.YEAR,(int)LuaState.fromDouble(time.rawget(YEAR)));
-		c.set(Calendar.MONTH,(int)LuaState.fromDouble(time.rawget(MONTH))-1);
-		c.set(Calendar.DAY_OF_MONTH,(int)LuaState.fromDouble(time.rawget(DAY)));
+		c.set(Calendar.YEAR,(int) KahluaUtil.fromDouble(time.rawget(YEAR)));
+		c.set(Calendar.MONTH,(int) KahluaUtil.fromDouble(time.rawget(MONTH))-1);
+		c.set(Calendar.DAY_OF_MONTH,(int) KahluaUtil.fromDouble(time.rawget(DAY)));
 		Object hour = time.rawget(HOUR);
 		Object minute = time.rawget(MIN);
 		Object seconds = time.rawget(SEC);
 		Object milliseconds = time.rawget(MILLISECOND);
 		//Object isDst = time.rawget(ISDST);
 		if (hour != null) {
-			c.set(Calendar.HOUR_OF_DAY,(int)LuaState.fromDouble(hour));
+			c.set(Calendar.HOUR_OF_DAY,(int) KahluaUtil.fromDouble(hour));
 		} else {
 			c.set(Calendar.HOUR_OF_DAY, 0);
 		}
 		if (minute != null) {
-			c.set(Calendar.MINUTE,(int)LuaState.fromDouble(minute));
+			c.set(Calendar.MINUTE,(int) KahluaUtil.fromDouble(minute));
 		} else {
 			c.set(Calendar.MINUTE, 0);
 		}
 		if (seconds != null) {
-			c.set(Calendar.SECOND,(int)LuaState.fromDouble(seconds));
+			c.set(Calendar.SECOND,(int) KahluaUtil.fromDouble(seconds));
 		} else {
 			c.set(Calendar.SECOND, 0);
 		}
 		if (milliseconds != null) {
-			c.set(Calendar.MILLISECOND, (int)LuaState.fromDouble(milliseconds));
+			c.set(Calendar.MILLISECOND, (int) KahluaUtil.fromDouble(milliseconds));
 		} else {
 			c.set(Calendar.MILLISECOND, 0);
 		}
