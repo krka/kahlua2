@@ -375,7 +375,7 @@ public final class BaseLib implements JavaFunction {
 			return "nan";
 		}
 		if (num.isInfinite()) {
-			if (MathLib.isNegative(num.doubleValue())) {
+			if (KahluaUtil.isNegative(num.doubleValue())) {
 				return "-inf";
 			}
 			return "inf";

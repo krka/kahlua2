@@ -338,7 +338,7 @@ public final class StringLib implements JavaFunction {
 						boolean isNaN = v.isInfinite() || v.isNaN();
 						
 						double vDouble = v.doubleValue();
-						if (MathLib.isNegative(vDouble)) {
+						if (KahluaUtil.isNegative(vDouble)) {
 							if (!isNaN) {
 								result.append('-');
 							}
@@ -372,7 +372,7 @@ public final class StringLib implements JavaFunction {
 						Double v = getDoubleArg(callFrame, argc);
 						boolean isNaN = v.isInfinite() || v.isNaN();
 						double vDouble = v.doubleValue();
-						if (MathLib.isNegative(vDouble)) {
+						if (KahluaUtil.isNegative(vDouble)) {
 							if (!isNaN) {
 								result.append('-');
 							}
@@ -385,7 +385,7 @@ public final class StringLib implements JavaFunction {
 						if (isNaN) {
 							result.append(BaseLib.numberToString(v));
 						} else {
-							double x = MathLib.roundToSignificantNumbers(vDouble, precision);
+							double x = roundToSignificantNumbers(vDouble, precision);
 
 							/*
 							 * Choose %f version if:
@@ -395,7 +395,7 @@ public final class StringLib implements JavaFunction {
 							 *     
 							 * otherwise, choose %e
 							 */ 
-							if (x == 0 || (x >= 1e-4 && x < MathLib.ipow(10, precision))) {
+							if (x == 0 || (x >= 1e-4 && x < (double) KahluaUtil.ipow(10, precision))) {
 								int iPartSize;
 								if (x == 0) {
 									iPartSize = 1;
@@ -550,14 +550,14 @@ public final class StringLib implements JavaFunction {
 	 * @param requirePeriod
 	 */
 	private void appendPrecisionNumber(StringBuffer buffer, double number, int precision, boolean requirePeriod) {
-		number = MathLib.roundToPrecision(number, precision);
+		number = roundToPrecision(number, precision);
 		double iPart = Math.floor(number);
 		double fPart = number - iPart;
 		
 		for (int i = 0; i < precision; i++) {
 			fPart *= 10.0;
 		}
-		fPart = MathLib.round(iPart + fPart) - iPart;
+		fPart = KahluaUtil.round(iPart + fPart) - iPart;
 			
 		stringBufferAppend(buffer, iPart, 10, true, 0);
 		
@@ -580,7 +580,7 @@ public final class StringLib implements JavaFunction {
 		
 		stringBufferAppend(buffer, iPart, 10, true, 0);
 		
-		double fPart = MathLib.roundToSignificantNumbers(number - iPart, significantDecimals);
+		double fPart = roundToSignificantNumbers(number - iPart, significantDecimals);
 		
 		boolean hasNotStarted = iPart == 0 && fPart != 0;
 		int zeroPaddingBefore = 0;
@@ -594,7 +594,7 @@ public final class StringLib implements JavaFunction {
 				}
 			}
 		}
-		fPart = MathLib.round(fPart);
+		fPart = KahluaUtil.round(fPart);
 
 		if (!includeTrailingZeros) {
 			while (fPart > 0 && (fPart % 10) == 0) {
@@ -637,7 +637,7 @@ public final class StringLib implements JavaFunction {
 					exponent--;
 				}
 			}
-			x = MathLib.roundToPrecision(x, precision);
+			x = roundToPrecision(x, precision);
 		}
 		int absExponent = Math.abs(exponent);
 		char expSign;
@@ -782,9 +782,39 @@ public final class StringLib implements JavaFunction {
 		return callFrame.push(res);
 	}
 
-	/* Pattern Matching
-	 * Original code that this was adapted from is copyright (c) 2008 groundspeak, inc.
-	 */
+    /**
+     * Rounds to keep <em>precision</em> decimals. Rounds towards even numbers.
+     * @param x the number to round
+     * @param precision the precision to round to. A precision of 3 will for instance round 1.65432 to 1.654
+     * @return the rounded number
+     */
+    public static double roundToPrecision(double x, int precision) {
+        double roundingOffset = KahluaUtil.ipow(10, precision);
+        return KahluaUtil.round(x * roundingOffset) / roundingOffset;
+    }
+
+    public static double roundToSignificantNumbers(double x, int precision) {
+        if (x == 0) {
+            return 0;
+        }
+        if (x < 0) {
+            return -roundToSignificantNumbers(-x, precision);
+        }
+        double lowerLimit = KahluaUtil.ipow(10, precision - 1);
+        double upperLimit = lowerLimit * 10.0;
+        double multiplier = 1.0;
+        while (multiplier * x < lowerLimit) {
+            multiplier *= 10.0;
+        }
+        while (multiplier * x >= upperLimit) {
+            multiplier /= 10.0;
+        }
+        return KahluaUtil.round(x * multiplier) / multiplier;
+    }
+
+    /* Pattern Matching
+      * Original code that this was adapted from is copyright (c) 2008 groundspeak, inc.
+      */
 
 	public static class MatchState {
 

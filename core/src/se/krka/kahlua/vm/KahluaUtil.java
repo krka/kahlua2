@@ -57,4 +57,45 @@ public class KahluaUtil {
 	public static void fail(String msg) {
 		throw new RuntimeException(msg);
 	}
+
+    /**
+     * Rounds towards even numbers
+     * @param x
+     */
+    public static double round(double x) {
+        if (x < 0) {
+            return -round(-x);
+        }
+        x += 0.5;
+        double x2 = Math.floor(x);
+        if (x2 == x) {
+            return x2 - ((long) x2 & 1);
+        }
+        return x2;
+    }
+
+    /* Thanks rici lake for ipow-implementation */
+
+    /**
+     * Calculates base^exponent, for non-negative exponents.
+     * 0^0 is defined to be 1
+     * @return 1 if exponent is zero or negative
+     */
+    public static long ipow(long base, int exponent) {
+        if (exponent <= 0) {
+            return 1;
+        }
+        long b = 1;
+        for (b = (exponent & 1) != 0 ? base : 1, exponent >>= 1; exponent != 0; exponent >>= 1) {
+            base *= base;
+            if ((exponent & 1) != 0) {
+                b *= base;
+            }
+        }
+        return b;
+    }
+
+    public static boolean isNegative(double vDouble) {
+        return Double.doubleToLongBits(vDouble) < 0;
+    }
 }
