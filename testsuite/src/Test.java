@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import se.krka.kahlua.j2se.J2SEPlatform;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
 import se.krka.kahlua.stdlib.OsLib;
 import se.krka.kahlua.test.UserdataArray;
@@ -32,8 +33,8 @@ import se.krka.kahlua.vm.*;
 
 public class Test {
 	private static LuaState getState(File dir) throws FileNotFoundException, IOException {
-
-		LuaState state = new LuaState(System.out);
+        Platform platform = new J2SEPlatform();
+        LuaState state = new LuaState(System.out, platform);
 		UserdataArray.register(state);
 		OsLib.register(state.getEnvironment());
 		LuaCompiler.register(state.getEnvironment());

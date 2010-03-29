@@ -5,6 +5,8 @@
 	<property name="emma.dir" value="/usr/share/java" />
 
 	<property name="core.src.dir"       value="${basedir}/core/src"/>
+	<property name="j2se.src.dir"       value="${basedir}/j2se/src"/>
+
 	<property name="build.dir"     value="${basedir}/bin"/>
 	<property name="classes.dir"     value="${build.dir}/classes"/>
 
@@ -16,23 +18,18 @@
 	<property name="test.lua.input.dir"     value="${test.dir}/lua"/>
 	<property name="test.emma.coverage.dir"     value="${test.dir}/coverage"/>
 
-	<path id="main.dependencies">
+	<path id="cldc11.dependencies">
 		<pathelement location="${basedir}/lib/cldcapi11.jar" />
-		<fileset dir="lib">
-			<include name="luaj*.jar" />
-		</fileset>
 	</path>
 
 	<path id="main.classpath">
 		<pathelement path="${classes.dir}/core"/>
+		<pathelement path="${classes.dir}/j2se"/>
 	</path>
 
 	<path id="test.classpath">
 		<path refid="main.classpath" />
 		<pathelement path="${test.classes.dir}"/>
-		<fileset dir="lib">
-			<include name="luaj*.jar" />
-		</fileset>
 	</path>
 
 	<path id="emma.lib" >
@@ -53,16 +50,17 @@
 	<target name="setup">
 		<mkdir dir="${build.dir}"/>
 		<mkdir dir="${classes.dir}/core"/>
+		<mkdir dir="${classes.dir}/j2se"/>
 
 		<mkdir dir="${test.build.dir}"/>
 		<mkdir dir="${test.classes.dir}"/>
 		<mkdir dir="${test.lua.output.dir}"/>
 	</target>
 
-	<target name="compile" depends="setup, compile-core" description="Compiles Kahlua">
+	<target name="compile" depends="setup, compile-core, compile-j2se" description="Compiles Kahlua">
 	</target>
 	
-	<target name="build" depends="compile, build-stdlib" description="Compiles Kahlua">
+	<target name="build" depends="compile, build-stdlib" description="Builds Kahlua">
 	</target>
 	
 	<target name="compile-core">
@@ -71,12 +69,25 @@
 			debug="true"
 			target="1.4"
 			source="1.4"
-			classpathref="main.dependencies"
+			classpathref="cldc11.dependencies"
 		>
 			<compilerarg value="-bootclasspath" />
 			<compilerarg value="" />
 
 			<src path="${core.src.dir}"/>
+		</javac>
+	</target>
+
+	<target name="compile-j2se" depends="compile-core">
+		<javac
+			destdir="${classes.dir}/j2se"
+			debug="true"
+		>
+			<classpath>
+				<pathelement location="${classes.dir}/core" />
+			</classpath>
+
+			<src path="${j2se.src.dir}"/>
 		</javac>
 	</target>
 

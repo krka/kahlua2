@@ -115,6 +115,8 @@ public class LuaState implements KahluaThread {
 
 	private static final String meta_ops[];
 
+    private final Platform platform;
+
 	static {
 		meta_ops = new String[38];
 		meta_ops[OP_ADD] = "__add";
@@ -129,15 +131,16 @@ public class LuaState implements KahluaThread {
 		meta_ops[OP_LE] = "__le";
 	}
 
-	public LuaState(PrintStream stream) {
-		this(stream, true);
+	public LuaState(PrintStream stream, Platform platform) {
+		this(stream, true, platform);
 	}
 
-	public LuaState() {
-		this(System.out, true);
+	public LuaState(Platform platform) {
+		this(System.out, true, platform);
 	}
 	
-	protected LuaState(PrintStream stream, boolean callReset) {
+	protected LuaState(PrintStream stream, boolean callReset, Platform platform) {
+        this.platform = platform;
         // The userdataMetatables must be weak to avoid memory leaks
         KahluaTable weakKeyMetatable = new KahluaTableImpl();
         weakKeyMetatable.rawset("__mode", "k");
@@ -170,8 +173,8 @@ public class LuaState implements KahluaThread {
 
 		BaseLib.register(this.getEnvironment());
 		StringLib.register(this);
-		MathLib.register(this);
         RandomLib.register(this);
+        platform.register(this);
 		CoroutineLib.register(this);
 		OsLib.register(this.getEnvironment());
 		TableLib.register(this.getEnvironment());
@@ -1105,7 +1108,7 @@ public class LuaState implements KahluaThread {
 			}
 			break;
 		case OP_POW:
-			res = MathLib.pow(v1, v2);
+			res = platform.pow(v1, v2);
 			break;
 		default:
 			// this should be unreachable
