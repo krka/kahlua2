@@ -1,7 +1,9 @@
+local random = newrandom()
+
 -- test ranges
 testCall(function()
 	for i = 1, 1000 do
-		local r = math.random()
+		local r = random:random()
 		assert(r >= 0)
 		assert(r <= 1)
 	end
@@ -9,7 +11,7 @@ end)
 
 testCall(function()
 	for i = 1, 1000 do
-		local r = math.random(12)
+		local r = random:random(12)
 		assert(r >= 1)
 		assert(r <= 12)
 		assert(math.floor(r) == r)
@@ -18,7 +20,7 @@ end)
 
 testCall(function()
 	for i = 1, 1000 do
-		local r = math.random(123, 128)
+		local r = random:random(123, 128)
 		assert(r >= 123)
 		assert(r <= 128)
 		assert(math.floor(r) == r)
@@ -29,7 +31,7 @@ end)
 testCall(function()
 	local t = {}
 	for i = 1, 1000 do
-		local r = math.random(1, 10)
+		local r = random:random(1, 10)
 		t[r] = (t[r] or 0) + 1
 	end
 	local count = 0
@@ -43,16 +45,16 @@ end)
 -- test seeding
 testCall(function()
 	for seed = 1, 1e4, 123 do
-		math.randomseed(seed)
+		random:seed(seed)
 		local sequence1 = {}
 		for i = 1, 100 do
-			sequence1[i] = math.random()
+			sequence1[i] = random:random()
 		end
 	
-		math.randomseed(seed)
+		random:seed(seed)
 		local sequence2 = {}
 		for i = 1, 100 do
-			sequence2[i] = math.random()
+			sequence2[i] = random:random()
 		end
 	
 		for i = 1, 100 do

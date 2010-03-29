@@ -21,14 +21,9 @@
  */
 package se.krka.kahlua.vm;
 
+import se.krka.kahlua.stdlib.*;
+
 import java.io.PrintStream;
-import java.util.Random;
-import se.krka.kahlua.stdlib.BaseLib;
-import se.krka.kahlua.stdlib.CoroutineLib;
-import se.krka.kahlua.stdlib.MathLib;
-import se.krka.kahlua.stdlib.OsLib;
-import se.krka.kahlua.stdlib.StringLib;
-import se.krka.kahlua.stdlib.TableLib;
 
 public class LuaState implements KahluaThread {
 	public static final int FIELDS_PER_FLUSH = 50;
@@ -111,9 +106,6 @@ public class LuaState implements KahluaThread {
 
 	public Coroutine currentThread;
 
-	// Needed for Math lib - every state needs its own random
-	public final Random random = new Random();
-
 	private final KahluaTable userdataMetatables;
     private final KahluaTable classMetatables;
 
@@ -179,6 +171,7 @@ public class LuaState implements KahluaThread {
 		BaseLib.register(this.getEnvironment());
 		StringLib.register(this);
 		MathLib.register(this);
+        RandomLib.register(this);
 		CoroutineLib.register(this);
 		OsLib.register(this.getEnvironment());
 		TableLib.register(this.getEnvironment());

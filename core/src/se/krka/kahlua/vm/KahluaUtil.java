@@ -1,5 +1,7 @@
 package se.krka.kahlua.vm;
 
+import se.krka.kahlua.stdlib.BaseLib;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -97,5 +99,9 @@ public class KahluaUtil {
 
     public static boolean isNegative(double vDouble) {
         return Double.doubleToLongBits(vDouble) < 0;
+    }
+
+    public static double getDoubleArg(LuaCallFrame callFrame, int argc, String funcname) {
+        return ((Double) BaseLib.getArg(callFrame, argc, BaseLib.TYPE_NUMBER, funcname)).doubleValue();
     }
 }

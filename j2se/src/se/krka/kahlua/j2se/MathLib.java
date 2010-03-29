@@ -3,6 +3,8 @@ package se.krka.kahlua.j2se;
 import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.*;
 
+import java.util.Random;
+
 public class MathLib implements JavaFunction {
 
 	private static final int ABS = 0;
@@ -119,7 +121,7 @@ public class MathLib implements JavaFunction {
 		}
 	}
 
-	private static double getDoubleArg(LuaCallFrame callFrame, int argc, String funcname) {
+    private static double getDoubleArg(LuaCallFrame callFrame, int argc, String funcname) {
 		return ((Double) BaseLib.getArg(callFrame, argc, BaseLib.TYPE_NUMBER, funcname)).doubleValue();
 	}
 
