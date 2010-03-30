@@ -23,12 +23,7 @@ package se.krka.kahlua.test;
 
 import java.util.Vector;
 
-import se.krka.kahlua.vm.JavaFunction;
-import se.krka.kahlua.vm.KahluaUtil;
-import se.krka.kahlua.vm.LuaCallFrame;
-import se.krka.kahlua.vm.LuaState;
-import se.krka.kahlua.vm.KahluaTable;
-import se.krka.kahlua.vm.KahluaTableImpl;
+import se.krka.kahlua.vm.*;
 
 public class UserdataArray implements JavaFunction {
 
@@ -43,9 +38,9 @@ public class UserdataArray implements JavaFunction {
 
 	private static KahluaTable metatable;
 
-	public static synchronized void register(LuaState state) {
+	public static synchronized void register(LuaState state, Platform platform) {
 		if (metatable == null) {
-			metatable = new KahluaTableImpl();
+			metatable = platform.newTable();
 			metatable.rawset("__metatable", "restricted");
 			metatable.rawset("__len", new UserdataArray(LENGTH));
 			metatable.rawset("__index", new UserdataArray(INDEX));

@@ -4,6 +4,7 @@ local y = newobject();
 testAssert(getmetatable(x) == nil)
 testAssert(getmetatable(y) == nil)
 
+--[[
 -- test properties
 local foo = withproperties(newobject())
 testAssert(foo.foo == nil)
@@ -26,3 +27,5 @@ local x2 = setmetatable(x, mt)
 testAssert(x == x2)
 testAssert(getmetatable(x) == mt)
 testAssert(getmetatable(y) == nil)
+--]]
+

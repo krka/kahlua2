@@ -3,8 +3,6 @@ package se.krka.kahlua.j2se;
 import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.*;
 
-import java.util.Random;
-
 public class MathLib implements JavaFunction {
 
 	private static final int ABS = 0;
@@ -75,8 +73,8 @@ public class MathLib implements JavaFunction {
 		this.index = index;
 	}
 
-    public static void register(LuaState state) {
-		KahluaTable math = new KahluaTableImpl();
+    public static void register(LuaState state, Platform platform) {
+		KahluaTable math = platform.newTable();
 		state.getEnvironment().rawset("math", math);
 
 		math.rawset("pi", KahluaUtil.toDouble(Math.PI));

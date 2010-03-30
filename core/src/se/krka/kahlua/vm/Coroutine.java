@@ -24,6 +24,9 @@ package se.krka.kahlua.vm;
 import java.util.Vector;
 
 public class Coroutine {
+    public final LuaState state;
+    private final Platform platform;
+
 	public KahluaTable environment;
 
 	public Coroutine parent;
@@ -44,12 +47,17 @@ public class Coroutine {
 	public LuaCallFrame[] callFrameStack;
 	public int callFrameTop;
 	
-	public LuaState state;
 
 	public int expectedResults;
-	
-	public Coroutine(LuaState state, KahluaTable environment) {
+
+    public Coroutine() {
+        state = null;
+        platform = null;
+    }
+
+    public Coroutine(LuaState state, KahluaTable environment) {
 		this.state = state;
+        platform = state.getPlatform();
 		this.environment = environment;
 		
 		objectStack = new Object[INITIAL_STACK_SIZE];
@@ -337,5 +345,8 @@ public class Coroutine {
 		return s;
 	}
 	*/
-	
+
+    public Platform getPlatform() {
+        return platform;
+    }
 }

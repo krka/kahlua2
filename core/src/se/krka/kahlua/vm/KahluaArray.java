@@ -30,6 +30,26 @@ public class KahluaArray implements KahluaTable {
 		return len;
 	}
 
+    public JavaFunction iterator() {
+        return new JavaFunction() {
+            int index = 1;
+            public int call(LuaCallFrame callFrame, int nArguments) {
+                while (true) {
+                    if (index > len()) {
+                        return 0;
+                    }
+                    Object value = rawget(index);
+                    if (value != null) {
+                        int localIndex = index;
+                        index++;
+                        return callFrame.push(KahluaUtil.toDouble(localIndex), value);
+                    }
+                    index++;
+                }
+            }
+        };
+    }
+
     public Object rawget(int index) {
         if (index < 1 || index > len) {
             return null;
@@ -70,13 +90,11 @@ public class KahluaArray implements KahluaTable {
     }
 
     public Object rawget(Object key) {
-        KahluaTableImpl.checkKey(key);
         int index = getKeyIndex(key);
         return rawget(index);
     }
 
     public void rawset(Object key, Object value) {
-        KahluaTableImpl.checkKey(key);
         int index = getKeyIndex(key);
         if (index == -1) {
             KahluaUtil.fail("Invalid table key: " + key);
@@ -110,9 +128,5 @@ public class KahluaArray implements KahluaTable {
 
 	public void setMetatable(KahluaTable metatable) {
 		this.metatable = metatable;
-	}
-
-	public void updateWeakSettings(boolean weakKeys, boolean weakValues) {
-		KahluaUtil.fail("Can't set weakness on arrays");
 	}
 }

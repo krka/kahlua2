@@ -21,12 +21,7 @@ THE SOFTWARE.
  */
 package se.krka.kahlua.stdlib;
 
-import se.krka.kahlua.vm.JavaFunction;
-import se.krka.kahlua.vm.KahluaTableImpl;
-import se.krka.kahlua.vm.KahluaUtil;
-import se.krka.kahlua.vm.LuaCallFrame;
-import se.krka.kahlua.vm.LuaState;
-import se.krka.kahlua.vm.KahluaTable;
+import se.krka.kahlua.vm.*;
 
 public final class StringLib implements JavaFunction {
 
@@ -86,8 +81,8 @@ public final class StringLib implements JavaFunction {
 		this.methodId = index;
 	}
 
-	public static void register(LuaState state) {
-		KahluaTable string = new KahluaTableImpl();
+	public static void register(LuaState state, Platform platform) {
+		KahluaTable string = platform.newTable();
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
 			string.rawset(names[i], functions[i]);
 		}

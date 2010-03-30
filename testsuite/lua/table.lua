@@ -4,7 +4,7 @@ for i = 1, 100 do
    t[i] = i * 3
 end
 
-testAssert(next(t), "next must not be nil")
+testAssert(pairs(t), "pairs must not be nil")
 
 do
    local c = 0
@@ -23,13 +23,6 @@ testCall(function()
 	end
 end)
 
-local a, b = -1, 0
-t[a * b] = -1
-t[b] = 1
-
-testAssert(t[a * b] == 1)
-
-
 rawset(t, "hello", "world")
 testAssert(rawget(t, "hello") == "world")
 setmetatable(t, {__index = function() return nil end, __newindex = function() end})
@@ -45,7 +38,7 @@ do
 			for j = 1, 2^i do
 				t[i] = i^2
 			end
-			for k, v in next, t do
+			for k, v in pairs(t) do
 				assert(k^2 == v)
 				t[k] = nil
 			end
@@ -57,18 +50,6 @@ function endswith(s1, s2)
 	return s1:sub(-#s2, -1) == s2
 end
 
-
-local status, errmsg = pcall(function() local t = {} t[0/0] = 1 end)
-testAssert(status == false)
-testAssert(endswith(errmsg, "table index is NaN"))
-
-local status, errmsg = pcall(function() local t = {} t[nil] = 1 end)
-testAssert(status == false, "status was " .. tostring(status))
-testAssert(endswith(errmsg, "table index is nil"))
-
-local status, errmsg = pcall(function() local t = {} next(t, "bad key") end)
-testAssert(not status)
-testAssert(endswith(errmsg, "invalid key to 'next'"))
 
 do
 	t = {1, 2, 3, 4, 5, 6, 7}

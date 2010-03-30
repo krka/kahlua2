@@ -36,6 +36,12 @@ testAssert(t[10] == "t10")
 testAssert(t[400] == nil)
 
 
+function verifyIter(iter, key, value)
+	local k, v = iter()
+	assert(key == k, "expected key " .. tostring(key) .. " but got " .. tostring(k))
+	assert(value == v, "expected value " .. tostring(value) .. " but got " .. tostring(v))
+end
+
 
 function verify(t)
     testAssert(t[1] == 40, tostring(t[1]))
@@ -44,12 +50,12 @@ function verify(t)
     testAssert(t[4] == nil)
     testAssert(#t == 3, tostring(#t))
 
-    testAssert(next(t) == 1)
-    testAssert(next(t, 1) == 2)
-    testAssert(next(t, 2) == 3)
-    testAssert(next(t, 3) == nil)
-    local status, err = pcall(next, t, 4)
-    testAssert(status == false)
+    local iter = pairs(t)
+    verifyIter(iter, 1, 40)
+    verifyIter(iter, 2, 50)
+    verifyIter(iter, 3, 60)
+    verifyIter(iter, nil, nil)
+    verifyIter(iter, nil, nil)
 end
 
 verify(table.newarray{40, 50, 60})

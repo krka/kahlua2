@@ -21,14 +21,7 @@ THE SOFTWARE.
 */
 package se.krka.kahlua.stdlib;
 
-import se.krka.kahlua.vm.Coroutine;
-import se.krka.kahlua.vm.JavaFunction;
-import se.krka.kahlua.vm.KahluaTable;
-import se.krka.kahlua.vm.KahluaTableImpl;
-import se.krka.kahlua.vm.KahluaUtil;
-import se.krka.kahlua.vm.LuaCallFrame;
-import se.krka.kahlua.vm.LuaClosure;
-import se.krka.kahlua.vm.LuaState;
+import se.krka.kahlua.vm.*;
 
 public class CoroutineLib implements JavaFunction {
 
@@ -44,7 +37,7 @@ public class CoroutineLib implements JavaFunction {
 	private static final String[] names;
 	
 	// NOTE: Coroutine.class won't work in J2ME - so this is used as a workaround
-	private static final Class LUA_THREAD_CLASS = new Coroutine(null, null).getClass();
+	private static final Class LUA_THREAD_CLASS = new Coroutine().getClass();
 	
 	static {
 		names = new String[NUM_FUNCTIONS];
@@ -72,8 +65,8 @@ public class CoroutineLib implements JavaFunction {
 		this.index = index;
 	}
 
-	public static void register(LuaState state) {
-		KahluaTable coroutine = new KahluaTableImpl();
+	public static void register(LuaState state, Platform platform) {
+		KahluaTable coroutine = platform.newTable();
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
 			coroutine.rawset(names[i], functions[i]);
 		}

@@ -43,20 +43,18 @@ public final class BaseLib implements JavaFunction {
 	private static final int SETMETATABLE = 7;
 	private static final int ERROR = 8;
 	private static final int UNPACK = 9;
-	private static final int NEXT = 10;
-	private static final int SETFENV = 11;
-	private static final int GETFENV = 12;
-	private static final int RAWEQUAL = 13;
-	private static final int RAWSET = 14;
-	private static final int RAWGET = 15;
-	private static final int COLLECTGARBAGE = 16;
-	private static final int DEBUGSTACKTRACE = 17;
-	private static final int BYTECODELOADER = 18;
+	private static final int SETFENV = 10;
+	private static final int GETFENV = 11;
+	private static final int RAWEQUAL = 12;
+	private static final int RAWSET = 13;
+	private static final int RAWGET = 14;
+	private static final int COLLECTGARBAGE = 15;
+	private static final int DEBUGSTACKTRACE = 16;
+	private static final int BYTECODELOADER = 17;
 
-	private static final int NUM_FUNCTIONS = 19;
+	private static final int NUM_FUNCTIONS = 18;
 
 	private static final String[] names;
-	public static final Object MODE_KEY = "__mode";
 	private static final Object DOUBLE_ONE = new Double(1.0);
 	
 	public static final String TYPE_NIL = "nil";
@@ -82,7 +80,6 @@ public final class BaseLib implements JavaFunction {
 		names[SETMETATABLE] = "setmetatable";
 		names[ERROR] = "error";
 		names[UNPACK] = "unpack";
-		names[NEXT] = "next";
 		names[SETFENV] = "setfenv";
 		names[GETFENV] = "getfenv";
 		names[RAWEQUAL] = "rawequal";
@@ -128,7 +125,6 @@ public final class BaseLib implements JavaFunction {
 		case SETMETATABLE: return setmetatable(callFrame, nArguments);
 		case ERROR: return error(callFrame, nArguments);
 		case UNPACK: return unpack(callFrame, nArguments);
-		case NEXT: return next(callFrame, nArguments);
 		case SETFENV: return setfenv(callFrame, nArguments);
 		case GETFENV: return getfenv(callFrame, nArguments);
 		case RAWEQUAL: return rawequal(callFrame, nArguments);
@@ -250,31 +246,6 @@ public final class BaseLib implements JavaFunction {
         }
         callFrame.push(res);
         return 1;
-	}
-
-	private int next(LuaCallFrame callFrame, int nArguments) {
-        KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-
-        KahluaTable t = (KahluaTable) callFrame.get(0);
-        Object key = null;
-
-        if (nArguments >= 2) {
-        	key = callFrame.get(1);
-        }
-
-        Object nextKey = t.next(key);
-        if (nextKey == null) {
-        	callFrame.setTop(1);
-        	callFrame.set(0, null);
-        	return 1;
-        }
-
-        Object value = t.rawget(nextKey);
-
-    	callFrame.setTop(2);
-    	callFrame.set(0, nextKey);
-    	callFrame.set(1, value);
-    	return 2;
 	}
 
 	private int unpack(LuaCallFrame callFrame, int nArguments) {

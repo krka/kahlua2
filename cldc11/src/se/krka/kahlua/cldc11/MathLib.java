@@ -26,7 +26,7 @@ import se.krka.kahlua.vm.KahluaTable;
 import se.krka.kahlua.vm.KahluaUtil;
 import se.krka.kahlua.vm.LuaCallFrame;
 import se.krka.kahlua.vm.LuaState;
-import se.krka.kahlua.vm.KahluaTableImpl;
+import se.krka.kahlua.cldc11.KahluaTableImpl;
 
 public final class MathLib implements JavaFunction {
 

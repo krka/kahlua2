@@ -26,11 +26,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
-import se.krka.kahlua.vm.JavaFunction;
-import se.krka.kahlua.vm.KahluaTable;
-import se.krka.kahlua.vm.KahluaUtil;
-import se.krka.kahlua.vm.LuaCallFrame;
-import se.krka.kahlua.vm.KahluaTableImpl;
+import se.krka.kahlua.vm.*;
 
 public class OsLib implements JavaFunction {
 	private static final int DATE = 0;
@@ -54,8 +50,8 @@ public class OsLib implements JavaFunction {
 		}
 	}
 
-	public static void register(KahluaTable environment) {
-		KahluaTable os = new KahluaTableImpl();
+	public static void register(KahluaTable environment, Platform platform) {
+		KahluaTable os = platform.newTable();
 		for (int i = 0; i < NUM_FUNCS; i++) {
 			os.rawset(funcnames[i], funcs[i]);
 		}
@@ -118,25 +114,26 @@ public class OsLib implements JavaFunction {
 	}
 
 	private int date(LuaCallFrame cf, int nargs) {
+        Platform platform = cf.getPlatform();
 		if (nargs == 0) {
-			return cf.push(getdate(DEFAULT_FORMAT));
+			return cf.push(getdate(DEFAULT_FORMAT, platform));
 		} else {
 			String format = BaseLib.rawTostring(cf.get(0));
 			if (nargs == 1) {
-				return cf.push(getdate(format));
+				return cf.push(getdate(format, platform));
 			} else {
 				Double rawTonumber = BaseLib.rawTonumber(cf.get(1));
 				long time = (long) (rawTonumber.doubleValue() * TIME_DIVIDEND);
-				return cf.push(getdate(format, time));
+				return cf.push(getdate(format, time, platform));
 			}
 		}
 	}
 
-	public static Object getdate(String format) {
-		return getdate(format, Calendar.getInstance().getTime().getTime());
+	public static Object getdate(String format, Platform platform) {
+		return getdate(format, Calendar.getInstance().getTime().getTime(), platform);
 	}
 
-	public static Object getdate(String format, long time) {
+	public static Object getdate(String format, long time, Platform platform) {
 		//boolean universalTime = format.startsWith("!");
 		Calendar calendar = null;
 		int si = 0;
@@ -151,7 +148,7 @@ public class OsLib implements JavaFunction {
         if (calendar == null) { // invalid calendar?
             return null;
         } else if (format.substring(si, 2 + si).equals(TABLE_FORMAT)) {
-        	return getTableFromDate(calendar);
+        	return getTableFromDate(calendar, platform);
         } else {
         	return formatTime(format.substring(si), calendar);
         }
@@ -230,8 +227,8 @@ public class OsLib implements JavaFunction {
         return null; // bad input format.
 	}
 
-	public static KahluaTable getTableFromDate(Calendar c) {
-		KahluaTable time = new KahluaTableImpl();
+	public static KahluaTable getTableFromDate(Calendar c, Platform platform) {
+		KahluaTable time = platform.newTable();
 		time.rawset(YEAR, KahluaUtil.toDouble(c.get(Calendar.YEAR)));
 		time.rawset(MONTH, KahluaUtil.toDouble(c.get(Calendar.MONTH)+1));
 		time.rawset(DAY, KahluaUtil.toDouble(c.get(Calendar.DAY_OF_MONTH)));

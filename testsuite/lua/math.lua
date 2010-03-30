@@ -36,14 +36,6 @@ do
 	t[value2] = 2
 	testAssert(t[value1] == 2)
 	testAssert(t[value2] == 2)
-
-	local zero = 0
-	value1 = 1 * zero
-	value2 = -1 * zero
-	t[value1] = 1
-	t[value2] = 2
-	testAssert(t[value1] == 2)
-	testAssert(t[value2] == 2)
 end
 
 function assertEquals(a, b)

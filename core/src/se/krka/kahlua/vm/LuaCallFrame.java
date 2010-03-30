@@ -22,10 +22,13 @@ THE SOFTWARE.
 package se.krka.kahlua.vm;
 
 public class LuaCallFrame {
-	public Coroutine coroutine;
+    private final Platform platform;
 
-	public LuaCallFrame(Coroutine coroutine) {
+	public final Coroutine coroutine;
+
+    public LuaCallFrame(Coroutine coroutine) {
 		this.coroutine = coroutine;
+        platform = coroutine.getPlatform();
 	}
 	
 	public LuaClosure closure;
@@ -180,4 +183,8 @@ public class LuaCallFrame {
 		}
 		return super.toString();
 	}
+
+    public Platform getPlatform() {
+        return platform;
+    }
 }

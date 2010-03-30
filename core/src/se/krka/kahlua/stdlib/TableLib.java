@@ -22,22 +22,15 @@ THE SOFTWARE.
  */
 package se.krka.kahlua.stdlib;
 
-import se.krka.kahlua.vm.KahluaArray;
-import se.krka.kahlua.vm.KahluaTable;
-import se.krka.kahlua.vm.KahluaTableImpl;
-
-import se.krka.kahlua.vm.JavaFunction;
-import se.krka.kahlua.vm.KahluaUtil;
-import se.krka.kahlua.vm.LuaCallFrame;
-import se.krka.kahlua.vm.LuaState;
+import se.krka.kahlua.vm.*;
 
 public final class TableLib implements JavaFunction {
 
 	private static final int CONCAT = 0;
 	private static final int INSERT = 1;
 	private static final int REMOVE = 2;
-	private static final int MAXN = 3;
-	private static final int NEWARRAY = 4;
+	private static final int NEWARRAY = 3;
+    private static final int PAIRS = 4;
 	private static final int NUM_FUNCTIONS = 5;
 
 	private static final String[] names;
@@ -48,8 +41,8 @@ public final class TableLib implements JavaFunction {
 		names[CONCAT] = "concat";
 		names[INSERT] = "insert";
 		names[REMOVE] = "remove";
-		names[MAXN] = "maxn";
 		names[NEWARRAY] = "newarray";
+        names[PAIRS] = "pairs";
 		functions = new TableLib[NUM_FUNCTIONS];
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
 			functions[i] = new TableLib(i);
@@ -62,8 +55,8 @@ public final class TableLib implements JavaFunction {
 		this.index = index;
 	}
 
-	public static void register(KahluaTable environment) {
-		KahluaTable table = new KahluaTableImpl();
+	public static void register(KahluaTable environment, Platform platform) {
+		KahluaTable table = platform.newTable();
 
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
 			table.rawset(names[i], functions[i]);
@@ -77,7 +70,7 @@ public final class TableLib implements JavaFunction {
 		}
 		return super.toString();
 	}
-
+    
 	public int call (LuaCallFrame callFrame, int nArguments) {
 		switch (index) {
 			case CONCAT:
@@ -86,16 +79,24 @@ public final class TableLib implements JavaFunction {
 				return insert(callFrame, nArguments);
 			case REMOVE:
 				return remove(callFrame, nArguments);
-			case MAXN:
-				return maxn(callFrame, nArguments);
 			case NEWARRAY:
 				return newarray(callFrame, nArguments);
+            case PAIRS:
+                return pairs(callFrame, nArguments);
 			default:
 				return 0;
 		}
 	}
 
-	private int newarray(LuaCallFrame callFrame, int arguments) {
+    private int pairs(LuaCallFrame callFrame, int nArguments) {
+        KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
+        Object o = callFrame.get(0);
+        KahluaUtil.luaAssert(o instanceof KahluaTable, "Expected a table");
+        KahluaTable t = (KahluaTable) o;
+        return callFrame.push(t.iterator());
+    }
+
+    private int newarray(LuaCallFrame callFrame, int arguments) {
 		Object param = BaseLib.getOptArg(callFrame, 1, null);
 		KahluaArray ret = new KahluaArray();
 		if (param instanceof KahluaTable && arguments == 1) {
@@ -226,18 +227,16 @@ public final class TableLib implements JavaFunction {
 		return 1;
 	}
 	
-	private static int maxn (LuaCallFrame callFrame, int nArguments) {
-		KahluaUtil.luaAssert(nArguments >= 1, "expected table, got no arguments");
-		KahluaTable t = (KahluaTable)callFrame.get(0);
-		Object key = null;
-		int max = 0;
-		while ((key = t.next(key)) != null) {
-			if (key instanceof Double) {
-				int what = (int) KahluaUtil.fromDouble(key);
-				if (what > max) max = what;
-			}
-		}
-		callFrame.push(KahluaUtil.toDouble(max));
-		return 1;
-	}
+    public static int len(KahluaTable kahluaTable, int low, int high) {
+        while (low < high) {
+            int middle = (high + low + 1) >> 1;
+            Object value = kahluaTable.rawget(middle);
+            if (value == null) {
+                high = middle - 1;
+            } else {
+                low = middle;
+            }
+        }
+        return low;
+    }
 }

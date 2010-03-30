@@ -17,9 +17,7 @@ function ipairs(t)
 	return ipairs_iterator, t, 0
 end
 
-function pairs(t)
-	return next, t, nil
-end
+pairs = table.pairs
 
 do
 	local function partition_nocomp(tbl, left, right, pivot)

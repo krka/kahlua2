@@ -35,8 +35,8 @@ public class Test {
 	private static LuaState getState(File dir) throws FileNotFoundException, IOException {
         Platform platform = new J2SEPlatform();
         LuaState state = new LuaState(System.out, platform);
-		UserdataArray.register(state);
-		OsLib.register(state.getEnvironment());
+		UserdataArray.register(state, platform);
+		OsLib.register(state.getEnvironment(), platform);
 		LuaCompiler.register(state.getEnvironment());
 
         state.getEnvironment().rawset("newobject", new JavaFunction(){
@@ -84,7 +84,7 @@ public class Test {
 			children = dir.listFiles();
 		}
 
-		KahluaTable testsuites = new KahluaTableImpl();
+		KahluaTable testsuites = state.getPlatform().newTable();
 		for (int i = 0; i < children.length; i++) {
 			File child = children[i];
 			if (child != null && !child.getName().contains("testhelper") && child.getName().endsWith(".lua")) {

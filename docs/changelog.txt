@@ -1,6 +1,8 @@
-Changes since rev 48
-* Fixed an "off by one" bug in the random function. Thanks Vlad for bug report.
+Kahlua 2
+----------
+* Removed "next" and reworked tables entirely.
+* Removed __mode to support weak tables.
+* Removed lua 5.1 table semantics:
+  * -0 == 0 for keys
+  * not allowing null keys / NaN keys
 
-Changes since rev 46
-* Removed Java 1.5 features and made the project fully compatible with Java 1.4
-* Removed all asserts and replaced some asserts with runtime exceptions

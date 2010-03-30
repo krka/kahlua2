@@ -33,8 +33,8 @@ public class RandomLib implements JavaFunction {
         this.index = index;
     }
 
-    public static void register(LuaState state) {
-        KahluaTable t = new KahluaTableImpl();
+    public static void register(LuaState state, Platform platform) {
+        KahluaTable t = platform.newTable();
         for (int i = 0; i < NUM_FUNCTIONS - 1; i++) {
             t.rawset(names[i], functions[i]);
         }

@@ -106,7 +106,6 @@ public class LuaState implements KahluaThread {
 
 	public Coroutine currentThread;
 
-	private final KahluaTable userdataMetatables;
     private final KahluaTable classMetatables;
 
     protected final PrintStream out;
@@ -141,13 +140,8 @@ public class LuaState implements KahluaThread {
 	
 	protected LuaState(PrintStream stream, boolean callReset, Platform platform) {
         this.platform = platform;
-        // The userdataMetatables must be weak to avoid memory leaks
-        KahluaTable weakKeyMetatable = new KahluaTableImpl();
-        weakKeyMetatable.rawset("__mode", "k");
-        userdataMetatables = new KahluaTableImpl();
-        userdataMetatables.setMetatable(weakKeyMetatable);
 
-        classMetatables = new KahluaTableImpl();
+        classMetatables = platform.newTable();
 
 		out = stream;
 		if (callReset) {
@@ -166,18 +160,18 @@ public class LuaState implements KahluaThread {
 	 */
 
 	protected final void reset() {
-		currentThread = new Coroutine(this, new KahluaTableImpl());
+		currentThread = new Coroutine(this, platform.newTable());
 
 		getEnvironment().rawset("_G", getEnvironment());
 		getEnvironment().rawset("_VERSION", "Lua 5.1 for CLDC 1.1");
 
 		BaseLib.register(this.getEnvironment());
-		StringLib.register(this);
-        RandomLib.register(this);
+		StringLib.register(this, platform);
+        RandomLib.register(this, platform);
         platform.register(this);
-		CoroutineLib.register(this);
-		OsLib.register(this.getEnvironment());
-		TableLib.register(this.getEnvironment());
+		CoroutineLib.register(this, platform);
+		OsLib.register(this.getEnvironment(), platform);
+		TableLib.register(this.getEnvironment(), platform);
 		
 		LuaClosure closure = KahluaUtil.loadByteCodeFromResource("/stdlib",
 				getEnvironment());
@@ -361,7 +355,7 @@ public class LuaState implements KahluaThread {
 					// b = getB9(op);
 					// c = getC9(op);
 
-					KahluaTable t = new KahluaTableImpl();
+					KahluaTable t = platform.newTable();
 					callFrame.set(a, t);
 					break;
 				}
@@ -1044,10 +1038,6 @@ public class LuaState implements KahluaThread {
 		return getMetaOp(b, meta_op);
 	}
 
-	private void setUserdataMetatable(Object obj, KahluaTable metatable) {
-		userdataMetatables.rawset(obj, metatable);
-	}
-
 	private final Object getRegisterOrConstant(LuaCallFrame callFrame, int index, Prototype prototype) {
 		int cindex = index - 256;
 		if (cindex < 0) {
@@ -1225,7 +1215,7 @@ public class LuaState implements KahluaThread {
             KahluaTable t = (KahluaTable) o;
             t.setMetatable(metatable);
         } else {
-            userdataMetatables.rawset(o, metatable);
+            KahluaUtil.fail("Could not set metatable for object");
         }
     }
 
@@ -1233,12 +1223,10 @@ public class LuaState implements KahluaThread {
 		if (o == null) {
 			return null;
 		}
-		KahluaTable metatable;
+		KahluaTable metatable = null;
 		if (o instanceof KahluaTable) {
 			KahluaTable t = (KahluaTable) o;
 			metatable = t.getMetatable();
-		} else {
-			metatable = (KahluaTable) userdataMetatables.rawget(o);
 		}
 
         if (metatable == null) {
@@ -1329,5 +1317,9 @@ public class LuaState implements KahluaThread {
 
     public KahluaTable getClassMetatable(Class clazz) {
         return (KahluaTable) classMetatables.rawget(clazz);
+    }
+
+    public Platform getPlatform() {
+        return platform;
     }
 }

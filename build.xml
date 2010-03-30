@@ -4,6 +4,7 @@
 
 	<property name="emma.dir" value="/usr/share/java" />
 
+	<property name="cldc11.src.dir"       value="${basedir}/cldc11/src"/>
 	<property name="core.src.dir"       value="${basedir}/core/src"/>
 	<property name="j2se.src.dir"       value="${basedir}/j2se/src"/>
 
@@ -51,13 +52,14 @@
 		<mkdir dir="${build.dir}"/>
 		<mkdir dir="${classes.dir}/core"/>
 		<mkdir dir="${classes.dir}/j2se"/>
+		<mkdir dir="${classes.dir}/cldc11"/>
 
 		<mkdir dir="${test.build.dir}"/>
 		<mkdir dir="${test.classes.dir}"/>
 		<mkdir dir="${test.lua.output.dir}"/>
 	</target>
 
-	<target name="compile" depends="setup, compile-core, compile-j2se" description="Compiles Kahlua">
+	<target name="compile" depends="setup, compile-core, compile-cldc11, compile-j2se" description="Compiles Kahlua">
 	</target>
 	
 	<target name="build" depends="compile, build-stdlib" description="Builds Kahlua">
@@ -78,6 +80,24 @@
 		</javac>
 	</target>
 
+	<target name="compile-cldc11" depends="compile-core">
+		<javac
+			destdir="${classes.dir}/cldc11"
+			debug="true"
+			target="1.4"
+			source="1.4"
+			classpathref="cldc11.dependencies"
+		>
+			<classpath>
+				<pathelement location="${classes.dir}/core" />
+			</classpath>
+			<compilerarg value="-bootclasspath" />
+			<compilerarg value="" />
+
+			<src path="${cldc11.src.dir}"/>
+		</javac>
+	</target>
+
 	<target name="compile-j2se" depends="compile-core">
 		<javac
 			destdir="${classes.dir}/j2se"
@@ -92,8 +112,14 @@
 	</target>
 
     <target name="package" depends="setup, build" description="Package the final kahlua jar">
-    	<jar jarfile="${build.dir}/kahlua.jar">
-    		<fileset dir="${classes.dir}" />
+    	<jar jarfile="${build.dir}/kahlua-core.jar">
+    		<fileset dir="${classes.dir}/core" />
+    	</jar>
+    	<jar jarfile="${build.dir}/kahlua-cldc11.jar">
+    		<fileset dir="${classes.dir}/cldc11" />
+    	</jar>
+    	<jar jarfile="${build.dir}/kahlua-j2se.jar">
+    		<fileset dir="${classes.dir}/j2se" />
     	</jar>
     </target>
 
