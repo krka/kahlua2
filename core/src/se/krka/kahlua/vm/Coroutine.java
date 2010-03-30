@@ -174,11 +174,10 @@ public class Coroutine {
 		int loopIndex = liveUpvalues.size();
 		while (--loopIndex >= 0) {
 			UpValue uv = (UpValue) liveUpvalues.elementAt(loopIndex);
-			if (uv.index < closeIndex) {
+			if (uv.getIndex() < closeIndex) {
 				return;
 			}
-			uv.value = objectStack[uv.index];
-			uv.thread = null;
+            uv.close();
 			liveUpvalues.removeElementAt(loopIndex);
 		}
 	}
@@ -188,16 +187,15 @@ public class Coroutine {
 		int loopIndex = liveUpvalues.size();
 		while (--loopIndex >= 0) {
 			UpValue uv = (UpValue) liveUpvalues.elementAt(loopIndex);
-			if (uv.index == scanIndex) {
+            int index = uv.getIndex();
+			if (index == scanIndex) {
 				return uv;
 			}
-			if (uv.index < scanIndex) {
+			if (index < scanIndex) {
 				break;
 			}
 		}
-		UpValue uv = new UpValue();
-		uv.thread = this;
-		uv.index = scanIndex;
+		UpValue uv = new UpValue(this, scanIndex);
 		
 		liveUpvalues.insertElementAt(uv, loopIndex + 1);
 		return uv;				
