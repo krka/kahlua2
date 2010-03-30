@@ -26,10 +26,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import se.krka.kahlua.j2se.ConcurrentKahluaTable;
+import se.krka.kahlua.j2se.J2SEPlatform;
+import se.krka.kahlua.j2se.KahluaTableImpl;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
 import se.krka.kahlua.vm.LuaClosure;
 import se.krka.kahlua.vm.KahluaTable;
+import se.krka.kahlua.vm.Platform;
 
 public class LuaC {
 	
@@ -44,8 +46,9 @@ public class LuaC {
 		System.out.println("Input: " + input.getCanonicalPath());
 		File output = new File(args[1]);
 		System.out.println("Output: " + output.getCanonicalPath());
-		
-		KahluaTable table = new ConcurrentKahluaTable();
+
+        Platform platform = new J2SEPlatform();
+		KahluaTable table = platform.newTable();
 		LuaClosure closure = LuaCompiler.loadis(new FileInputStream(input), input.getName(), table);
 		closure.prototype.dump(new FileOutputStream(output));
 	}

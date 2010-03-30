@@ -32,9 +32,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ConcurrentKahluaTable implements KahluaTable {
-    private final ConcurrentHashMap<Object, Object> delegate = new ConcurrentHashMap<Object, Object>();
+public class KahluaTableImpl implements KahluaTable {
+    private final Map<Object, Object> delegate;
     private KahluaTable metatable;
+
+    public KahluaTableImpl(Map<Object, Object> delegate) {
+        this.delegate = delegate;
+    }
 
     @Override
     public void setMetatable(KahluaTable metatable) {

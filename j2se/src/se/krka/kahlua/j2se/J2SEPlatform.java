@@ -4,6 +4,9 @@ import se.krka.kahlua.vm.KahluaTable;
 import se.krka.kahlua.vm.LuaState;
 import se.krka.kahlua.vm.Platform;
 
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class J2SEPlatform implements Platform {
     @Override
     public void register(LuaState state) {
@@ -17,6 +20,6 @@ public class J2SEPlatform implements Platform {
 
     @Override
     public KahluaTable newTable() {
-        return new ConcurrentKahluaTable();
+        return new KahluaTableImpl(new ConcurrentHashMap<Object, Object>());
     }
 }
