@@ -85,6 +85,7 @@ public class InteractiveShell {
 					} else {
 						String text = input.getText();
 						append(output, "input", "> " + text);
+						input.setText("");
 						try {
 							LuaClosure luaClosure = LuaCompiler.loadstring(text, "@interpreter", state.getEnvironment());
 							Object[] res = state.pcall(luaClosure);
