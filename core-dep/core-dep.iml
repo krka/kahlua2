@@ -2,13 +2,11 @@
 <module type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
-    <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+    <content url="file://$MODULE_DIR$/../bin/classes/core">
+      <sourceFolder url="file://$MODULE_DIR$/../bin/classes/core" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="core" />
-    <orderEntry type="module" module-name="core-dep" scope="RUNTIME" />
   </component>
 </module>
 
