@@ -46,7 +46,7 @@ public class InteractiveShell {
 		input.setForeground(inputColor);
 		input.setCaretColor(Color.WHITE);
         JPanel inputPanel = new JPanel(new BorderLayout());
-		JScrollPane inputScrollPane = new JScrollPane(input, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		JScrollPane inputScrollPane = new JScrollPane(input, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         inputPanel.add(new JLabel("Input"), BorderLayout.NORTH);
         inputPanel.add(inputScrollPane, BorderLayout.CENTER);
         main.add(inputPanel, BorderLayout.SOUTH);
@@ -67,7 +67,7 @@ public class InteractiveShell {
         output.setEditable(false);
 
         input.setColumns(80);
-        input.setRows(3);
+        input.setRows(6);
         input.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent keyEvent) {
@@ -81,7 +81,7 @@ public class InteractiveShell {
             public void keyReleased(KeyEvent keyEvent) {
 				if (keyEvent.getKeyCode() == KeyEvent.VK_ENTER) {
 					if ((keyEvent.getModifiers() & KeyEvent.CTRL_MASK) != 0) {
-						input.append("\n");
+						input.insert("\n", input.getCaretPosition());
 					} else {
 						String text = input.getText();
 						append(output, "input", "> " + text);
