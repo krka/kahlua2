@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2007-2008 Kristofer Karlsson <kristofer.karlsson@gmail.com>
+Copyright (c) 2010 Kristofer Karlsson <kristofer.karlsson@gmail.com>
 Portions of this code Copyright (c) 2007 Andre Bogus <andre@m3n.de>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

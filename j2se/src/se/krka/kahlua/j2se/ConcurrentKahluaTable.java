@@ -36,14 +36,17 @@ public class ConcurrentKahluaTable implements KahluaTable {
     private final ConcurrentHashMap<Object, Object> delegate = new ConcurrentHashMap<Object, Object>();
     private KahluaTable metatable;
 
+    @Override
     public void setMetatable(KahluaTable metatable) {
         this.metatable = metatable;
     }
 
+    @Override
     public KahluaTable getMetatable() {
         return metatable;
     }
 
+    @Override
     public void rawset(Object key, Object value) {
         if (value == null) {
             delegate.remove(key);
@@ -52,6 +55,7 @@ public class ConcurrentKahluaTable implements KahluaTable {
         delegate.put(key, value);
     }
 
+    @Override
     public Object rawget(Object key) {
         return delegate.get(key);
     }
