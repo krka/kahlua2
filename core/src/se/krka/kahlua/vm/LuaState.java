@@ -21,6 +21,7 @@
  */
 package se.krka.kahlua.vm;
 
+import se.krka.kahlua.luaj.compiler.LuaCompiler;
 import se.krka.kahlua.stdlib.*;
 
 import java.io.PrintStream;
@@ -172,7 +173,7 @@ public class LuaState implements KahluaThread {
 		CoroutineLib.register(this, platform);
 		OsLib.register(this.getEnvironment(), platform);
 		TableLib.register(this.getEnvironment(), platform);
-		
+
 		LuaClosure closure = KahluaUtil.loadByteCodeFromResource("/stdlib",
 				getEnvironment());
 		if (closure == null) {
