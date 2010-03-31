@@ -21,7 +21,6 @@
  */
 package se.krka.kahlua.vm;
 
-import se.krka.kahlua.luaj.compiler.LuaCompiler;
 import se.krka.kahlua.stdlib.*;
 
 import java.io.PrintStream;
@@ -131,23 +130,31 @@ public class LuaState implements KahluaThread {
 		meta_ops[OP_LE] = "__le";
 	}
 
-	public LuaState(PrintStream stream, Platform platform) {
-		this(stream, true, platform);
-	}
-
-	public LuaState(Platform platform) {
-		this(System.out, true, platform);
+	public LuaState(Platform platform, KahluaTable environment) {
+		this(System.out, platform, environment);
 	}
 	
-	protected LuaState(PrintStream stream, boolean callReset, Platform platform) {
+	public LuaState(PrintStream stream, Platform platform, KahluaTable environment) {
         this.platform = platform;
 
         classMetatables = platform.newTable();
 
 		out = stream;
-		if (callReset) {
-			reset();
-		}
+        currentThread = new Coroutine(this, environment);
+
+        StringLib.register(this, this.platform);
+        RandomLib.register(this, this.platform);
+        this.platform.register(this);
+        CoroutineLib.register(this, this.platform);
+        OsLib.register(this.getEnvironment(), this.platform);
+        TableLib.register(this.getEnvironment(), this.platform);
+
+        LuaClosure closure = KahluaUtil.loadByteCodeFromResource("/stdlib",
+                getEnvironment());
+        if (closure == null) {
+            KahluaUtil.fail("Could not load /stdlib.lbc");
+        }
+        call(closure, null, null, null);
 	}
 
 	// For debugging purposes only
@@ -160,29 +167,7 @@ public class LuaState implements KahluaThread {
 	 * Auto-generated catch block e.printStackTrace(); } }
 	 */
 
-	protected final void reset() {
-		currentThread = new Coroutine(this, platform.newTable());
-
-		getEnvironment().rawset("_G", getEnvironment());
-		getEnvironment().rawset("_VERSION", "Lua 5.1 for CLDC 1.1");
-
-		BaseLib.register(this.getEnvironment());
-		StringLib.register(this, platform);
-        RandomLib.register(this, platform);
-        platform.register(this);
-		CoroutineLib.register(this, platform);
-		OsLib.register(this.getEnvironment(), platform);
-		TableLib.register(this.getEnvironment(), platform);
-
-		LuaClosure closure = KahluaUtil.loadByteCodeFromResource("/stdlib",
-				getEnvironment());
-		if (closure == null) {
-			KahluaUtil.fail("Could not load /stdlib.lbc");
-		}
-		call(closure, null, null, null);
-	}
-
-	public int call(int nArguments) {
+    public int call(int nArguments) {
 		int top = currentThread.getTop();
 		int base = top - nArguments - 1;
 		Object o = currentThread.objectStack[base];
