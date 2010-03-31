@@ -21,13 +21,10 @@
 ******************************************************************************/
 package org.luaj.kahluafork.compiler;
 
-import java.util.Hashtable;
-
-import org.luaj.kahluafork.compiler.ConsControl;
-import org.luaj.kahluafork.compiler.expdesc;
-
 import se.krka.kahlua.vm.KahluaException;
 import se.krka.kahlua.vm.Prototype;
+
+import java.util.Hashtable;
 
 
 public class FuncState {
@@ -72,11 +69,11 @@ public class FuncState {
 	// from lcode.h
 	// =============================================================
 
-	InstructionPtr getcodePtr(expdesc e) {
+	InstructionPtr getcodePtr(ExpDesc e) {
 		return new InstructionPtr( f.code, e.info );
 	}
 
-	int getcode(expdesc e) {
+	int getcode(ExpDesc e) {
 		return f.code[e.info];
 	}
 
@@ -84,7 +81,7 @@ public class FuncState {
 		return codeABx(o,A,sBx+MAXARG_sBx);
 	}
 
-	void setmultret(expdesc e) {
+	void setmultret(ExpDesc e) {
 		setreturns(e, LUA_MULTRET);
 	}
 
@@ -110,7 +107,7 @@ public class FuncState {
 	}
 
 
-	int indexupvalue(String name, expdesc v) {
+	int indexupvalue(String name, ExpDesc v) {
 		int i;
 		for (i = 0; i < f.numUpvalues; i++) {
 			if (upvalues_k[i] == v.k && upvalues_info[i] == v.info) {
@@ -149,7 +146,7 @@ public class FuncState {
 			bl.upval = true;
 	}
 		
-	int singlevaraux(String n, expdesc var, int base) {
+	int singlevaraux(String n, ExpDesc var, int base) {
 		int v = searchvar(n); /* look up at current level */
 		if (v >= 0) {
 			var.init(LexState.VLOCAL, v);
@@ -425,7 +422,7 @@ public class FuncState {
 		}
 	}
 
-	void freeexp(expdesc e) {
+	void freeexp(ExpDesc e) {
 		if (e.k == LexState.VNONRELOC)
 			this.freereg(e.info);
 	}
@@ -464,7 +461,7 @@ public class FuncState {
 		return this.addk(NULL_OBJECT);
 	}
 
-	void setreturns(expdesc e, int nresults) {
+	void setreturns(ExpDesc e, int nresults) {
 		if (e.k == LexState.VCALL) { /* expression is an open function call? */
 			SETARG_C(this.getcodePtr(e), nresults + 1);
 		} else if (e.k == LexState.VVARARG) {
@@ -474,7 +471,7 @@ public class FuncState {
 		}
 	}
 
-	void setoneret(expdesc e) {
+	void setoneret(ExpDesc e) {
 		if (e.k == LexState.VCALL) { /* expression is an open function call? */
 			e.k = LexState.VNONRELOC;
 			e.info = GETARG_A(this.getcode(e));
@@ -484,7 +481,7 @@ public class FuncState {
 		}
 	}
 
-	void dischargevars(expdesc e) {
+	void dischargevars(ExpDesc e) {
 		switch (e.k) {
 		case LexState.VLOCAL: {
 			e.k = LexState.VNONRELOC;
@@ -523,7 +520,7 @@ public class FuncState {
 		return this.codeABC(OP_LOADBOOL, A, b, jump);
 	}
 
-	void discharge2reg(expdesc e, int reg) {
+	void discharge2reg(ExpDesc e, int reg) {
 		this.dischargevars(e);
 		switch (e.k) {
 		case LexState.VNIL: {
@@ -563,14 +560,14 @@ public class FuncState {
 		e.k = LexState.VNONRELOC;
 	}
 
-	void discharge2anyreg(expdesc e) {
+	void discharge2anyreg(ExpDesc e) {
 		if (e.k != LexState.VNONRELOC) {
 			this.reserveregs(1);
 			this.discharge2reg(e, this.freereg - 1);
 		}
 	}
 
-	void exp2reg(expdesc e, int reg) {
+	void exp2reg(ExpDesc e, int reg) {
 		this.discharge2reg(e, reg);
 		if (e.k == LexState.VJMP)
 			e.t = this.concat(e.t, e.info); /* put this jump in `t' list */
@@ -594,14 +591,14 @@ public class FuncState {
 		e.k = LexState.VNONRELOC;
 	}
 
-	void exp2nextreg(expdesc e) {
+	void exp2nextreg(ExpDesc e) {
 		this.dischargevars(e);
 		this.freeexp(e);
 		this.reserveregs(1);
 		this.exp2reg(e, this.freereg - 1);
 	}
 
-	int exp2anyreg(expdesc e) {
+	int exp2anyreg(ExpDesc e) {
 		this.dischargevars(e);
 		if (e.k == LexState.VNONRELOC) {
 			if (!e.hasjumps())
@@ -615,14 +612,14 @@ public class FuncState {
 		return e.info;
 	}
 
-	void exp2val(expdesc e) {
+	void exp2val(ExpDesc e) {
 		if (e.hasjumps())
 			this.exp2anyreg(e);
 		else
 			this.dischargevars(e);
 	}
 
-	int exp2RK(expdesc e) {
+	int exp2RK(ExpDesc e) {
 		this.exp2val(e);
 		switch (e.k) {
 		case LexState.VKNUM:
@@ -651,7 +648,7 @@ public class FuncState {
 		return this.exp2anyreg(e);
 	}
 
-	void storevar(expdesc var, expdesc ex) {
+	void storevar(ExpDesc var, ExpDesc ex) {
 		switch (var.k) {
 		case LexState.VLOCAL: {
 			this.freeexp(ex);
@@ -681,7 +678,7 @@ public class FuncState {
 		this.freeexp(ex);
 	}
 
-	void self(expdesc e, expdesc key) {
+	void self(ExpDesc e, ExpDesc key) {
 		int func;
 		this.exp2anyreg(e);
 		this.freeexp(e);
@@ -693,7 +690,7 @@ public class FuncState {
 		e.k = LexState.VNONRELOC;
 	}
 
-	void invertjump(expdesc e) {
+	void invertjump(ExpDesc e) {
 		InstructionPtr pc = this.getjumpcontrol(e.info);
 		_assert (testTMode(GET_OPCODE(pc.get()))
 				&& GET_OPCODE(pc.get()) != OP_TESTSET && GET_OPCODE(pc.get()) != OP_TEST);
@@ -703,7 +700,7 @@ public class FuncState {
 		SETARG_A(pc, nota);
 	}
 
-	int jumponcond(expdesc e, int cond) {
+	int jumponcond(ExpDesc e, int cond) {
 		if (e.k == LexState.VRELOCABLE) {
 			int ie = this.getcode(e);
 			if (GET_OPCODE(ie) == OP_NOT) {
@@ -717,7 +714,7 @@ public class FuncState {
 		return this.condjump(OP_TESTSET, NO_REG, e.info, cond);
 	}
 
-	void goiftrue(expdesc e) {
+	void goiftrue(ExpDesc e) {
 		int pc; /* pc of last jump */
 		this.dischargevars(e);
 		switch (e.k) {
@@ -746,7 +743,7 @@ public class FuncState {
 		e.t = LexState.NO_JUMP;
 	}
 
-	void goiffalse(expdesc e) {
+	void goiffalse(ExpDesc e) {
 		int pc; /* pc of last jump */
 		this.dischargevars(e);
 		switch (e.k) {
@@ -773,7 +770,7 @@ public class FuncState {
 		e.f = LexState.NO_JUMP;
 	}
 
-	void codenot(expdesc e) {
+	void codenot(ExpDesc e) {
 		this.dischargevars(e);
 		switch (e.k) {
 		case LexState.VNIL:
@@ -814,12 +811,12 @@ public class FuncState {
 		this.removevalues(e.t);
 	}
 
-	void indexed(expdesc t, expdesc k) {
+	void indexed(ExpDesc t, ExpDesc k) {
 		t.aux = this.exp2RK(k);
 		t.k = LexState.VINDEXED;
 	}
 
-	boolean constfolding(int op, expdesc e1, expdesc e2) {
+	boolean constfolding(int op, ExpDesc e1, ExpDesc e2) {
 		if (!e1.isnumeral() || !e2.isnumeral())
 			return false;
 		double v1, v2, r;
@@ -858,7 +855,7 @@ public class FuncState {
 		return true;
 	}
 
-	void codearith(int op, expdesc e1, expdesc e2) {
+	void codearith(int op, ExpDesc e1, ExpDesc e2) {
 		if (constfolding(op, e1, e2))
 			return;
 		else {
@@ -877,7 +874,7 @@ public class FuncState {
 		}
 	}
 
-	void codecomp(int /* OpCode */op, int cond, expdesc e1, expdesc e2) {
+	void codecomp(int /* OpCode */op, int cond, ExpDesc e1, ExpDesc e2) {
 		int o1 = this.exp2RK(e1);
 		int o2 = this.exp2RK(e2);
 		this.freeexp(e2);
@@ -893,8 +890,8 @@ public class FuncState {
 		e1.k = LexState.VJMP;
 	}
 
-	void prefix(int /* UnOpr */op, expdesc e) {
-		expdesc e2 = new expdesc();
+	void prefix(int /* UnOpr */op, ExpDesc e) {
+		ExpDesc e2 = new ExpDesc();
 		e2.init(LexState.VKNUM, 0);
 		switch (op) {
 		case LexState.OPR_MINUS: {
@@ -916,7 +913,7 @@ public class FuncState {
 		}
 	}
 
-	void infix(int /* BinOpr */op, expdesc v) {
+	void infix(int /* BinOpr */op, ExpDesc v) {
 		switch (op) {
 		case LexState.OPR_AND: {
 			this.goiftrue(v);
@@ -948,7 +945,7 @@ public class FuncState {
 	}
 
 
-	void posfix(int op, expdesc e1, expdesc e2) {
+	void posfix(int op, ExpDesc e1, ExpDesc e2) {
 		switch (op) {
 		case LexState.OPR_AND: {
 			_assert (e1.t == LexState.NO_JUMP); /* list must be closed */

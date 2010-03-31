@@ -7,5 +7,5 @@ package org.luaj.kahluafork.compiler;
 public class LHS_assign {
 	LHS_assign prev;
 	/* variable (global, local, upvalue, or indexed) */
-	expdesc v = new expdesc();
+	ExpDesc v = new ExpDesc();
 }

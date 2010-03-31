@@ -1,6 +1,6 @@
 package org.luaj.kahluafork.compiler;
 
-public class expdesc {
+public class ExpDesc {
 	int k; // expkind, from enumerated list, above
 
 	int info, aux;
@@ -31,7 +31,7 @@ public class expdesc {
 		return (k == LexState.VKNUM && t == LexState.NO_JUMP && f == LexState.NO_JUMP);
 	}
 
-	public void setvalue(expdesc other) {
+	public void setvalue(ExpDesc other) {
 		this.k = other.k;
 		this._nval = other._nval;
 		this.has_nval = other.has_nval;

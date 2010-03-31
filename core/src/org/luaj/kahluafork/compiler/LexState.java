@@ -738,11 +738,11 @@ public class LexState {
 		return ts;
 	}
 	
-	void codestring(expdesc e, String s) {
+	void codestring(ExpDesc e, String s) {
 		e.init(VK, fs.stringK(s));
 	}
 
-	void checkname(expdesc e) {
+	void checkname(ExpDesc e) {
 		codestring(e, str_checkname());
 	}
 
@@ -780,14 +780,14 @@ public class LexState {
 		fs.nactvar = tolevel;
 	}
 	
-	void singlevar(expdesc var) {
+	void singlevar(ExpDesc var) {
 		String varname = this.str_checkname();
 		FuncState fs = this.fs;
 		if (fs.singlevaraux(varname, var, 1) == VGLOBAL)
 			var.info = fs.stringK(varname); /* info points to global name */
 	}
 	
-	void adjust_assign(int nvars, int nexps, expdesc e) {
+	void adjust_assign(int nvars, int nexps, ExpDesc e) {
 		FuncState fs = this.fs;
 		int extra = nvars - nexps;
 		if (hasmultret(e.k)) {
@@ -820,7 +820,7 @@ public class LexState {
 		nCcalls--;
 	}
 	
-	void pushclosure(FuncState func, expdesc v) {
+	void pushclosure(FuncState func, ExpDesc v) {
 		FuncState fs = this.fs;
 		Prototype f = fs.f;
 		if (f.prototypes == null || fs.np + 1 > f.prototypes.length)
@@ -884,17 +884,17 @@ public class LexState {
 	/* GRAMMAR RULES */
 	/*============================================================*/
 
-	void field(expdesc v) {
+	void field(ExpDesc v) {
 		/* field -> ['.' | ':'] NAME */
 		FuncState fs = this.fs;
-		expdesc key = new expdesc();
+		ExpDesc key = new ExpDesc();
 		fs.exp2anyreg(v);
 		this.next(); /* skip the dot or colon */
 		this.checkname(key);
 		fs.indexed(v, key);
 	}
 	
-	void yindex(expdesc v) {
+	void yindex(ExpDesc v) {
 		/* index -> '[' expr ']' */
 		this.next(); /* skip the '[' */
 		this.expr(v);
@@ -915,8 +915,8 @@ public class LexState {
 		/* recfield -> (NAME | `['exp1`]') = exp1 */
 		FuncState fs = this.fs;
 		int reg = this.fs.freereg;
-		expdesc key = new expdesc();
-		expdesc val = new expdesc();
+		ExpDesc key = new ExpDesc();
+		ExpDesc val = new ExpDesc();
 		int rkkey;
 		if (this.t.token == TK_NAME) {
 			fs.checklimit(cc.nh, MAX_INT, "items in a constructor");
@@ -940,7 +940,7 @@ public class LexState {
 	}
 
 
-	void constructor(expdesc t) {
+	void constructor(ExpDesc t) {
 		/* constructor -> ?? */
 		FuncState fs = this.fs;
 		int line = this.linenumber;
@@ -1029,7 +1029,7 @@ public class LexState {
 	}
 
 
-	void body(expdesc e, boolean needself, int line) {
+	void body(ExpDesc e, boolean needself, int line) {
 		/* body -> `(' parlist `)' chunk END */
 		FuncState new_fs = new FuncState();
 		open_func(new_fs);
@@ -1048,7 +1048,7 @@ public class LexState {
 		this.pushclosure(new_fs, e);
 	}
 	
-	int explist1(expdesc v) {
+	int explist1(ExpDesc v) {
 		/* explist1 -> expr { `,' expr } */
 		int n = 1; /* at least one expression */
 		this.expr(v);
@@ -1061,9 +1061,9 @@ public class LexState {
 	}
 
 
-	void funcargs(expdesc f) {
+	void funcargs(ExpDesc f) {
 		FuncState fs = this.fs;
-		expdesc args = new expdesc();
+		ExpDesc args = new ExpDesc();
 		int base, nparams;
 		int line = this.linenumber;
 		switch (this.t.token) {
@@ -1116,7 +1116,7 @@ public class LexState {
 	** =======================================================================
 	*/
 
-	void prefixexp(expdesc v) {
+	void prefixexp(ExpDesc v) {
 		/* prefixexp -> NAME | '(' expr ')' */
 		switch (this.t.token) {
 		case '(': {
@@ -1139,7 +1139,7 @@ public class LexState {
 	}
 
 
-	void primaryexp(expdesc v) {
+	void primaryexp(ExpDesc v) {
 		/*
 		 * primaryexp -> prefixexp { `.' NAME | `[' exp `]' | `:' NAME funcargs |
 		 * funcargs }
@@ -1153,14 +1153,14 @@ public class LexState {
 				break;
 			}
 			case '[': { /* `[' exp1 `]' */
-				expdesc key = new expdesc();
+				ExpDesc key = new ExpDesc();
 				fs.exp2anyreg(v);
 				this.yindex(key);
 				fs.indexed(v, key);
 				break;
 			}
 			case ':': { /* `:' NAME funcargs */
-				expdesc key = new expdesc();
+				ExpDesc key = new ExpDesc();
 				this.next();
 				this.checkname(key);
 				fs.self(v, key);
@@ -1181,7 +1181,7 @@ public class LexState {
 	}
 
 
-	void simpleexp(expdesc v) {
+	void simpleexp(ExpDesc v) {
 		/*
 		 * simpleexp -> NUMBER | STRING | NIL | true | false | ... | constructor |
 		 * FUNCTION body | primaryexp
@@ -1308,7 +1308,7 @@ public class LexState {
 	** subexpr -> (simpleexp | unop subexpr) { binop subexpr }
 	** where `binop' is any binary operator with a priority higher than `limit'
 	*/
-	int subexpr(expdesc v, int limit) {
+	int subexpr(ExpDesc v, int limit) {
 		int op;
 		int uop;
 		this.enterlevel();
@@ -1322,7 +1322,7 @@ public class LexState {
 		/* expand while operators have priorities higher than `limit' */
 		op = getbinopr(this.t.token);
 		while (op != OPR_NOBINOPR && priorityLeft[op] > limit) {
-			expdesc v2 = new expdesc();
+			ExpDesc v2 = new ExpDesc();
 			int nextop;
 			this.next();
 			fs.infix(op, v);
@@ -1335,7 +1335,7 @@ public class LexState {
 		return op; /* return first untreated operator */
 	}
 
-	void expr(expdesc v) {
+	void expr(ExpDesc v) {
 		this.subexpr(v, 0);
 	}
 
@@ -1380,7 +1380,7 @@ public class LexState {
 	** local value in a safe place and use this safe copy in the previous
 	** assignment.
 	*/
-	void check_conflict (LHS_assign lh, expdesc v) {
+	void check_conflict (LHS_assign lh, ExpDesc v) {
 		FuncState fs = this.fs;
 		int extra = fs.freereg;  /* eventual position to save local variable */
 		boolean conflict = false;
@@ -1404,7 +1404,7 @@ public class LexState {
 
 
 	void assignment (LHS_assign lh, int nvars) {
-		expdesc e = new expdesc();
+		ExpDesc e = new ExpDesc();
 		this.check_condition(VLOCAL <= lh.v.k && lh.v.k <= VINDEXED,
 	                      "syntax error");
 		if (this.testnext(',')) {  /* assignment -> `,' primaryexp assignment */
@@ -1437,7 +1437,7 @@ public class LexState {
 
 	int cond() {
 		/* cond -> exp */
-		expdesc v = new expdesc();
+		ExpDesc v = new ExpDesc();
 		/* read condition */
 		this.expr(v);
 		/* `falses' are all equal here */
@@ -1509,7 +1509,7 @@ public class LexState {
 
 
 	int exp1() {
-		expdesc e = new expdesc();
+		ExpDesc e = new ExpDesc();
 		int k;
 		this.expr(e);
 		k = e.k;
@@ -1564,7 +1564,7 @@ public class LexState {
 	void forlist(String indexname) {
 		/* forlist -> NAME {,NAME} IN explist1 forbody */
 		FuncState fs = this.fs;
-		expdesc e = new expdesc();
+		ExpDesc e = new ExpDesc();
 		int nvars = 0;
 		int line;
 		int base = fs.freereg;
@@ -1643,8 +1643,8 @@ public class LexState {
 	}
 
 	void localfunc() {
-		expdesc v = new expdesc();
-		expdesc b = new expdesc();
+		ExpDesc v = new ExpDesc();
+		ExpDesc b = new ExpDesc();
 		FuncState fs = this.fs;
 		this.new_localvar(this.str_checkname(), 0);
 		v.init(VLOCAL, fs.freereg);
@@ -1660,7 +1660,7 @@ public class LexState {
 		/* stat -> LOCAL NAME {`,' NAME} [`=' explist1] */
 		int nvars = 0;
 		int nexps;
-		expdesc e = new expdesc();
+		ExpDesc e = new ExpDesc();
 		do {
 			this.new_localvar(this.str_checkname(), nvars++);
 		} while (this.testnext(','));
@@ -1675,7 +1675,7 @@ public class LexState {
 	}
 
 
-	boolean funcname(expdesc v) {
+	boolean funcname(ExpDesc v) {
 		/* funcname -> NAME {field} [`:' NAME] */
 		boolean needself = false;
 		this.singlevar(v);
@@ -1692,8 +1692,8 @@ public class LexState {
 	void funcstat(int line) {
 		/* funcstat -> FUNCTION funcname body */
 		boolean needself;
-		expdesc v = new expdesc();
-		expdesc b = new expdesc();
+		ExpDesc v = new ExpDesc();
+		ExpDesc b = new ExpDesc();
 		this.next(); /* skip FUNCTION */
 		needself = this.funcname(v);
 		this.body(b, needself, line);
@@ -1718,7 +1718,7 @@ public class LexState {
 	void retstat() {
 		/* stat -> RETURN explist */
 		FuncState fs = this.fs;
-		expdesc e = new expdesc();
+		ExpDesc e = new ExpDesc();
 		int first, nret; /* registers with returned values */
 		this.next(); /* skip RETURN */
 		if (block_follow(this.t.token) || this.t.token == ';')
