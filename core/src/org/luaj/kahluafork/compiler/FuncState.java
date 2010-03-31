@@ -114,7 +114,7 @@ public class FuncState {
 		int i;
 		for (i = 0; i < f.numUpvalues; i++) {
 			if (upvalues_k[i] == v.k && upvalues_info[i] == v.info) {
-				_assert(upvalues[i] == name);
+				_assert(upvalues[i].equals(name));
 				return i;
 			}
 		}
@@ -135,7 +135,7 @@ public class FuncState {
 	int searchvar(String n) {
 		int i;
 		for (i = nactvar - 1; i >= 0; i--) {
-			if (n == getlocvar(i))
+			if (n.equals(getlocvar(i)))
 				return i;
 		}
 		return -1; /* not found */

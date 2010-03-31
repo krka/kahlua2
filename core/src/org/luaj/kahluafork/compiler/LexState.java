@@ -33,9 +33,7 @@ import se.krka.kahlua.vm.Prototype;
 public class LexState {
 	
 	public int nCcalls;
-	Hashtable strings = new Hashtable();
 
-	
 	protected static final String RESERVED_LOCAL_VAR_FOR_CONTROL = "(for control)";
     protected static final String RESERVED_LOCAL_VAR_FOR_STATE = "(for state)";
     protected static final String RESERVED_LOCAL_VAR_FOR_GENERATOR = "(for generator)";
@@ -280,29 +278,15 @@ public class LexState {
 		lexerror( msg, t.token );
 	}
 
-	String newstring( String s ) {
-		return newTString(s);
-	}
-
 	String newstring( byte[] chars, int offset, int len ) {
 		try {
 			String s = new String(chars, offset, len, "UTF-8");
-			return newTString(s);
+			return s;
 		} catch (UnsupportedEncodingException e) {
 			return null;
 		}
 	}
 
-	public String newTString(String s) {
-		String t = (String) strings.get(s);
-		if (t == null ) {
-			t = s;
-			strings.put(t, t);
-		}
-		return t;
-	}
-
-	
 	void inclinenumber() {
 		int old = current;
 		FuncState._assert( currIsNewline() );
@@ -777,8 +761,7 @@ public class LexState {
 //	  this.new_localvar(luaX_newstring(ls, "" v, (sizeof(v)/sizeof(char))-1), n)
 //
 	void new_localvarliteral(String v, int n) {
-		String ts = newstring(v);
-		new_localvar(ts, n);
+        new_localvar(v, n);
 	}
 
 	void new_localvar(String name, int n) {
