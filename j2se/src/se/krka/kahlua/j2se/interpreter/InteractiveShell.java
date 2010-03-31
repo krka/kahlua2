@@ -2,7 +2,10 @@ package se.krka.kahlua.j2se.interpreter;
 
 import se.krka.kahlua.j2se.J2SEPlatform;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
+import se.krka.kahlua.vm.JavaFunction;
 import se.krka.kahlua.vm.KahluaException;
+import se.krka.kahlua.vm.KahluaUtil;
+import se.krka.kahlua.vm.LuaCallFrame;
 import se.krka.kahlua.vm.LuaClosure;
 import se.krka.kahlua.vm.LuaState;
 
@@ -10,6 +13,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
 import javax.swing.text.Style;
 import java.awt.BorderLayout;
@@ -23,19 +27,34 @@ import java.io.IOException;
 public class InteractiveShell {
     public static void main(final String[] args) {
         JFrame frame = new JFrame("Kahlua interpreter");
+
+        JPanel interpreter1 = createInterpreter();
+        JPanel interpreter2 = createInterpreter();
+
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.add("First", interpreter1);
+        tabs.add("Second", interpreter2);
+        frame.getContentPane().add(tabs);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
+
+    }
+
+    private static JPanel createInterpreter() {
         JPanel main = new JPanel(new BorderLayout());
 
         final Terminal terminal = new Terminal(false, Color.WHITE);
         terminal.setPreferredSize(new Dimension(800, 400));
 
-		Color inputColor = Color.GREEN.brighter().brighter().brighter();
+        Color inputColor = Color.GREEN.brighter().brighter().brighter();
         final Style inputStyle = terminal.createStyle("input", inputColor);
-		final Style errorStyle = terminal.createStyle("error", Color.RED.brighter().brighter());
+        final Style errorStyle = terminal.createStyle("error", Color.RED.brighter().brighter());
 
-		JPanel outputPanel = new JPanel(new BorderLayout());
-		outputPanel.add(new JLabel("Output"), BorderLayout.NORTH);
-		outputPanel.add(terminal, BorderLayout.CENTER);
-		main.add(outputPanel, BorderLayout.CENTER);
+        JPanel outputPanel = new JPanel(new BorderLayout());
+        outputPanel.add(new JLabel("Output"), BorderLayout.NORTH);
+        outputPanel.add(terminal, BorderLayout.CENTER);
+        main.add(outputPanel, BorderLayout.CENTER);
 
         final Terminal input = new Terminal(true, Color.WHITE);
         input.setPreferredSize(new Dimension(800, 100));
@@ -44,9 +63,20 @@ public class InteractiveShell {
         inputPanel.add(input, BorderLayout.CENTER);
         main.add(inputPanel, BorderLayout.SOUTH);
 
-		final LuaState state = new LuaState(
-				terminal.getPrintStream(),
-				new J2SEPlatform());
+        final LuaState state = new LuaState(
+                terminal.getPrintStream(),
+                new J2SEPlatform());
+        state.getEnvironment().rawset("sleep", new JavaFunction() {
+            @Override
+            public int call(LuaCallFrame callFrame, int nArguments) {
+                double seconds = KahluaUtil.getDoubleArg(callFrame, 1, "sleep");
+                try {
+                    Thread.sleep((long) (seconds * 1000));
+                } catch (InterruptedException e) {
+                }
+                return 0;
+            }
+        });
 
         input.setPreferredSize(new Dimension(800, 100));
         input.addKeyListener(new KeyListener() {
@@ -94,12 +124,9 @@ public class InteractiveShell {
 			}
         });
 
-        frame.getContentPane().add(main);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
 
-		terminal.appendLine("Welcome to the Kahlua interpreter");
-		input.requestFocus();
+        terminal.appendLine("Welcome to the Kahlua interpreter");
+        input.requestFocus();
+        return main;
     }
 }
