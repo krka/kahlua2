@@ -1,5 +1,6 @@
 package se.krka.kahlua.cldc11;
 
+import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.KahluaTable;
 import se.krka.kahlua.cldc11.KahluaTableImpl;
 import se.krka.kahlua.vm.LuaState;
@@ -16,5 +17,11 @@ public class CLDC11Platform implements Platform {
 
     public KahluaTable newTable() {
         return new KahluaTableImpl();
+    }
+
+    public KahluaTable newEnvironment() {
+        KahluaTable env = newTable();
+        BaseLib.register(env);
+        return env;
     }
 }

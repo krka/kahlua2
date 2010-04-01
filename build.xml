@@ -210,7 +210,7 @@
 	</target>
 	
     <target name="run-interpreter" depends="build" description="Run the gui interpreter">
-		<java classname="se.krka.kahlua.j2se.InteractiveShell" fork="true" dir="${basedir}">
+		<java classname="se.krka.kahlua.j2se.interpreter.InteractiveShell" fork="true" dir="${basedir}">
 			<classpath refid="main.classpath" />
 		</java>
     </target>

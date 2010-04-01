@@ -146,11 +146,11 @@ public class LuaState implements KahluaThread {
         RandomLib.register(this, this.platform);
         this.platform.register(this);
         CoroutineLib.register(this, this.platform);
-        OsLib.register(this.getEnvironment(), this.platform);
-        TableLib.register(this.getEnvironment(), this.platform);
+        OsLib.register(environment, this.platform);
+        TableLib.register(environment, this.platform);
 
         LuaClosure closure = KahluaUtil.loadByteCodeFromResource("/stdlib",
-                getEnvironment());
+                environment);
         if (closure == null) {
             KahluaUtil.fail("Could not load /stdlib.lbc");
         }

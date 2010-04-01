@@ -29,6 +29,7 @@ public class J2SEPlatform implements Platform {
         return new KahluaTableImpl(new ConcurrentHashMap<Object, Object>());
     }
 
+    @Override
     public KahluaTable newEnvironment() {
         KahluaTable env = newTable();
 

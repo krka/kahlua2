@@ -16,7 +16,6 @@ end
 function ipairs(t)
 	return ipairs_iterator, t, 0
 end
-
 pairs = table.pairs
 
 do
@@ -145,123 +144,6 @@ do
 				)
 			)
 		end
-	end
-end
-
-
-package = {}
-package.loaded = {
-	string = string,
-	table = table,
-	math = math,
-	package = package,
-	os = os,
-	math = math,
-	coroutine = coroutine
-}
-package.loaders = {}
-package.path = "/"
-table.insert(package.loaders, bytecodeloader)
-bytecodeloader = nil
-
-function require(modname)
-	local m = package.loaded[modname]
-	if m ~= nil then
-		return m
-	end
-	
-	local loaders = package.loaders
-	local errormessage = ""
-	for i = 1, #loaders do
-		local loader = loaders[i]
-		local loader2 = loader(modname)
-		if type(loader2) == "function" then
-			m = loader2(modname)
-			if m == nil then
-				m = true
-			end
-			package.loaded[modname] = m
-			return m
-		elseif type(loader2) == "string" then
-			errormessage = errormessage .. loader2
-		end
-	end
-	error("Module '" .. modname .. "' not found:\n" .. errormessage)
-end
-
-function package.seeall(module)
-	local mt = getmetatable(module) or {}
-	mt.__index = getfenv(0)
-	setmetatable(module, mt)
-end
-
-local function apply(obj, n, f, ...)
-	if n > 0 then
-		f(obj)
-		return apply(obj, n - 1, ...)
-	end	
-end
-
-function module(name, ...)
-	local env = getfenv(0)
-	local t = package.loaded[name] or env[name]
-	if not t then
-		t = {}
-		package.loaded[name] = t
-	end
-	t._NAME = name
-	t._M = t
-
-	local packagename, lastname = name:match("^(.*%.)([^.]*)$")
-	t._PACKAGE = packagename
-	if name:find(".", 1, true) then
-		local chain = env
-		for partial in name:gmatch("([^%.]*)%.") do
-			chain[partial] = chain[partial] or {}
-			chain = chain[partial]
-		end
-		chain[lastname] = t
-	else
-		env[name] = t
-	end
-	apply(t, select("#", ...), ...)
-	setfenv(2, t)
-end
-
-
-do
-	local properties = {}
-	setmetatable(properties, {__mode = "k"})
-
-	function withproperties(obj)
-		local old = getmetatable(obj)
-		local oldindex = old and old.__index
-		local oldisfun = type(oldindex) == "function"
-		local function index(t, k)
-			local p = properties[t]
-			if p then
-				local value = p[k]
-				if value then
-					return value
-				end
-			end
-			if oldindex then
-				if oldisfun then
-					return oldindex(t, k)
-				end
-				return oldindex[k]
-			end
-		end
-		local function newindex(t, k, v)
-			local p = properties[t]
-			if not p then
-				p = {}
-				properties[t] = p
-			end
-			p[k] = v
-		end
-		setmetatable(obj, {__index = index, __newindex = newindex})
-		return obj
 	end
 end
 
