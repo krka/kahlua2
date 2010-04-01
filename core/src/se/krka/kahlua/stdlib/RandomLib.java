@@ -33,15 +33,16 @@ public class RandomLib implements JavaFunction {
         this.index = index;
     }
 
-    public static void register(LuaState state, Platform platform) {
+    public static void register(Platform platform, KahluaTable environment) {
         KahluaTable t = platform.newTable();
         for (int i = 0; i < NUM_FUNCTIONS - 1; i++) {
             t.rawset(names[i], functions[i]);
         }
 
         t.rawset("__index", t);
-        state.setClassMetatable(RANDOM_CLASS, t);
-        state.getEnvironment().rawset("newrandom", NEWRANDOM_FUN);
+        KahluaTable metatables = KahluaUtil.getClassMetatables(environment, platform);
+        metatables.rawset(RANDOM_CLASS, t);
+        environment.rawset("newrandom", NEWRANDOM_FUN);
     }
 
     public int call(LuaCallFrame callFrame, int nArguments) {

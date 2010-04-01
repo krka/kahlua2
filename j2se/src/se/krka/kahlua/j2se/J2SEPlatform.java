@@ -6,6 +6,7 @@ import se.krka.kahlua.stdlib.OsLib;
 import se.krka.kahlua.stdlib.RandomLib;
 import se.krka.kahlua.stdlib.StringLib;
 import se.krka.kahlua.stdlib.TableLib;
+import se.krka.kahlua.test.UserdataArray;
 import se.krka.kahlua.vm.KahluaTable;
 import se.krka.kahlua.vm.LuaState;
 import se.krka.kahlua.vm.Platform;
@@ -14,11 +15,6 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class J2SEPlatform implements Platform {
-    @Override
-    public void register(LuaState state) {
-        MathLib.register(state, this);
-    }
-
     @Override
     public double pow(double x, double y) {
         return Math.pow(x, y);
@@ -36,8 +32,16 @@ public class J2SEPlatform implements Platform {
         env.rawset("_G", env);
         env.rawset("_VERSION", "Kahlua 2 for J2SE");
 
+        MathLib.register(env, this);
         BaseLib.register(env);
-        
+        RandomLib.register(this, env);
+        UserdataArray.register(env, this);
+        StringLib.register(env, this);
+        CoroutineLib.register(env, this);
+        OsLib.register(env, this);
+        TableLib.register(env, this);
+
+
         return env;
     }
 }

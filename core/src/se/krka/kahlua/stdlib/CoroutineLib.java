@@ -65,15 +65,16 @@ public class CoroutineLib implements JavaFunction {
 		this.index = index;
 	}
 
-	public static void register(LuaState state, Platform platform) {
+	public static void register(KahluaTable env, Platform platform) {
 		KahluaTable coroutine = platform.newTable();
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
 			coroutine.rawset(names[i], functions[i]);
 		}
 		
 		coroutine.rawset("__index", coroutine);
-		state.setClassMetatable(LUA_THREAD_CLASS, coroutine);
-		state.getEnvironment().rawset("coroutine", coroutine);
+        KahluaTable metatables = KahluaUtil.getClassMetatables(env, platform);
+        metatables.rawset(LUA_THREAD_CLASS, coroutine);
+		env.rawset("coroutine", coroutine);
 	}
 	
 	public int call(LuaCallFrame callFrame, int nArguments) {

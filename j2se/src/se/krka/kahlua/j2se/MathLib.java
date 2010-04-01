@@ -73,9 +73,9 @@ public class MathLib implements JavaFunction {
 		this.index = index;
 	}
 
-    public static void register(LuaState state, Platform platform) {
+    public static void register(KahluaTable env, Platform platform) {
 		KahluaTable math = platform.newTable();
-		state.getEnvironment().rawset("math", math);
+		env.rawset("math", math);
 
 		math.rawset("pi", KahluaUtil.toDouble(Math.PI));
 		math.rawset("huge", KahluaUtil.toDouble(Double.POSITIVE_INFINITY));

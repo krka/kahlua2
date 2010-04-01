@@ -38,7 +38,7 @@ public class UserdataArray implements JavaFunction {
 
 	private static KahluaTable metatable;
 
-	public static synchronized void register(LuaState state, Platform platform) {
+	public static synchronized void register(KahluaTable env, Platform platform) {
 		if (metatable == null) {
 			metatable = platform.newTable();
 			metatable.rawset("__metatable", "restricted");
@@ -50,8 +50,10 @@ public class UserdataArray implements JavaFunction {
 			metatable.rawset("push", new UserdataArray(PUSH));
 		}
 
-		state.setClassMetatable(VECTOR_CLASS, metatable);
-		state.getEnvironment().rawset("array", metatable);
+        KahluaTable metatables = KahluaUtil.getClassMetatables(env, platform);
+        metatables.rawset(VECTOR_CLASS, metatable);
+
+		env.rawset("array", metatable);
 	}
 
 	private int index;

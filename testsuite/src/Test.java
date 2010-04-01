@@ -35,7 +35,6 @@ public class Test {
 	private static LuaState getState(File dir) throws FileNotFoundException, IOException {
         Platform platform = new J2SEPlatform();
         LuaState state = new LuaState(System.out, platform, platform.newEnvironment());
-        UserdataArray.register(state, platform);
 		OsLib.register(state.getEnvironment(), platform);
 		LuaCompiler.register(state.getEnvironment());
 

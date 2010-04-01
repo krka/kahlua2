@@ -81,15 +81,16 @@ public final class StringLib implements JavaFunction {
 		this.methodId = index;
 	}
 
-	public static void register(LuaState state, Platform platform) {
+	public static void register(KahluaTable env, Platform platform) {
 		KahluaTable string = platform.newTable();
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
 			string.rawset(names[i], functions[i]);
 		}
 
 		string.rawset("__index", string);
-		state.setClassMetatable(STRING_CLASS, string);
-		state.getEnvironment().rawset("string", string);
+        KahluaTable metatables = KahluaUtil.getClassMetatables(env, platform);
+        metatables.rawset(STRING_CLASS, string);
+		env.rawset("string", string);
 	}
 
 	public String toString() {

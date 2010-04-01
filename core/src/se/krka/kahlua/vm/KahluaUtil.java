@@ -104,4 +104,13 @@ public class KahluaUtil {
     public static double getDoubleArg(LuaCallFrame callFrame, int argc, String funcname) {
         return ((Double) BaseLib.getArg(callFrame, argc, BaseLib.TYPE_NUMBER, funcname)).doubleValue();
     }
+            
+    public static KahluaTable getClassMetatables(KahluaTable env, Platform platform) {
+        Object classMeta = env.rawget("__classmetatables");
+        if (classMeta == null || !(classMeta instanceof KahluaTable)) {
+            classMeta = platform.newTable();
+            env.rawset("__classmetatables", classMeta);
+        }
+        return (KahluaTable) classMeta;
+    }
 }

@@ -25,8 +25,6 @@ import se.krka.kahlua.vm.JavaFunction;
 import se.krka.kahlua.vm.KahluaTable;
 import se.krka.kahlua.vm.KahluaUtil;
 import se.krka.kahlua.vm.LuaCallFrame;
-import se.krka.kahlua.vm.LuaState;
-import se.krka.kahlua.cldc11.KahluaTableImpl;
 
 public final class MathLib implements JavaFunction {
 
@@ -97,9 +95,9 @@ public final class MathLib implements JavaFunction {
 		this.index = index;
 	}
 
-	public static void register(LuaState state) {
+	public static void register(KahluaTable env) {
 		KahluaTable math = new KahluaTableImpl();
-		state.getEnvironment().rawset("math", math);
+		env.rawset("math", math);
 
 		math.rawset("pi", KahluaUtil.toDouble(Math.PI));
 		math.rawset("huge", KahluaUtil.toDouble(Double.POSITIVE_INFINITY));
