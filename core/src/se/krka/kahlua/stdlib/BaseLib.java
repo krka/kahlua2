@@ -63,7 +63,7 @@ public final class BaseLib implements JavaFunction {
 	public static final String TYPE_BOOLEAN = "boolean";
 	public static final String TYPE_FUNCTION = "function";
 	public static final String TYPE_TABLE = "table";
-	public static final String TYPE_THREAD = "coroutine";
+	public static final String TYPE_COROUTINE = "coroutine";
 	public static final String TYPE_USERDATA = "userdata";
 
 	private static final BaseLib[] functions;
@@ -98,7 +98,7 @@ public final class BaseLib implements JavaFunction {
 
 	private final int index;
 
-	public BaseLib(int index) {
+    public BaseLib(int index) {
 		this.index = index;
 	}
 
@@ -141,9 +141,9 @@ public final class BaseLib implements JavaFunction {
 	}
 	
 	private int debugstacktrace(LuaCallFrame callFrame, int nArguments) {
-		Coroutine thread = (Coroutine) getOptArg(callFrame, 1, BaseLib.TYPE_THREAD);
-		if (thread == null) {
-			thread = callFrame.coroutine;
+		Coroutine coroutine = (Coroutine) getOptArg(callFrame, 1, BaseLib.TYPE_COROUTINE);
+		if (coroutine == null) {
+			coroutine = callFrame.coroutine;
 		}
 		Double levelDouble = (Double) getOptArg(callFrame, 2, BaseLib.TYPE_NUMBER);
 		int level = 0;
@@ -160,7 +160,7 @@ public final class BaseLib implements JavaFunction {
 		if (haltAtDouble != null) {
 			haltAt = haltAtDouble.intValue(); 
 		}
-		return callFrame.push(thread.getCurrentStackTrace(level, count, haltAt));
+		return callFrame.push(coroutine.getCurrentStackTrace(level, count, haltAt));
 	}
 
 	private int rawget(LuaCallFrame callFrame, int nArguments) {
@@ -480,7 +480,7 @@ public final class BaseLib implements JavaFunction {
 			return TYPE_TABLE;
 		}
 		if (o instanceof Coroutine) {
-			return TYPE_THREAD;
+			return TYPE_COROUTINE;
 		}
 		return TYPE_USERDATA;
 	}
