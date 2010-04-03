@@ -25,7 +25,7 @@ import se.krka.kahlua.stdlib.*;
 
 import java.io.PrintStream;
 
-public class LuaState implements KahluaThread {
+public class LuaState {
 	public static final int FIELDS_PER_FLUSH = 50;
 	public static final int OP_MOVE = 0;
 	public static final int OP_LOADK = 1;
