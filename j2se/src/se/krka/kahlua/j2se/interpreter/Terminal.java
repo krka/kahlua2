@@ -131,7 +131,7 @@ public class Terminal extends JPanel {
     private boolean isAtBottom(int value) {
         int maximum = scrollbar.getMaximum();
         int amount = scrollbar.getVisibleAmount();
-        return value >= maximum - amount - 8;
+        return value >= maximum - amount - 16;
     }
 
     public void setCaretColor(Color color) {

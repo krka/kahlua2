@@ -35,6 +35,8 @@ import javax.swing.text.Style;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
@@ -45,8 +47,12 @@ import java.util.concurrent.Future;
 public class Interpreter extends JPanel {
     private final LuaState state;
     private final Terminal terminal;
-    private final Style errorStyle;
+    private final JLabel outputTitle = new JLabel("Output:");
+    private final JLabel inputTitle = new JLabel("Input:");
 
+
+    private final Style errorStyle;
+    private final History history = new History();
     private final ExecutorService executors = Executors.newSingleThreadExecutor();
     private Future<?> future;
 
@@ -61,14 +67,14 @@ public class Interpreter extends JPanel {
         errorStyle = terminal.createStyle("error", Color.RED.brighter().brighter());
 
         JPanel outputPanel = new JPanel(new BorderLayout());
-        outputPanel.add(new JLabel("Output"), BorderLayout.NORTH);
+        outputPanel.add(outputTitle, BorderLayout.NORTH);
         outputPanel.add(terminal, BorderLayout.CENTER);
         this.add(outputPanel, BorderLayout.CENTER);
 
         final Terminal input = new Terminal(true, Color.WHITE);
         input.setPreferredSize(new Dimension(800, 100));
         JPanel inputPanel = new JPanel(new BorderLayout());
-        inputPanel.add(new JLabel("Input"), BorderLayout.NORTH);
+        inputPanel.add(inputTitle, BorderLayout.NORTH);
         inputPanel.add(input, BorderLayout.CENTER);
         this.add(inputPanel, BorderLayout.SOUTH);
 
@@ -86,15 +92,24 @@ public class Interpreter extends JPanel {
 
             @Override
             public void keyReleased(KeyEvent keyEvent) {
-                if (keyEvent.getKeyCode() == KeyEvent.VK_ENTER) {
-                    if ((keyEvent.getModifiers() & KeyEvent.CTRL_MASK) == 0) {
-                    } else {
+                if (isControl(keyEvent)) {
+                    if (keyEvent.getKeyCode() == KeyEvent.VK_ENTER) {
                         if (isDone()) {
                             String text = input.getText();
+                            history.add(text);
                             terminal.appendLine(text, inputStyle);
                             input.setText("");
                             execute(text);
-                        }
+                       }
+                        keyEvent.consume();
+                    }
+                    if (keyEvent.getKeyCode() == KeyEvent.VK_UP) {
+                        history.moveBack(input);
+                        keyEvent.consume();
+                    }
+                    if (keyEvent.getKeyCode() == KeyEvent.VK_DOWN) {
+                        history.moveForward(input);
+                        keyEvent.consume();
                     }
                 }
             }
@@ -102,13 +117,35 @@ public class Interpreter extends JPanel {
 
 
         terminal.appendLine("Welcome to the Kahlua interpreter");
-        input.requestFocus();
+        this.addComponentListener(new ComponentListener() {
+            @Override
+            public void componentResized(ComponentEvent componentEvent) {
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent componentEvent) {
+            }
+
+            @Override
+            public void componentShown(ComponentEvent componentEvent) {
+                input.requestFocus();
+            }
+
+            @Override
+            public void componentHidden(ComponentEvent componentEvent) {
+            }
+        });
+    }
+
+    private boolean isControl(KeyEvent keyEvent) {
+        return (keyEvent.getModifiers() & KeyEvent.CTRL_MASK) != 0;
     }
 
     private void execute(final String text) {
         future = executors.submit(new Runnable() {
             @Override
             public void run() {
+                outputTitle.setText("Output: [running...]");
                 try {
                     LuaClosure luaClosure = LuaCompiler.loadstring(text, "<interpreter>", state.getEnvironment());
                     Object[] res = state.pcall(luaClosure);
@@ -132,6 +169,7 @@ public class Interpreter extends JPanel {
                 } catch (KahluaException e) {
                     terminal.appendLine(e.getMessage(), errorStyle);
                 }
+                outputTitle.setText("Output:");
             }
         });
     }

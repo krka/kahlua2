@@ -32,6 +32,7 @@ public class InteractiveShell {
         JPanel interpreter2 = new Interpreter(platform, env);
 
         JTabbedPane tabs = new JTabbedPane();
+        tabs.setFocusable(false);
         tabs.add("First", interpreter1);
         tabs.add("Second", interpreter2);
         frame.getContentPane().add(tabs);
