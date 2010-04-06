@@ -37,7 +37,7 @@ public class CoroutineLib implements JavaFunction {
 	private static final String[] names;
 	
 	// NOTE: Coroutine.class won't work in J2ME - so this is used as a workaround
-	private static final Class LUA_THREAD_CLASS = new Coroutine().getClass();
+	private static final Class COROUTINE_CLASS = new Coroutine().getClass();
 	
 	static {
 		names = new String[NUM_FUNCTIONS];
@@ -50,7 +50,8 @@ public class CoroutineLib implements JavaFunction {
 
 	private final int index;
 	private static final CoroutineLib[] functions;
-	static {
+
+    static {
 		functions = new CoroutineLib[NUM_FUNCTIONS];
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
 			functions[i] = new CoroutineLib(i);
@@ -73,7 +74,7 @@ public class CoroutineLib implements JavaFunction {
 		
 		coroutine.rawset("__index", coroutine);
         KahluaTable metatables = KahluaUtil.getClassMetatables(env, platform);
-        metatables.rawset(LUA_THREAD_CLASS, coroutine);
+        metatables.rawset(COROUTINE_CLASS, coroutine);
 		env.rawset("coroutine", coroutine);
 	}
 	
@@ -161,7 +162,7 @@ public class CoroutineLib implements JavaFunction {
 			nextCallFrame.init();
 		}
 
-		callFrame.coroutine.state.currentThread = t;
+		callFrame.coroutine.state.currentCoroutine = t;
 		
 		return 0;
 	}
@@ -193,15 +194,15 @@ public class CoroutineLib implements JavaFunction {
 			nextCallFrame.push(value);
 		}
 		
-		t.state.currentThread = parent;
+		t.state.currentCoroutine = parent;
 	}
 	
 	private int create(LuaCallFrame callFrame, int nArguments) {
 		LuaClosure c = getFunction(callFrame, nArguments);
 
-		Coroutine newThread = new Coroutine(callFrame.coroutine.state, callFrame.coroutine.environment);
-		newThread.pushNewCallFrame(c, null, 0, 0, -1, true, true);
-		callFrame.push(newThread);
+		Coroutine coroutine = new Coroutine(callFrame.coroutine.state, callFrame.coroutine.environment);
+		coroutine.pushNewCallFrame(c, null, 0, 0, -1, true, true);
+		callFrame.push(coroutine);
 		return 1;
 	}
 

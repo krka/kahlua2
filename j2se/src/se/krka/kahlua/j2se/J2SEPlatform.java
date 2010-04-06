@@ -8,10 +8,8 @@ import se.krka.kahlua.stdlib.StringLib;
 import se.krka.kahlua.stdlib.TableLib;
 import se.krka.kahlua.test.UserdataArray;
 import se.krka.kahlua.vm.KahluaTable;
-import se.krka.kahlua.vm.LuaState;
 import se.krka.kahlua.vm.Platform;
 
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class J2SEPlatform implements Platform {

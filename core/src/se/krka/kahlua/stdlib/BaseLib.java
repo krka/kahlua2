@@ -27,7 +27,7 @@ import se.krka.kahlua.vm.KahluaTable;
 import se.krka.kahlua.vm.KahluaUtil;
 import se.krka.kahlua.vm.LuaCallFrame;
 import se.krka.kahlua.vm.LuaClosure;
-import se.krka.kahlua.vm.LuaState;
+import se.krka.kahlua.vm.KahluaThread;
 import se.krka.kahlua.vm.Coroutine;
 
 public final class BaseLib implements JavaFunction {
@@ -305,7 +305,7 @@ public final class BaseLib implements JavaFunction {
 	}
 
 	private static int print(LuaCallFrame callFrame, int nArguments) {
-		LuaState state = callFrame.coroutine.state;
+		KahluaThread state = callFrame.coroutine.state;
 		KahluaTable env = state.getEnvironment();
 		Object toStringFun = state.tableGet(env, "tostring");
 		StringBuffer sb = new StringBuffer();
@@ -442,7 +442,7 @@ public final class BaseLib implements JavaFunction {
 		return 1;
 	}
 
-	public static void setmetatable(LuaState state, Object o, KahluaTable newMeta, boolean raw) {
+	public static void setmetatable(KahluaThread state, Object o, KahluaTable newMeta, boolean raw) {
 		KahluaUtil.luaAssert(o != null, "Expected table, got nil");
 		final Object oldMeta = state.getmetatable(o, raw);
 
@@ -493,7 +493,7 @@ public final class BaseLib implements JavaFunction {
 		return 1;
 	}
 
-	public static String tostring(Object o, LuaState state) {
+	public static String tostring(Object o, KahluaThread state) {
 		if (o == null) {
 			return TYPE_NIL;
 		}

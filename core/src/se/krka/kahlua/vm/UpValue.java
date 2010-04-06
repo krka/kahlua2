@@ -24,15 +24,15 @@ package se.krka.kahlua.vm;
 
 public final class UpValue {
 	// For open upvalues
-	private Coroutine thread;
+	private Coroutine coroutine;
 
     private final int index;
 
 	// For closed upvalues
 	private Object value;
 
-    public UpValue(Coroutine thread, int index) {
-        this.thread = thread;
+    public UpValue(Coroutine coroutine, int index) {
+        this.coroutine = coroutine;
         this.index = index;
     }
 
@@ -41,23 +41,23 @@ public final class UpValue {
     }
 
     public final Object getValue() {
-		if (thread == null) {
+		if (coroutine == null) {
 			return value;
 		}
-		return thread.objectStack[index];
+		return coroutine.objectStack[index];
 	}
 
 
 	public final void setValue(Object object) {
-		if (thread == null) {
+		if (coroutine == null) {
 			value = object;
 			return;
 		}
-		thread.objectStack[index] = object;
+		coroutine.objectStack[index] = object;
 	}
 
     public void close() {
-        value = thread.objectStack[index];
-        thread = null;
+        value = coroutine.objectStack[index];
+        coroutine = null;
     }
 }

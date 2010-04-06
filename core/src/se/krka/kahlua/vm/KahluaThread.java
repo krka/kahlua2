@@ -25,7 +25,7 @@ import se.krka.kahlua.stdlib.*;
 
 import java.io.PrintStream;
 
-public class LuaState {
+public class KahluaThread {
 	public static final int FIELDS_PER_FLUSH = 50;
 	public static final int OP_MOVE = 0;
 	public static final int OP_LOADK = 1;
@@ -82,18 +82,18 @@ public class LuaState {
         meta_ops[OP_LE] = "__le";
     }
 
-	public Coroutine currentThread;
+	public Coroutine currentCoroutine;
     private final PrintStream out;
     private final Platform platform;
 
-	public LuaState(Platform platform, KahluaTable environment) {
+    public KahluaThread(Platform platform, KahluaTable environment) {
 		this(System.out, platform, environment);
 	}
 	
-	public LuaState(PrintStream stream, Platform platform, KahluaTable environment) {
+	public KahluaThread(PrintStream stream, Platform platform, KahluaTable environment) {
         this.platform = platform;
 		out = stream;
-        currentThread = new Coroutine(this, environment);
+        currentCoroutine = new Coroutine(this, environment);
 
         LuaClosure closure = KahluaUtil.loadByteCodeFromResource("/stdlib",
                 environment);
@@ -103,9 +103,9 @@ public class LuaState {
         call(closure, null, null, null);
 	}
 
-	// For debugging purposes only
+    // For debugging purposes only
 	/*
-	 * public static void main(String[] args) { LuaState s = new LuaState(); try {
+	 * public static void main(String[] args) { KahluaThread s = new KahluaThread(); try {
 	 * LuaClosure closure = Prototype.loadByteCode(new
 	 * FileInputStream("coroutine.lbc"), s.getEnvironment()); s.pcall(closure,
 	 * null); } catch (FileNotFoundException e) { // TODO Auto-generated catch
@@ -114,9 +114,9 @@ public class LuaState {
 	 */
 
     public int call(int nArguments) {
-		int top = currentThread.getTop();
+		int top = currentCoroutine.getTop();
 		int base = top - nArguments - 1;
-		Object o = currentThread.objectStack[base];
+		Object o = currentCoroutine.objectStack[base];
 
 		if (o == null) {
 			throw new RuntimeException("tried to call nil");
@@ -130,24 +130,24 @@ public class LuaState {
 			throw new RuntimeException("tried to call a non-function");
 		}
 
-		LuaCallFrame callFrame = currentThread.pushNewCallFrame((LuaClosure) o, null,
+		LuaCallFrame callFrame = currentCoroutine.pushNewCallFrame((LuaClosure) o, null,
 				base + 1, base, nArguments, false, false);
 		callFrame.init();
 
 		luaMainloop();
 
-		int nReturnValues = currentThread.getTop() - base;
+		int nReturnValues = currentCoroutine.getTop() - base;
 
-		currentThread.stackTrace = "";
+		currentCoroutine.stackTrace = "";
 
 		return nReturnValues;
 	}
 
 	private int callJava(JavaFunction f, int localBase, int returnBase,
 			int nArguments) {
-		Coroutine thread = currentThread;
+		Coroutine coroutine = currentCoroutine;
 
-		LuaCallFrame callFrame = thread.pushNewCallFrame(null, f, localBase,
+		LuaCallFrame callFrame = coroutine.pushNewCallFrame(null, f, localBase,
 				returnBase, nArguments, false, false);
 
 		int nReturnValues = f.call(callFrame, nArguments);
@@ -159,7 +159,7 @@ public class LuaState {
 		callFrame.stackCopy(actualReturnBase, -1, nReturnValues);
 		callFrame.setTop(nReturnValues - 1);
 
-		thread.popCallFrame();
+		coroutine.popCallFrame();
 
 		return nReturnValues;
 	}
@@ -175,7 +175,7 @@ public class LuaState {
 	}
 
 	private final void luaMainloop() {
-		LuaCallFrame callFrame = currentThread.currentCallFrame();
+		LuaCallFrame callFrame = currentCoroutine.currentCallFrame();
 		LuaClosure closure = callFrame.closure;
 		Prototype prototype = closure.prototype;
 		int[] opcodes = prototype.code;
@@ -597,7 +597,7 @@ public class LuaState {
 					}
 
 					if (fun instanceof LuaClosure) {
-						LuaCallFrame newCallFrame = currentThread
+						LuaCallFrame newCallFrame = currentCoroutine
 								.pushNewCallFrame((LuaClosure) fun, null, localBase2,
 										returnBase2, nArguments2, true,
 										callFrame.canYield);
@@ -612,7 +612,7 @@ public class LuaState {
 						callJava((JavaFunction) fun, base + a + 1, base + a,
 								nArguments2);
 
-						callFrame = currentThread.currentCallFrame();
+						callFrame = currentCoroutine.currentCallFrame();
 
 						// This means that we got back from a yield to a java
 						// function, such as pcall
@@ -638,7 +638,7 @@ public class LuaState {
 				case OP_TAILCALL: {
 					int base = callFrame.localBase;
 
-					currentThread.closeUpvalues(base);
+					currentCoroutine.closeUpvalues(base);
 
 					a = getA8(op);
 					b = getB9(op);
@@ -665,9 +665,9 @@ public class LuaState {
 						nArguments2++;
 					}
 
-					currentThread.stackCopy(base + a, returnBase,
+					currentCoroutine.stackCopy(base + a, returnBase,
 							nArguments2 + 1);
-					currentThread.setTop(returnBase + nArguments2 + 1);
+					currentCoroutine.setTop(returnBase + nArguments2 + 1);
 
 					if (fun instanceof LuaClosure) {
 						callFrame.localBase = localBase2;
@@ -678,28 +678,28 @@ public class LuaState {
 						if (!(fun instanceof JavaFunction)) {
 							KahluaUtil.fail(("Tried to call a non-function: " + fun));
 						}
-						Coroutine oldThread = currentThread;
+						Coroutine oldCoroutine = currentCoroutine;
 						callJava((JavaFunction) fun, localBase2, returnBase,
 								nArguments2);
 
-						callFrame = currentThread.currentCallFrame();
-						oldThread.popCallFrame();
+						callFrame = currentCoroutine.currentCallFrame();
+						oldCoroutine.popCallFrame();
 
-						if (oldThread != currentThread) {
-							if (oldThread.isDead()) {
+						if (oldCoroutine != currentCoroutine) {
+							if (oldCoroutine.isDead()) {
 
-								if (currentThread.parent == oldThread) {
-									currentThread.parent = oldThread.parent;
-									oldThread.parent = null;
+								if (currentCoroutine.parent == oldCoroutine) {
+									currentCoroutine.parent = oldCoroutine.parent;
+									oldCoroutine.parent = null;
 
 									// This is an implicit yield, so push a TRUE
 									// to the parent
-									currentThread.parent.currentCallFrame()
+									currentCoroutine.parent.currentCallFrame()
 											.push(Boolean.TRUE);
 								}
 							}
 
-							callFrame = currentThread.currentCallFrame();
+							callFrame = currentCoroutine.currentCallFrame();
 							if (callFrame.isJava()) {
 								return;
 							}
@@ -707,7 +707,7 @@ public class LuaState {
 							if (!callFrame.fromLua) {
 								return;
 							}
-							callFrame = currentThread.currentCallFrame();
+							callFrame = currentCoroutine.currentCallFrame();
 
 							if (callFrame.restoreTop) {
 								callFrame
@@ -728,34 +728,34 @@ public class LuaState {
 					b = getB9(op) - 1;
 
 					int base = callFrame.localBase;
-					currentThread.closeUpvalues(base);
+					currentCoroutine.closeUpvalues(base);
 
 					if (b == -1) {
 						b = callFrame.getTop() - a;
 					}
 
-					currentThread.stackCopy(callFrame.localBase + a,
+					currentCoroutine.stackCopy(callFrame.localBase + a,
 							returnBase, b);
-					currentThread.setTop(returnBase + b);
+					currentCoroutine.setTop(returnBase + b);
 
 					if (callFrame.fromLua) {
 						if (callFrame.canYield
-								&& currentThread.callFrameTop == 1) {
+								&& currentCoroutine.callFrameTop == 1) {
 							callFrame.localBase = callFrame.returnBase;
-							Coroutine thread = currentThread;
+							Coroutine coroutine = currentCoroutine;
 							CoroutineLib.yieldHelper(callFrame, callFrame, b);
-							thread.popCallFrame();
+							coroutine.popCallFrame();
 
 							// If this coroutine is called from a java function,
 							// return immediately
-							callFrame = currentThread.currentCallFrame();
+							callFrame = currentCoroutine.currentCallFrame();
 							if (callFrame.isJava()) {
 								return;
 							}
 						} else {
-							currentThread.popCallFrame();
+							currentCoroutine.popCallFrame();
 						}
-						callFrame = currentThread.currentCallFrame();
+						callFrame = currentCoroutine.currentCallFrame();
 
 						closure = callFrame.closure;
 						prototype = closure.prototype;
@@ -766,7 +766,7 @@ public class LuaState {
 							callFrame.setTop(prototype.maxStacksize);
 						}
 					} else {
-						currentThread.popCallFrame();
+						currentCoroutine.popCallFrame();
 						return;
 					}
 					break;
@@ -885,26 +885,26 @@ public class LuaState {
 				}
 				} // switch
 			} catch (RuntimeException e) {
-				// inspectThread(currentThread);
+				// inspectThread(currentCoroutine);
 
 				// Pop off all java frames first
 				while (true) {
-					callFrame = currentThread.currentCallFrame();
+					callFrame = currentCoroutine.currentCallFrame();
 
 					if (callFrame.isLua()) {
 						break;
 					}
-					currentThread.addStackTrace(callFrame);
-					currentThread.popCallFrame();
+					currentCoroutine.addStackTrace(callFrame);
+					currentCoroutine.popCallFrame();
 				}
 
 				boolean rethrow = true;
 				while (true) {
-					callFrame = currentThread.currentCallFrame();
+					callFrame = currentCoroutine.currentCallFrame();
 					if (callFrame == null) {
-						Coroutine parent = currentThread.parent;
+						Coroutine parent = currentCoroutine.parent;
 						if (parent != null) {
-							currentThread.parent = null;
+							currentCoroutine.parent = null;
 							// Yield and fail
 
 							// Copy arguments
@@ -913,11 +913,11 @@ public class LuaState {
 
 							nextCallFrame.push(Boolean.FALSE);
 							nextCallFrame.push(e.getMessage());
-							nextCallFrame.push(currentThread.stackTrace);
+							nextCallFrame.push(currentCoroutine.stackTrace);
 
-							currentThread.state.currentThread = parent;
-							currentThread = parent;
-							callFrame = currentThread.currentCallFrame();
+							currentCoroutine.state.currentCoroutine = parent;
+							currentCoroutine = parent;
+							callFrame = currentCoroutine.currentCallFrame();
 							closure = callFrame.closure;
 							prototype = closure.prototype;
 							opcodes = prototype.code;
@@ -927,8 +927,8 @@ public class LuaState {
 						}
 						break;
 					}
-					currentThread.addStackTrace(callFrame);
-					currentThread.popCallFrame();
+					currentCoroutine.addStackTrace(callFrame);
+					currentCoroutine.popCallFrame();
 
 					if (!callFrame.fromLua) {
 						break;
@@ -1039,47 +1039,47 @@ public class LuaState {
 	}
 
 	public Object call(Object fun, Object arg1, Object arg2, Object arg3) {
-		int oldTop = currentThread.getTop();
+		int oldTop = currentCoroutine.getTop();
 		final int argslen = 3;
-		currentThread.setTop(oldTop + 1 + argslen);
-		currentThread.objectStack[oldTop] = fun;
+		currentCoroutine.setTop(oldTop + 1 + argslen);
+		currentCoroutine.objectStack[oldTop] = fun;
 
-		currentThread.objectStack[oldTop + 1] = arg1;
-		currentThread.objectStack[oldTop + 2] = arg2;
-		currentThread.objectStack[oldTop + 3] = arg3;
+		currentCoroutine.objectStack[oldTop + 1] = arg1;
+		currentCoroutine.objectStack[oldTop + 2] = arg2;
+		currentCoroutine.objectStack[oldTop + 3] = arg3;
 
 		int nReturnValues = call(argslen);
 
 		Object ret = null;
 		if (nReturnValues >= 1) {
-			ret = currentThread.objectStack[oldTop];
+			ret = currentCoroutine.objectStack[oldTop];
 		}
-		currentThread.setTop(oldTop);
+		currentCoroutine.setTop(oldTop);
 		return ret;
 	}
 
 	public Object call(Object fun, Object[] args) {
-		int oldTop = currentThread.getTop();
+		int oldTop = currentCoroutine.getTop();
 		int argslen = args == null ? 0 : args.length;
-		currentThread.setTop(oldTop + 1 + argslen);
-		currentThread.objectStack[oldTop] = fun;
+		currentCoroutine.setTop(oldTop + 1 + argslen);
+		currentCoroutine.objectStack[oldTop] = fun;
 
 		for (int i = 1; i <= argslen; i++) {
-			currentThread.objectStack[oldTop + i] = args[i - 1];
+			currentCoroutine.objectStack[oldTop + i] = args[i - 1];
 		}
 		int nReturnValues = call(argslen);
 
 		Object ret = null;
 		if (nReturnValues >= 1) {
-			ret = currentThread.objectStack[oldTop];
+			ret = currentCoroutine.objectStack[oldTop];
 		}
-		currentThread.setTop(oldTop);
+		currentCoroutine.setTop(oldTop);
 		return ret;
 	}
 
 	public Object tableGet(Object table, Object key) {
 		Object curObj = table;
-		for (int i = LuaState.MAX_INDEX_RECURSION; i > 0; i--) {
+		for (int i = KahluaThread.MAX_INDEX_RECURSION; i > 0; i--) {
 			boolean isTable = curObj instanceof KahluaTable;
 			if (isTable) {
 				KahluaTable t = (KahluaTable) curObj;
@@ -1108,7 +1108,7 @@ public class LuaState {
 
 	public void tableSet(Object table, Object key, Object value) {
 		Object curObj = table;
-		for (int i = LuaState.MAX_INDEX_RECURSION; i > 0; i--) {
+		for (int i = KahluaThread.MAX_INDEX_RECURSION; i > 0; i--) {
 			Object metaOp;
 			if (curObj instanceof KahluaTable) {
 				KahluaTable t = (KahluaTable) curObj;
@@ -1174,20 +1174,20 @@ public class LuaState {
 	public Object[] pcall(Object fun, Object[] args) {
 		int nArgs = args == null ? 0 : args.length;
 
-		Coroutine thread = currentThread;
-		int oldTop = thread.getTop();
+		Coroutine coroutine = currentCoroutine;
+		int oldTop = coroutine.getTop();
 
-		thread.setTop(oldTop + 1 + nArgs);
-		thread.objectStack[oldTop] = fun;
+		coroutine.setTop(oldTop + 1 + nArgs);
+		coroutine.objectStack[oldTop] = fun;
 		if (nArgs > 0) {
-			System.arraycopy(args, 0, thread.objectStack, oldTop + 1,
+			System.arraycopy(args, 0, coroutine.objectStack, oldTop + 1,
 					nArgs);
 		}
 		int nRet = pcall(nArgs);
-		KahluaUtil.luaAssert(thread == currentThread, "Internal Kahlua error - coroutine changed in pcall");
+		KahluaUtil.luaAssert(coroutine == currentCoroutine, "Internal Kahlua error - coroutine changed in pcall");
 		Object[] ret = new Object[nRet];
-		System.arraycopy(thread.objectStack, oldTop, ret, 0, nRet);
-		thread.setTop(oldTop);
+		System.arraycopy(coroutine.objectStack, oldTop, ret, 0, nRet);
+		coroutine.setTop(oldTop);
 		return ret;
 	}
 
@@ -1196,19 +1196,19 @@ public class LuaState {
 	}
 
 	public int pcall(int nArguments) {
-		Coroutine thread = currentThread;
-		LuaCallFrame currentCallFrame = thread.currentCallFrame();
-		thread.stackTrace = "";
-		int oldBase = thread.getTop() - nArguments - 1;
+		Coroutine coroutine = currentCoroutine;
+		LuaCallFrame currentCallFrame = coroutine.currentCallFrame();
+		coroutine.stackTrace = "";
+		int oldBase = coroutine.getTop() - nArguments - 1;
 
 		Object errorMessage;
 		Throwable exception;
 		try {
 			int nValues = call(nArguments);
 			int newTop = oldBase + nValues + 1;
-			thread.setTop(newTop);
-			thread.stackCopy(oldBase, oldBase + 1, nValues);
-			thread.objectStack[oldBase] = Boolean.TRUE;
+			coroutine.setTop(newTop);
+			coroutine.stackCopy(oldBase, oldBase + 1, nValues);
+			coroutine.objectStack[oldBase] = Boolean.TRUE;
 
 			return 1 + nValues;
 		} catch (KahluaException e) {
@@ -1218,26 +1218,26 @@ public class LuaState {
 			exception = e;
 			errorMessage = e.getMessage();
 		}
-		KahluaUtil.luaAssert(thread == currentThread, "Internal Kahlua error - coroutine changed in pcall");
+		KahluaUtil.luaAssert(coroutine == currentCoroutine, "Internal Kahlua error - coroutine changed in pcall");
 		if (currentCallFrame != null) {
 			currentCallFrame.closeUpvalues(0);
 		}
-		thread.cleanCallFrames(currentCallFrame);
+		coroutine.cleanCallFrames(currentCallFrame);
 		if (errorMessage instanceof String) {
 			errorMessage = ((String) errorMessage);
 		}
-		thread.setTop(oldBase + 4);
-		thread.objectStack[oldBase] = Boolean.FALSE;
-		thread.objectStack[oldBase + 1] = errorMessage;
-		thread.objectStack[oldBase + 2] = thread.stackTrace;
-		thread.objectStack[oldBase + 3] = exception;
-		thread.stackTrace = "";
+		coroutine.setTop(oldBase + 4);
+		coroutine.objectStack[oldBase] = Boolean.FALSE;
+		coroutine.objectStack[oldBase + 1] = errorMessage;
+		coroutine.objectStack[oldBase + 2] = coroutine.stackTrace;
+		coroutine.objectStack[oldBase + 3] = exception;
+		coroutine.stackTrace = "";
 
 		return 4;
 	}
 
 	public KahluaTable getEnvironment() {
-		return currentThread.environment;
+		return currentCoroutine.environment;
 	}
 
 	public PrintStream getOut() {

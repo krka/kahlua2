@@ -26,7 +26,7 @@ import se.krka.kahlua.luaj.compiler.LuaCompiler;
 import se.krka.kahlua.vm.KahluaException;
 import se.krka.kahlua.vm.KahluaTable;
 import se.krka.kahlua.vm.LuaClosure;
-import se.krka.kahlua.vm.LuaState;
+import se.krka.kahlua.vm.KahluaThread;
 import se.krka.kahlua.vm.Platform;
 
 import javax.swing.JLabel;
@@ -45,7 +45,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class Interpreter extends JPanel {
-    private final LuaState state;
+    private final KahluaThread state;
     private final Terminal terminal;
     private final JLabel outputTitle = new JLabel("Output:");
     private final JLabel inputTitle = new JLabel("Input:");
@@ -78,7 +78,7 @@ public class Interpreter extends JPanel {
         inputPanel.add(input, BorderLayout.CENTER);
         this.add(inputPanel, BorderLayout.SOUTH);
 
-        state = new LuaState(terminal.getPrintStream(), platform, env);
+        state = new KahluaThread(terminal.getPrintStream(), platform, env);
 
         input.setPreferredSize(new Dimension(800, 100));
         input.addKeyListener(new KeyListener() {

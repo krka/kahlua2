@@ -24,7 +24,7 @@ package se.krka.kahlua.vm;
 import java.util.Vector;
 
 public class Coroutine {
-    public final LuaState state;
+    public final KahluaThread state;
     private final Platform platform;
 
 	public KahluaTable environment;
@@ -55,7 +55,7 @@ public class Coroutine {
         platform = null;
     }
 
-    public Coroutine(LuaState state, KahluaTable environment) {
+    public Coroutine(KahluaThread state, KahluaTable environment) {
 		this.state = state;
         platform = state.getPlatform();
 		this.environment = environment;

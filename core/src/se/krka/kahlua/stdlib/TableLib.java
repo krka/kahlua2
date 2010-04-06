@@ -150,11 +150,11 @@ public final class TableLib implements JavaFunction {
 		return callFrame.push(buffer.toString());
 	}
 	
-	public static void insert (LuaState state, KahluaTable table, Object element) {
+	public static void insert (KahluaThread state, KahluaTable table, Object element) {
 		append(state, table, element);
 	}
 
-	public static void append(LuaState state, KahluaTable table, Object element) {
+	public static void append(KahluaThread state, KahluaTable table, Object element) {
 		int position = 1 + table.len();
 		state.tableSet(table, KahluaUtil.toDouble(position), element);
 	}
@@ -164,7 +164,7 @@ public final class TableLib implements JavaFunction {
 		table.rawset(KahluaUtil.toDouble(position), element);
 	}
 
-	public static void insert(LuaState state, KahluaTable table, int position, Object element) {
+	public static void insert(KahluaThread state, KahluaTable table, int position, Object element) {
 		int len = table.len();
 		for (int i = len; i >= position; i--) {
 			state.tableSet(table, KahluaUtil.toDouble(i+1), state.tableGet(table, KahluaUtil.toDouble(i)));
@@ -202,11 +202,11 @@ public final class TableLib implements JavaFunction {
 		return 0;
 	}
 	
-	public static Object remove (LuaState state, KahluaTable table) {
+	public static Object remove (KahluaThread state, KahluaTable table) {
 		return remove(state, table, table.len());
 	}
 	
-	public static Object remove (LuaState state, KahluaTable table, int position) {
+	public static Object remove (KahluaThread state, KahluaTable table, int position) {
 		Object ret = state.tableGet(table, KahluaUtil.toDouble(position));
 		int len = table.len();
 		for (int i = position; i < len; i++) {

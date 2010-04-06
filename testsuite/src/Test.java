@@ -28,13 +28,12 @@ import java.io.IOException;
 import se.krka.kahlua.j2se.J2SEPlatform;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
 import se.krka.kahlua.stdlib.OsLib;
-import se.krka.kahlua.test.UserdataArray;
 import se.krka.kahlua.vm.*;
 
 public class Test {
-	private static LuaState getState(File dir) throws FileNotFoundException, IOException {
+	private static KahluaThread getState(File dir) throws FileNotFoundException, IOException {
         Platform platform = new J2SEPlatform();
-        LuaState state = new LuaState(System.out, platform, platform.newEnvironment());
+        KahluaThread state = new KahluaThread(System.out, platform, platform.newEnvironment());
 		OsLib.register(state.getEnvironment(), platform);
 		LuaCompiler.register(state.getEnvironment());
 
@@ -55,7 +54,7 @@ public class Test {
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		File dir = new File(args[0]);
 
-		LuaState state = getState(dir);
+		KahluaThread state = getState(dir);
 		
 		Object runTest = state.getEnvironment().rawget("testCall");
 		KahluaUtil.luaAssert(runTest != null, "Could not find testCall");
