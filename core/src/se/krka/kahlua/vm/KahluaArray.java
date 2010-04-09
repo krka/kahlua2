@@ -9,7 +9,7 @@ public class KahluaArray implements KahluaTable {
 
     private boolean recalculateLen;
 
-	public KahluaArray() {
+    public KahluaArray() {
 		data = new Object[16];
 		len = 0;
 	}
@@ -30,22 +30,41 @@ public class KahluaArray implements KahluaTable {
 		return len;
 	}
 
-    public JavaFunction iterator() {
-        return new JavaFunction() {
-            int index = 1;
+    public KahluaTableIterator iterator() {
+        return new KahluaTableIterator() {
+            private Double curKey;
+            private Object curValue;
+            private int index = 1;
             public int call(LuaCallFrame callFrame, int nArguments) {
+                if (advance()) {
+                    return callFrame.push(getKey(), getValue());
+                }
+                return 0;
+            }
+
+            public boolean advance() {
                 while (true) {
                     if (index > len()) {
-                        return 0;
+                        return false;
                     }
                     Object value = rawget(index);
                     if (value != null) {
                         int localIndex = index;
                         index++;
-                        return callFrame.push(KahluaUtil.toDouble(localIndex), value);
+                        curKey = KahluaUtil.toDouble(localIndex);
+                        curValue = value;
+                        return true;
                     }
                     index++;
                 }
+            }
+
+            public Object getKey() {
+                return curKey;
+            }
+
+            public Object getValue() {
+                return curValue;
             }
         };
     }

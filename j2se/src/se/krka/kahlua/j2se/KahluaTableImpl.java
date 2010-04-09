@@ -23,10 +23,7 @@
 package se.krka.kahlua.j2se;
 
 import se.krka.kahlua.stdlib.TableLib;
-import se.krka.kahlua.vm.JavaFunction;
-import se.krka.kahlua.vm.KahluaTable;
-import se.krka.kahlua.vm.KahluaUtil;
-import se.krka.kahlua.vm.LuaCallFrame;
+import se.krka.kahlua.vm.*;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -80,16 +77,42 @@ public class KahluaTableImpl implements KahluaTable {
     }
 
     @Override
-    public JavaFunction iterator() {
+    public KahluaTableIterator iterator() {
         final Iterator<Map.Entry<Object,Object>> iterator = delegate.entrySet().iterator();
-        return new JavaFunction() {
+        return new KahluaTableIterator() {
+            private Object curKey;
+            private Object curValue;
+
             @Override
             public int call(LuaCallFrame callFrame, int nArguments) {
-                if (iterator.hasNext()) {
-                    Map.Entry<Object, Object> value = iterator.next();
-                    return callFrame.push(value.getKey(), value.getValue());
+                if (advance()) {
+                    return callFrame.push(getKey(), getValue());
                 }
                 return 0;
+            }
+
+            @Override
+            public boolean advance() {
+                if (iterator.hasNext()) {
+                    Map.Entry<Object, Object> value = iterator.next();
+                    curKey = value.getKey();
+                    curValue = value.getValue();
+                    return true;
+                }
+                curKey = null;
+                curValue = null;
+                return false;
+            }
+
+            @Override
+            public Object getKey() {
+                return curKey;
+
+            }
+
+            @Override
+            public Object getValue() {
+                return curValue;
             }
         };
 

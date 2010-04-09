@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2009 Kristofer Karlsson <kristofer.karlsson@gmail.com>
+ Copyright (c) 2010 Kristofer Karlsson <kristofer.karlsson@gmail.com>
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -22,17 +22,8 @@
 
 package se.krka.kahlua.vm;
 
-public interface KahluaTable {
-	void setMetatable(KahluaTable metatable);
-	KahluaTable getMetatable();
-	
-	void rawset(Object key, Object value);
-	Object rawget(Object key);
-
-	void rawset(int key, Object value);
-	Object rawget(int key);
-
-	int len();
-
-    KahluaTableIterator iterator();
+public interface KahluaTableIterator extends JavaFunction {
+    boolean advance();
+    Object getKey();
+    Object getValue();
 }

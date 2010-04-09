@@ -106,11 +106,15 @@ public class KahluaUtil {
     }
             
     public static KahluaTable getClassMetatables(KahluaTable env, Platform platform) {
-        Object classMeta = env.rawget("__classmetatables");
-        if (classMeta == null || !(classMeta instanceof KahluaTable)) {
-            classMeta = platform.newTable();
-            env.rawset("__classmetatables", classMeta);
+        return getOrCreateTable(env, platform, "__classmetatables");
+    }
+
+    public static KahluaTable getOrCreateTable(KahluaTable env, Platform platform, String name) {
+        Object t = env.rawget(name);
+        if (t == null || !(t instanceof KahluaTable)) {
+            t = platform.newTable();
+            env.rawset(name, t);
         }
-        return (KahluaTable) classMeta;
+        return (KahluaTable) t;
     }
 }

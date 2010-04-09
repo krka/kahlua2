@@ -23,10 +23,7 @@ THE SOFTWARE.
 package se.krka.kahlua.cldc11;
 
 import se.krka.kahlua.stdlib.TableLib;
-import se.krka.kahlua.vm.JavaFunction;
-import se.krka.kahlua.vm.KahluaTable;
-import se.krka.kahlua.vm.KahluaUtil;
-import se.krka.kahlua.vm.LuaCallFrame;
+import se.krka.kahlua.vm.*;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -68,16 +65,36 @@ public final class KahluaTableImpl implements KahluaTable {
         return TableLib.len(this, 0, delegate.size());
     }
 
-    public JavaFunction iterator() {
+    public KahluaTableIterator iterator() {
         final Enumeration enumeration = delegate.keys();
-        return new JavaFunction() {
+        return new KahluaTableIterator() {
+            private Object curValue;
+            private Object curKey;
+
             public int call(LuaCallFrame callFrame, int nArguments) {
-                if (enumeration.hasMoreElements()) {
-                    Object key = enumeration.nextElement();
-                    Object value = delegate.get(key);
-                    return callFrame.push(key, value);
+                if (advance()) {
+                    return callFrame.push(getKey(), getValue());
                 }
                 return 0;
+            }
+
+            public boolean advance() {
+                if (enumeration.hasMoreElements()) {
+                    curKey = enumeration.nextElement();
+                    curValue = delegate.get(curKey);
+                    return true;
+                }
+                curKey = null;
+                curValue = null;
+                return false;
+            }
+
+            public Object getKey() {
+                return curKey;
+            }
+
+            public Object getValue() {
+                return curValue;
             }
         };
     }
