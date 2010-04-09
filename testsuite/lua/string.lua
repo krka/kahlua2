@@ -125,12 +125,20 @@ end
 s = "Hello world"
 
 testAssertEqual(#s,11)
+testAssertEqual(s:sub(-1, 5),"")
+testAssertEqual(s:sub(0, 5),"Hello")
 testAssertEqual(s:sub(1, 5),"Hello")
+testAssertEqual(s:sub(2, 5),"ello")
 testAssertEqual(s:sub(1, -1),"Hello world")
 testAssertEqual(s:sub(1, -5),"Hello w")
 testAssertEqual(s:sub(1, -7),"Hello")
 testAssertEqual(s:sub(1, 0),"")
 testAssertEqual(s:sub(1, -25),"")
+
+testAssertEqual(s:sub(-5, -1),"world")
+testAssertEqual(s:sub(-500,500),"Hello world")
+testAssertEqual(s:sub(500,-500),"")
+testAssertEqual(s:sub(#s + 1, 1000),"")
 
 testAssertEqual(s.sub,string.sub)
 

@@ -761,17 +761,22 @@ public final class StringLib implements JavaFunction {
 		int istart = (int) start;
 		int iend = (int) end;
 
+		int len = s.length();
 		if (istart < 0) {
-			istart += Math.max(0, s.length() + 1);
+			istart = Math.max(len + istart + 1, 1);
+		} else if (istart == 0) {
+			istart = 1;
 		}
 
+
 		if (iend < 0) {
-			iend += Math.max(0, s.length() + 1);
+			iend = Math.max(0, iend + len + 1);
+		} else if (iend > len) {
+			iend = len;
 		}
 
 		if (istart > iend) {
-			callFrame.push("");
-			return 1;
+			return callFrame.push("");
 		}
 		res = s.substring(istart - 1, iend);
 
