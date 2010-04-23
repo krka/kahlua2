@@ -38,12 +38,6 @@ local typeSerialize = {}
 local function nilSerialize(value)
     return tostring(value)
 end
-typeSerialize["nil"] = nilSerialize
-
-local function numberSerialize(value)
-   return tostring(value)
-end
-typeSerialize["number"] = numberSerialize
 
 local function stringSerialize(value)
    return string.format("%q", value)
