@@ -22,7 +22,11 @@
 
 package se.krka.kahlua.j2se.interpreter;
 
+import se.krka.kahlua.converter.LuaConverterManager;
+import se.krka.kahlua.integration.LuaCaller;
+import se.krka.kahlua.integration.LuaReturn;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
+import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.KahluaException;
 import se.krka.kahlua.vm.KahluaTable;
 import se.krka.kahlua.vm.LuaClosure;
@@ -55,6 +59,9 @@ public class Interpreter extends JPanel {
     private final History history = new History();
     private final ExecutorService executors = Executors.newSingleThreadExecutor();
     private Future<?> future;
+
+    LuaConverterManager manager = new LuaConverterManager();
+    LuaCaller caller = new LuaCaller(manager);
 
     public Interpreter(Platform platform, KahluaTable env) {
         super(new BorderLayout());
@@ -148,21 +155,15 @@ public class Interpreter extends JPanel {
                 outputTitle.setText("Output: [running...]");
                 try {
                     LuaClosure luaClosure = LuaCompiler.loadstring(text, "<interpreter>", state.getEnvironment());
-                    Object[] res = state.pcall(luaClosure);
-                    if (res[0] == Boolean.TRUE) {
-                        for (int i = 1; i < res.length; i++) {
-                            if (res[i] == null) {
-                                terminal.appendLine("nil");
-                            } else {
-                                terminal.appendLine(res[i].toString());
-                            }
+                    LuaReturn result = caller.protectedCall(state, luaClosure);
+                    if (result.isSuccess()) {
+                        for (Object o : result) {
+                            terminal.appendLine(BaseLib.tostring(o, state));
                         }
                     } else {
-                        for (int i = 1; i < res.length; i++) {
-                            if (res[i] != null) {
-                                terminal.appendLine(res[i].toString(), errorStyle);
-                            }
-                        }
+                        terminal.appendLine(result.getErrorString(), errorStyle);
+                        terminal.appendLine(result.getLuaStackTrace(), errorStyle);
+                        result.getJavaException().printStackTrace(System.err);
                     }
                 } catch (IOException e) {
                     e.printStackTrace(terminal.getPrintStream());

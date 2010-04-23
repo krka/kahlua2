@@ -267,7 +267,7 @@ public class Coroutine {
 				}
 			}
 		} else {
-			return "at " + frame.javaFunction;
+			return "at " + frame.javaFunction + "\n";
 		}
 		return "";
 	}
