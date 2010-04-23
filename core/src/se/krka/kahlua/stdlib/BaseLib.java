@@ -520,10 +520,7 @@ public final class BaseLib implements JavaFunction {
 			return res;
 		}
 
-		if (o instanceof KahluaTable) {
-			return "table 0x" + System.identityHashCode(o);
-		}
-		throw new RuntimeException("no __tostring found on object");
+        return o.toString();
 	}
 
 	private static int tonumber(LuaCallFrame callFrame, int nArguments) {

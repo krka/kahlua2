@@ -58,6 +58,9 @@ public class KahluaTableImpl implements KahluaTable {
 
     @Override
     public Object rawget(Object key) {
+        if (key == null) {
+            return null;
+        }
         return delegate.get(key);
     }
 
@@ -116,5 +119,10 @@ public class KahluaTableImpl implements KahluaTable {
             }
         };
 
+    }
+
+    @Override
+    public String toString() {
+        return "table 0x" + System.identityHashCode(this);
     }
 }

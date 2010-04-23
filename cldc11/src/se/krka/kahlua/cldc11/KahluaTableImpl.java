@@ -98,4 +98,9 @@ public final class KahluaTableImpl implements KahluaTable {
             }
         };
     }
+
+    public String toString() {
+        return "table 0x" + System.identityHashCode(this);
+    }
+    
 }

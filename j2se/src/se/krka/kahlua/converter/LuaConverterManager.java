@@ -106,12 +106,16 @@ public class LuaConverterManager {
 		
 		Class<?> luaClass = luaObject.getClass();
 		Map<Class, LuaToJavaConverter> map = getLuaCache(luaClass);
-		
-		LuaToJavaConverter converter = map.get(javaClass);
-		if (converter == null) {
-			throw new LuaConversionError("No conversion found from " + luaClass + " to " + javaClass);
-		}
-		return (T) converter.fromLuaToJava(luaObject);
+
+        Class<?> scanClass = javaClass;
+        while (scanClass != null) {
+            LuaToJavaConverter converter = map.get(scanClass);
+            if (converter != null) {
+                return (T) converter.fromLuaToJava(luaObject, javaClass);
+            }
+            scanClass = scanClass.getSuperclass();
+        }
+        throw new LuaConversionError("No conversion found from " + luaClass + " to " + javaClass);
 	}
 
 	@SuppressWarnings("unchecked")

@@ -35,7 +35,6 @@ import se.krka.kahlua.vm.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Map;
 import java.util.Map.Entry;
 
 /**
@@ -164,19 +163,31 @@ public class LuaJavaClassExposer {
     public void exposeGlobalObjectFunction(KahluaTable environment, Object owner, Method method, String methodName) {
         Class<? extends Object> clazz = owner.getClass();
         readDebugData(clazz);
-        environment.rawset(methodName, new LuaJavaInvoker(this, manager, clazz, methodName, new MethodCaller(method, owner, false)));
+        environment.rawset(methodName, getInvoker(owner, method, methodName, clazz));
+    }
+
+    private LuaJavaInvoker getInvoker(Object owner, Method method, String methodName, Class<? extends Object> clazz) {
+        return new LuaJavaInvoker(this, manager, clazz, methodName, new MethodCaller(method, owner, false));
     }
 
     public void exposeGlobalClassFunction(KahluaTable environment, Class<?> clazz, Constructor<?> constructor, String methodName) {
         readDebugData(clazz);
-        environment.rawset(methodName, new LuaJavaInvoker(this, manager, clazz, methodName, new ConstructorCaller(constructor)));
+        environment.rawset(methodName, getInvoker(clazz, constructor, methodName));
+    }
+
+    private LuaJavaInvoker getInvoker(Class<?> clazz, Constructor<?> constructor, String methodName) {
+        return new LuaJavaInvoker(this, manager, clazz, methodName, new ConstructorCaller(constructor));
     }
 
     public void exposeGlobalClassFunction(KahluaTable environment, Class<?> clazz, Method method, String methodName) {
         readDebugData(clazz);
         if (Modifier.isStatic(method.getModifiers())) {
-            environment.rawset(methodName, new LuaJavaInvoker(this, manager, clazz, methodName, new MethodCaller(method, null, false)));
+            environment.rawset(methodName, getInvoker(clazz, method, methodName));
         }
+    }
+
+    private LuaJavaInvoker getInvoker(Class<?> clazz, Method method, String methodName) {
+        return getInvoker(null, method, methodName, clazz);
     }
 
     /**
@@ -252,6 +263,31 @@ public class LuaJavaClassExposer {
         }
     }
 
+    public void exposeLikeJava(Class clazz, KahluaTable staticBase) {
+        if (clazz == null || isExposed(clazz)) {
+            return;
+        }
+        setupMetaTables(clazz);
+
+        KahluaTable container = KahluaUtil.getOrCreateTable(staticBase, platform, clazz.getSimpleName());
+
+        for (Method method : clazz.getMethods()) {
+            String name = method.getName();
+            if (Modifier.isPublic(method.getModifiers())) {
+                if (Modifier.isStatic(method.getModifiers())) {
+                    container.rawset(name, getInvoker(clazz, method, name));
+                } else {
+                    exposeMethod(clazz, method, name);
+                }
+            }
+        }
+        for (Constructor constructor : clazz.getConstructors()) {
+            if (Modifier.isPublic(constructor.getModifiers())) {
+                container.rawset("new", getInvoker(clazz, constructor, "new"));
+            }
+        }
+    }
+
     private void populateMethods(Class<?> clazz) {
         for (Constructor<?> constructor : clazz.getConstructors()) {
             LuaConstructor annotation = constructor.getAnnotation(LuaConstructor.class);
@@ -293,8 +329,8 @@ public class LuaJavaClassExposer {
         return clazz != null && clazz.isAnnotationPresent(LuaClass.class);
     }
 
-    private boolean isExposed(Class<?> clazz) {
-        return getMetaTable(clazz) != null;
+    public boolean isExposed(Class<?> clazz) {
+        return clazz != null && getMetaTable(clazz) != null;
     }
 
     LuaClassDebugInformation getDebugdata(Class<?> clazz) {

@@ -74,7 +74,7 @@ public class KahluaTableConverter {
 			}
 		});
 		manager.addLuaConverter(new LuaToJavaConverter<KahluaTable, List>() {
-			public List<Object> fromLuaToJava(KahluaTable luaObject) throws IllegalArgumentException {
+			public List<Object> fromLuaToJava(KahluaTable luaObject, Class<List> javaClass) throws IllegalArgumentException {
 				int n = luaObject.len();
 				List<Object> list = new ArrayList<Object>(n);
 				for (int i = 1; i <= n; i++) {
@@ -93,7 +93,7 @@ public class KahluaTableConverter {
 			}
 		});
 		manager.addLuaConverter(new LuaToJavaConverter<KahluaTable, Map>() {
-			public Map fromLuaToJava(KahluaTable luaObject) throws IllegalArgumentException {
+			public Map fromLuaToJava(KahluaTable luaObject, Class<Map> javaClass) throws IllegalArgumentException {
                 KahluaTableIterator iterator = luaObject.iterator();
                 Map map = new HashMap();
                 while (iterator.advance()) {

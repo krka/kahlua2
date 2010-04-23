@@ -187,5 +187,21 @@ public class LuaConverterManagerTest {
 		Object obj = manager.fromLuaToJava(obj2, Object.class);
 		assertSame(obj, obj2);
 	}	
-	
+
+    static enum DummyEnum {
+        FOO, BAR
+    }
+
+    @Test
+    public void testEnumConversion() throws LuaConversionError {
+        LuaConverterManager manager = new LuaConverterManager();
+        KahluaEnumConverter.install(manager);
+
+        DummyEnum x = DummyEnum.FOO;
+        Object x2 = manager.fromJavaToLua(x);
+        assertEquals("FOO", x2);
+        DummyEnum x3 = manager.fromLuaToJava(x2, DummyEnum.class);
+        assertEquals(DummyEnum.FOO, x3);
+    }
+
 }

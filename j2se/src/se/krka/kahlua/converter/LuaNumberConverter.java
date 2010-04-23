@@ -28,7 +28,7 @@ public class LuaNumberConverter {
 	
 	public static void install(LuaConverterManager manager) {
 		manager.addLuaConverter(new LuaToJavaConverter<Double, Long>() {
-			public Long fromLuaToJava(Double luaObject) {
+			public Long fromLuaToJava(Double luaObject, Class<Long> javaClass) {
 				return new Long(luaObject.longValue());
 			}
 			public Class<Long> getJavaType() {
@@ -39,7 +39,7 @@ public class LuaNumberConverter {
 			}
 		});
 		manager.addLuaConverter(new LuaToJavaConverter<Double, Integer>() {
-			public Integer fromLuaToJava(Double luaObject) {
+			public Integer fromLuaToJava(Double luaObject, Class<Integer> javaClass) {
 				return new Integer(luaObject.intValue());
 			}
 			public Class<Integer> getJavaType() {
@@ -50,7 +50,7 @@ public class LuaNumberConverter {
 			}
 		});
 		manager.addLuaConverter(new LuaToJavaConverter<Double, Float>() {
-			public Float fromLuaToJava(Double luaObject) {
+			public Float fromLuaToJava(Double luaObject, Class<Float> javaClass) {
 				return new Float(luaObject.floatValue());
 			}
 			public Class<Float> getJavaType() {
@@ -61,7 +61,7 @@ public class LuaNumberConverter {
 			}
 		});
 		manager.addLuaConverter(new LuaToJavaConverter<Double, Byte>() {
-			public Byte fromLuaToJava(Double luaObject) {
+			public Byte fromLuaToJava(Double luaObject, Class<Byte> javaClass) {
 				return new Byte(luaObject.byteValue());
 			}
 			public Class<Byte> getJavaType() {
@@ -72,7 +72,7 @@ public class LuaNumberConverter {
 			}
 		});
 		manager.addLuaConverter(new LuaToJavaConverter<Double, Character>() {
-			public Character fromLuaToJava(Double luaObject) {
+			public Character fromLuaToJava(Double luaObject, Class<Character> javaClass) {
 				return new Character((char) luaObject.intValue());
 			}
 			public Class<Character> getJavaType() {
@@ -83,7 +83,7 @@ public class LuaNumberConverter {
 			}
 		});
 		manager.addLuaConverter(new LuaToJavaConverter<Double, Short>() {
-			public Short fromLuaToJava(Double luaObject) {
+			public Short fromLuaToJava(Double luaObject, Class<Short> javaClass) {
 				return new Short(luaObject.shortValue());
 			}
 			public Class<Short> getJavaType() {

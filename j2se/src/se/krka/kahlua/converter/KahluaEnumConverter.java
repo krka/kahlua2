@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2009 Kristofer Karlsson <kristofer.karlsson@gmail.com>
+ Copyright (c) 2010 Kristofer Karlsson <kristofer.karlsson@gmail.com>
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,34 @@
 
 package se.krka.kahlua.converter;
 
-public interface LuaToJavaConverter<LuaType, JavaType> {
-	
-	Class<LuaType> getLuaType();
-	Class<JavaType> getJavaType();
-	
-	JavaType fromLuaToJava(LuaType luaObject, Class<JavaType> javaClass) throws LuaConversionError;
+public class KahluaEnumConverter {
+
+	private KahluaEnumConverter() {
+	}
+
+    @SuppressWarnings("unchecked")
+	public static void install(final LuaConverterManager manager) {
+		manager.addJavaConverter(new JavaToLuaConverter<Enum>() {
+			public Object fromJavaToLua(Enum javaObject) throws LuaConversionError {
+                return javaObject.name();
+			}
+
+			public Class<Enum> getJavaType() {
+				return Enum.class;
+			}
+		});
+		manager.addLuaConverter(new LuaToJavaConverter<String, Enum>() {
+			public Enum fromLuaToJava(String luaObject, Class<Enum> javaClass) throws IllegalArgumentException {
+                return Enum.valueOf(javaClass, luaObject);
+			}
+
+			public Class<Enum> getJavaType() {
+				return Enum.class;
+			}
+
+			public Class<String> getLuaType() {
+				return String.class;
+			}
+		});
+	}
 }
