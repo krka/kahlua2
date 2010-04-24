@@ -69,7 +69,9 @@ public class Require implements JavaFunction {
             } catch (IOException e) {
                 error(states, path, "Error in: " + path + ": " + e.getMessage());
             } catch (RuntimeException e) {
-                error(states, path, "Error in: " + path + ": " + e.getMessage());
+                String msg = "Error in: " + path + ": " + e.getMessage();
+                setState(states, path, Result.error(msg));
+                throw new RuntimeException(msg, e);
             }
         }
         if (result == Result.LOADING) {

@@ -10,10 +10,10 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="core" />
     <orderEntry type="module" module-name="core-dep" scope="RUNTIME" />
-    <orderEntry type="module-library">
+    <orderEntry type="module-library" scope="TEST">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../lib/junit4.jar!/" />
+          <root url="jar://$APPLICATION_HOME_DIR$/lib/junit-4.7.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
