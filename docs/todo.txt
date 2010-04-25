@@ -3,6 +3,9 @@
 * Add easier object introspection, i.e. methods(obj)
 * Add callback for when unknown classes appear (maybe)
 * Add pretty print of tables
+* Add ctrl-p in interpreter to show usage of function
+* Add debug method for showing function usage
+
 
 MAYBE
 

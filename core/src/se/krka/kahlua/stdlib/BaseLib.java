@@ -506,10 +506,10 @@ public final class BaseLib implements JavaFunction {
 		if (o instanceof Boolean) {
 			return o == Boolean.TRUE ? "true" : "false";
 		}
+        if (o instanceof LuaClosure) {
+            return "closure 0x" + System.identityHashCode(o);
+        }
 		if (o instanceof JavaFunction) {
-			return "function 0x" + System.identityHashCode(o);
-		}
-		if (o instanceof LuaClosure) {
 			return "function 0x" + System.identityHashCode(o);
 		}
 

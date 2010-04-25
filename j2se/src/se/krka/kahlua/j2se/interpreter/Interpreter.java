@@ -33,8 +33,7 @@ import se.krka.kahlua.vm.LuaClosure;
 import se.krka.kahlua.vm.KahluaThread;
 import se.krka.kahlua.vm.Platform;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.text.Style;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -63,10 +62,10 @@ public class Interpreter extends JPanel {
     LuaConverterManager manager = new LuaConverterManager();
     LuaCaller caller = new LuaCaller(manager);
 
-    public Interpreter(Platform platform, KahluaTable env) {
+    public Interpreter(Platform platform, KahluaTable env, JFrame owner) {
         super(new BorderLayout());
 
-        terminal = new Terminal(false, Color.WHITE);
+        terminal = new Terminal(false, Color.WHITE, owner, false, null, null);
         terminal.setPreferredSize(new Dimension(800, 400));
 
         Color inputColor = Color.GREEN.brighter().brighter().brighter();
@@ -78,14 +77,12 @@ public class Interpreter extends JPanel {
         outputPanel.add(terminal, BorderLayout.CENTER);
         this.add(outputPanel, BorderLayout.CENTER);
 
-        final Terminal input = new Terminal(true, Color.WHITE);
+        final Terminal input = new Terminal(true, Color.WHITE, owner, true, env, platform);
         input.setPreferredSize(new Dimension(800, 100));
         JPanel inputPanel = new JPanel(new BorderLayout());
         inputPanel.add(inputTitle, BorderLayout.NORTH);
         inputPanel.add(input, BorderLayout.CENTER);
         this.add(inputPanel, BorderLayout.SOUTH);
-
-        state = new KahluaThread(terminal.getPrintStream(), platform, env);
 
         input.setPreferredSize(new Dimension(800, 100));
         input.addKeyListener(new KeyListener() {
@@ -122,7 +119,6 @@ public class Interpreter extends JPanel {
             }
         });
 
-
         terminal.appendLine("Welcome to the Kahlua interpreter");
         this.addComponentListener(new ComponentListener() {
             @Override
@@ -142,6 +138,8 @@ public class Interpreter extends JPanel {
             public void componentHidden(ComponentEvent componentEvent) {
             }
         });
+
+        state = new KahluaThread(terminal.getPrintStream(), platform, env);
     }
 
     private boolean isControl(KeyEvent keyEvent) {

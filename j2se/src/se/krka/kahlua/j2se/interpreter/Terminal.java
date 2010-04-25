@@ -22,11 +22,11 @@
 
 package se.krka.kahlua.j2se.interpreter;
 
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
+import se.krka.kahlua.j2se.interpreter.autocomplete.AutoComplete;
+import se.krka.kahlua.vm.KahluaTable;
+import se.krka.kahlua.vm.Platform;
+
+import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -52,10 +52,10 @@ public class Terminal extends JPanel {
         }
     });
 
-    public Terminal(boolean editable, Color foreground) {
+    public Terminal(boolean editable, Color foreground, JFrame owner, boolean autoComplete, KahluaTable env, Platform platform) {
         super(new BorderLayout());
         textPane = new JTextPane();
-        textPane.setFont(new Font("Monospaced", Font.PLAIN, 10));
+        textPane.setFont(new Font("Monospaced", Font.PLAIN, 16));
         setBackground(Color.BLACK);
         setForeground(foreground);
         defaultStyle = createStyle("default", foreground);
@@ -64,8 +64,13 @@ public class Terminal extends JPanel {
         textPane.setCaretPosition(0);
         textPane.setCaretColor(Color.WHITE);
 
+        JComponent scrollChild = textPane;
+        if (autoComplete) {
+            scrollChild = new AutoComplete(owner, textPane, platform, env);
+        }
+
         scrollPane = new JScrollPane(
-                textPane,
+                scrollChild,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollbar = scrollPane.getVerticalScrollBar();
@@ -157,5 +162,9 @@ public class Terminal extends JPanel {
     @Override
     public void addKeyListener(KeyListener l) {
         textPane.addKeyListener(l);
+    }
+
+    public JTextPane getTextPane() {
+        return textPane;
     }
 }
