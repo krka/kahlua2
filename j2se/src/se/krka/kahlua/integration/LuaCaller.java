@@ -22,7 +22,6 @@
 
 package se.krka.kahlua.integration;
 
-import se.krka.kahlua.converter.LuaConversionError;
 import se.krka.kahlua.converter.LuaConverterManager;
 import se.krka.kahlua.vm.KahluaThread;
 
@@ -37,11 +36,7 @@ public class LuaCaller {
 	public Object[] pcall(KahluaThread state, Object functionObject, Object... args) {
 		if (args != null) {
 			for (int i = args.length - 1; i >= 0; i--) {
-				try {
-					args[i] = converterManager.fromJavaToLua(args[i]);
-				} catch (LuaConversionError e) {
-					return new Object[] {Boolean.FALSE, e.getMessage(), "", e};
-				}
+				args[i] = converterManager.fromJavaToLua(args[i]);
 			}
 		}
 		Object[] results = state.pcall(functionObject, args);

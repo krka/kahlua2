@@ -33,6 +33,7 @@ import se.krka.kahlua.integration.processor.LuaMethodDebugInformation;
 import se.krka.kahlua.vm.*;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map.Entry;
@@ -270,7 +271,7 @@ public class LuaJavaClassExposer {
         setupMetaTables(clazz);
 
         KahluaTable container = KahluaUtil.getOrCreateTable(staticBase, platform, clazz.getSimpleName());
-
+        container.rawset("class", clazz);
         for (Method method : clazz.getMethods()) {
             String name = method.getName();
             if (Modifier.isPublic(method.getModifiers())) {
@@ -278,6 +279,17 @@ public class LuaJavaClassExposer {
                     container.rawset(name, getInvoker(clazz, method, name));
                 } else {
                     exposeMethod(clazz, method, name);
+                }
+            }
+        }
+        for (Field field : clazz.getFields()) {
+            String name = field.getName();
+            if (Modifier.isPublic(field.getModifiers())) {
+                if (Modifier.isStatic(field.getModifiers())) {
+                    try {
+                        container.rawset(name, field.get(clazz));
+                    } catch (IllegalAccessException e) {
+                    }
                 }
             }
         }

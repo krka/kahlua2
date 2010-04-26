@@ -22,7 +22,6 @@
 
 package se.krka.kahlua.integration.expose;
 
-import se.krka.kahlua.converter.LuaConversionError;
 import se.krka.kahlua.converter.LuaConverterManager;
 import se.krka.kahlua.vm.LuaCallFrame;
 
@@ -37,12 +36,8 @@ public class ReturnValues {
 	}
 	
 	public ReturnValues push(Object o) {
-		try {
-			args += callFrame.push(manager.fromJavaToLua(o));
-			return this;
-		} catch (LuaConversionError e) {
-			throw new RuntimeException(e);
-		}
+        args += callFrame.push(manager.fromJavaToLua(o));
+        return this;
 	}
 	
 	public ReturnValues push(Object... params) {

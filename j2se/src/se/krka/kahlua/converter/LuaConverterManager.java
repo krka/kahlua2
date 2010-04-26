@@ -91,7 +91,7 @@ public class LuaConverterManager {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T fromLuaToJava(Object luaObject, Class<T> javaClass) throws LuaConversionError {
+	public <T> T fromLuaToJava(Object luaObject, Class<T> javaClass) {
 		if (luaObject == null) {
 			return null;
 		}
@@ -111,11 +111,14 @@ public class LuaConverterManager {
         while (scanClass != null) {
             LuaToJavaConverter converter = map.get(scanClass);
             if (converter != null) {
-                return (T) converter.fromLuaToJava(luaObject, javaClass);
+                Object o = converter.fromLuaToJava(luaObject, javaClass);
+                if (o != null) {
+                    return (T) o;
+                }
             }
             scanClass = scanClass.getSuperclass();
         }
-        throw new LuaConversionError("No conversion found from " + luaClass + " to " + javaClass);
+        return null;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -148,7 +151,7 @@ public class LuaConverterManager {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public Object fromJavaToLua(Object javaObject) throws LuaConversionError {
+	public Object fromJavaToLua(Object javaObject) {
 		if (javaObject == null) {
 			return null;
 		}
@@ -157,7 +160,7 @@ public class LuaConverterManager {
 		try {
 			return converter.fromJavaToLua(javaObject);
 		} catch (StackOverflowError e) {
-			throw new LuaConversionError("Argument contained recursive elements.");
+			throw new RuntimeException("Could not convert " + javaObject + ": it contained recursive elements.");
 		}
 	}
 

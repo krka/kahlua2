@@ -24,5 +24,5 @@ package se.krka.kahlua.converter;
 
 public interface JavaToLuaConverter<JavaType> {
 	Class<JavaType> getJavaType();
-	Object fromJavaToLua(JavaType javaObject) throws LuaConversionError;
+	Object fromJavaToLua(JavaType javaObject);
 }

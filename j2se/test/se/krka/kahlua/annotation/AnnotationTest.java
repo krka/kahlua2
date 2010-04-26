@@ -3,7 +3,6 @@ package se.krka.kahlua.annotation;
 import org.junit.Before;
 import org.junit.Test;
 import se.krka.kahlua.converter.KahluaTableConverter;
-import se.krka.kahlua.converter.LuaConversionError;
 import se.krka.kahlua.converter.LuaConverterManager;
 import se.krka.kahlua.converter.LuaNumberConverter;
 import se.krka.kahlua.integration.doc.ApiDocumentationExporter;
@@ -247,7 +246,7 @@ public class AnnotationTest {
 	}
 
 	@Test
-	public void testGetExposedClasses() throws LuaConversionError {
+	public void testGetExposedClasses() {
 
 		factory.exposeClass(InheritedAnnotationClass.class);
 		KahluaTable exposedClasses = factory.getExposedClasses();

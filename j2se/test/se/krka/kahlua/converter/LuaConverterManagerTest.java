@@ -20,7 +20,7 @@ public class LuaConverterManagerTest {
     private KahluaTableConverter kahluaTableConverter = new KahluaTableConverter(platform);
 
     @Test
-	public void testPrimitives1() throws LuaConversionError {
+	public void testPrimitives1() {
 		LuaConverterManager manager = new LuaConverterManager();
 		LuaNumberConverter.install(manager);
 		Double result = manager.fromLuaToJava(new Double(1.25), double.class);
@@ -29,7 +29,7 @@ public class LuaConverterManagerTest {
 	}
 	
 	@Test
-	public void testPrimitives2() throws LuaConversionError {
+	public void testPrimitives2() {
 		LuaConverterManager manager = new LuaConverterManager();
 		LuaNumberConverter.install(manager);
 		Long result = manager.fromLuaToJava(new Double(123.45), long.class);
@@ -41,7 +41,7 @@ public class LuaConverterManagerTest {
 	}
 	
 	@Test
-	public void testPrimitives3() throws LuaConversionError {
+	public void testPrimitives3() {
 		LuaConverterManager manager = new LuaConverterManager();
 		LuaNumberConverter.install(manager);
 		Object result = manager.fromJavaToLua(123);
@@ -53,15 +53,16 @@ public class LuaConverterManagerTest {
 		assertEquals(((Double) result).doubleValue(), 123.0);
 		
 	}
-	
-	@Test(expected = LuaConversionError.class)
-	public void testConversionError() throws LuaConversionError {
+
+    @Test
+	public void testConversionError() {
 		LuaConverterManager manager = new LuaConverterManager();
-		manager.fromLuaToJava(new Double(123.45), long.class);		
-	}
+        Long obj = manager.fromLuaToJava(new Double(123.45), long.class);
+        assertEquals(null, obj);
+    }
 
 	@Test
-	public void testJavaToLua() throws LuaConversionError{
+	public void testJavaToLua(){
 		LuaConverterManager manager = new LuaConverterManager();
 		LuaNumberConverter.install(manager);
 		Object object = manager.fromJavaToLua(123L);
@@ -69,7 +70,7 @@ public class LuaConverterManagerTest {
 	}
 	
 	@Test
-	public void testJavaToLuaDefault() throws LuaConversionError {
+	public void testJavaToLuaDefault() {
 		LuaConverterManager manager = new LuaConverterManager();
 		LuaNumberConverter.install(manager);
 		Object obj = new Object();
@@ -78,7 +79,7 @@ public class LuaConverterManagerTest {
 	}
 	
 	@Test
-	public void testJavaToKahluaTables() throws LuaConversionError {
+	public void testJavaToKahluaTables() {
 		LuaConverterManager manager = new LuaConverterManager();
         kahluaTableConverter.install(manager);
 		List<String> list = new ArrayList<String>();
@@ -97,7 +98,7 @@ public class LuaConverterManagerTest {
 	
 	
 	@Test
-	public void testJavaToKahluaTablesMap() throws LuaConversionError {
+	public void testJavaToKahluaTablesMap() {
 		LuaConverterManager manager = new LuaConverterManager();
         kahluaTableConverter.install(manager);
 		Map map = new HashMap();
@@ -115,7 +116,7 @@ public class LuaConverterManagerTest {
 	}	
 	
 	@Test
-	public void testLuaToJavaTables() throws LuaConversionError {
+	public void testLuaToJavaTables() {
 		LuaConverterManager manager = new LuaConverterManager();
         kahluaTableConverter.install(manager);
 
@@ -131,7 +132,7 @@ public class LuaConverterManagerTest {
 	}
 	
 	@Test
-	public void testLuaToJavaTablesMap() throws LuaConversionError {
+	public void testLuaToJavaTablesMap() {
 		LuaConverterManager manager = new LuaConverterManager();
         kahluaTableConverter.install(manager);
 
@@ -146,7 +147,7 @@ public class LuaConverterManagerTest {
 	}
 
 	@Test
-	public void testJavaToKahluaTablesRecursion() throws LuaConversionError {
+	public void testJavaToKahluaTablesRecursion() {
 		LuaConverterManager manager = new LuaConverterManager();
         kahluaTableConverter.install(manager);
 		LuaNumberConverter.install(manager);
@@ -166,8 +167,8 @@ public class LuaConverterManagerTest {
 		assertEquals(t.rawget("Z"), "World");
 	}	
 	
-	@Test(expected = LuaConversionError.class)
-	public void testJavaToKahluaTablesRecursionInfinite() throws LuaConversionError {
+	@Test(expected = RuntimeException.class)
+	public void testJavaToKahluaTablesRecursionInfinite() {
 		LuaConverterManager manager = new LuaConverterManager();
         kahluaTableConverter.install(manager);
 
@@ -175,12 +176,11 @@ public class LuaConverterManagerTest {
 		map.put("X", map);
 		
 		Object obj = manager.fromJavaToLua(map);
-		
-	}	
+	}
 
 	
 	@Test
-	public void testSubtypeReturn() throws LuaConversionError {
+	public void testSubtypeReturn() {
 		LuaConverterManager manager = new LuaConverterManager();
 		
 		Object obj2 = new StringBuilder();
@@ -193,7 +193,7 @@ public class LuaConverterManagerTest {
     }
 
     @Test
-    public void testEnumConversion() throws LuaConversionError {
+    public void testEnumConversion() {
         LuaConverterManager manager = new LuaConverterManager();
         KahluaEnumConverter.install(manager);
 

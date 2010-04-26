@@ -43,7 +43,7 @@ public class KahluaTableConverter {
     @SuppressWarnings("unchecked")
 	public void install(final LuaConverterManager manager) {
 		manager.addJavaConverter(new JavaToLuaConverter<List>() {
-			public Object fromJavaToLua(List javaObject) throws LuaConversionError {
+			public Object fromJavaToLua(List javaObject) {
                 KahluaTable t = platform.newTable();
 				int i = 0;
 				for (Object o: javaObject) {
@@ -58,7 +58,7 @@ public class KahluaTableConverter {
 			}
 		});
 		manager.addJavaConverter(new JavaToLuaConverter<Map>() {
-			public Object fromJavaToLua(Map javaObject) throws LuaConversionError {
+			public Object fromJavaToLua(Map javaObject) {
 				Map<Object, Object> map = javaObject;
                 KahluaTable t = platform.newTable();
 				for (Entry<Object, Object> entry: map.entrySet()) {

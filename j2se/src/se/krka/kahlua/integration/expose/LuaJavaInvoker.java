@@ -25,12 +25,10 @@ package se.krka.kahlua.integration.expose;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Array;
 
-import se.krka.kahlua.converter.LuaConversionError;
 import se.krka.kahlua.converter.LuaConverterManager;
 import se.krka.kahlua.integration.expose.caller.Caller;
 import se.krka.kahlua.integration.processor.LuaClassDebugInformation;
 import se.krka.kahlua.integration.processor.LuaMethodDebugInformation;
-import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.JavaFunction;
 import se.krka.kahlua.vm.KahluaUtil;
 import se.krka.kahlua.vm.LuaCallFrame;
@@ -156,19 +154,20 @@ public class LuaJavaInvoker implements JavaFunction {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {
             throw new RuntimeException(e.getCause());
-        } catch (LuaConversionError e) {
-            throw new RuntimeException(e);
         } catch (InstantiationException e) {
             throw new RuntimeException(e);
         }
     }
 
     private Object convert(int parameterIndex, Object o, Class<?> parameterType) {
-        try {
-            return manager.fromLuaToJava(o, parameterType);
-        } catch (LuaConversionError luaConversionError) {
-            throw newError(parameterIndex, luaConversionError);
+        if (o == null) {
+            return null;
         }
+        Object value = manager.fromLuaToJava(o, parameterType);
+        if (value != null) {
+            return value;
+        }
+        throw newError(parameterIndex, "No conversion found from " + o + " to " + parameterType);
     }
 
     private String syntaxErrorMessage(String errorMessage) {
@@ -179,9 +178,9 @@ public class LuaJavaInvoker implements JavaFunction {
         return errorMessage;
     }
 
-	private RuntimeException newError(int i, Exception e) {
+	private RuntimeException newError(int i, String message) {
 		int argumentIndex = i + 1;
-		String errorMessage = e.getMessage() + " at argument #" + argumentIndex;
+		String errorMessage = message + " at argument #" + argumentIndex;
 		String argumentName = getParameterName(i);
 		if (argumentName != null) {
 			errorMessage += ", " + argumentName;

@@ -30,7 +30,7 @@ public class KahluaEnumConverter {
     @SuppressWarnings("unchecked")
 	public static void install(final LuaConverterManager manager) {
 		manager.addJavaConverter(new JavaToLuaConverter<Enum>() {
-			public Object fromJavaToLua(Enum javaObject) throws LuaConversionError {
+			public Object fromJavaToLua(Enum javaObject) {
                 return javaObject.name();
 			}
 

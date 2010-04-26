@@ -26,10 +26,8 @@ import se.krka.kahlua.integration.expose.ReturnValues;
 
 import java.lang.reflect.InvocationTargetException;
 
-import se.krka.kahlua.converter.LuaConversionError;
-
 public interface Caller {
-	void call(Object self, ReturnValues rv, Object[] params) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, LuaConversionError, InstantiationException;
+	void call(Object self, ReturnValues rv, Object[] params) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InstantiationException;
 	
 	Class<?>[] getParameterTypes();
 	
