@@ -34,14 +34,14 @@ import java.util.*;
 
 class Menu extends JWindow {
     private final JList visualList;
-    private final DefaultListModel listModel;
+    private final SmartListModel listModel;
     private final AutoComplete autoComplete;
     private Point position;
 
     public Menu(AutoComplete autoComplete, Window window) {
         super(window);
         this.autoComplete = autoComplete;
-        listModel = new DefaultListModel();
+        listModel = new SmartListModel();
         position = new Point(0, 0);
         visualList = new JList(listModel) {
             public int getVisibleRowCount() {
@@ -92,13 +92,10 @@ class Menu extends JWindow {
     }
 
     public void setMatches(Collection<CompletionItem> matches) {
-        listModel.clear();
+        listModel.setContent(matches);
         if (matches.isEmpty()) {
             setVisible(false);
             return;
-        }
-        for (CompletionItem match : matches) {
-            listModel.addElement(match);
         }
         pack();
         pack();

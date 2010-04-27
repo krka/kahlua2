@@ -157,7 +157,7 @@ public class Interpreter extends JPanel {
             public void run() {
                 outputTitle.setText("Output: [running...]");
                 try {
-                    LuaClosure luaClosure = LuaCompiler.loadstring(text, "<interpreter>", state.getEnvironment());
+                    LuaClosure luaClosure = smartCompile(text);
                     LuaReturn result = caller.protectedCall(state, luaClosure);
                     if (result.isSuccess()) {
                         for (Object o : result) {
@@ -176,6 +176,17 @@ public class Interpreter extends JPanel {
                 outputTitle.setText("Output:");
             }
         });
+    }
+
+    private LuaClosure smartCompile(String text) throws IOException {
+        LuaClosure luaClosure;
+        try {
+            luaClosure = LuaCompiler.loadstring("return " + text, "<interpreter>", state.getEnvironment());
+        } catch (KahluaException e) {
+            // Ignore it and try without "return "
+            luaClosure = LuaCompiler.loadstring(text, "<interpreter>", state.getEnvironment());
+        }
+        return luaClosure;
     }
 
     public boolean isDone() {

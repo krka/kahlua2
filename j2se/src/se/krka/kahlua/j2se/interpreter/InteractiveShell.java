@@ -12,7 +12,7 @@ public class InteractiveShell {
         JFrame frame = new JFrame("Kahlua interpreter");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        final J2SEPlatform platform = new J2SEPlatform();
+        final Platform platform = new J2SEPlatform();
         KahluaTable env = platform.newEnvironment();
         env.rawset("sleep", new JavaFunction() {
             @Override
