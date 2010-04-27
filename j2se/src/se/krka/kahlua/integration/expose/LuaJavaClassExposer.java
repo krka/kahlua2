@@ -270,8 +270,12 @@ public class LuaJavaClassExposer {
         }
         setupMetaTables(clazz);
 
-        KahluaTable container = KahluaUtil.getOrCreateTable(staticBase, platform, clazz.getSimpleName());
+        String[] packageStructure = clazz.getName().split("\\.");
+        KahluaTable container = createTableStructure(staticBase, packageStructure);
         container.rawset("class", clazz);
+        if (staticBase.rawget(clazz.getSimpleName()) == null) {
+            staticBase.rawset(clazz.getSimpleName(), container);
+        }
         for (Method method : clazz.getMethods()) {
             String name = method.getName();
             if (Modifier.isPublic(method.getModifiers())) {
@@ -298,6 +302,13 @@ public class LuaJavaClassExposer {
                 container.rawset("new", getInvoker(clazz, constructor, "new"));
             }
         }
+    }
+
+    private KahluaTable createTableStructure(KahluaTable base, String[] structure) {
+        for (String s : structure) {
+            base = KahluaUtil.getOrCreateTable(base, platform, s);
+        }
+        return base;
     }
 
     private void populateMethods(Class<?> clazz) {

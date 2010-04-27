@@ -25,7 +25,6 @@ package se.krka.kahlua.j2se.interpreter;
 import se.krka.kahlua.converter.LuaConverterManager;
 import se.krka.kahlua.integration.LuaCaller;
 import se.krka.kahlua.integration.LuaReturn;
-import se.krka.kahlua.integration.annotations.LuaMethod;
 import se.krka.kahlua.integration.expose.LuaJavaClassExposer;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
 import se.krka.kahlua.stdlib.BaseLib;
@@ -51,7 +50,7 @@ import java.util.concurrent.Future;
 
 public class Interpreter extends JPanel {
     private final KahluaThread state;
-    private final Terminal terminal;
+    private final Terminal output;
     private final JLabel outputTitle = new JLabel("Output:");
     private final JLabel inputTitle = new JLabel("Input:");
 
@@ -71,16 +70,16 @@ public class Interpreter extends JPanel {
         exposer = new LuaJavaClassExposer(manager, platform, env);
         exposer.exposeGlobalFunctions(this);
 
-        terminal = new Terminal(false, Color.WHITE, owner, false, null, null);
-        terminal.setPreferredSize(new Dimension(800, 400));
+        output = new Terminal(false, Color.WHITE, owner, false, null, null);
+        output.setPreferredSize(new Dimension(800, 400));
 
         Color inputColor = Color.GREEN.brighter().brighter().brighter();
-        final Style inputStyle = terminal.createStyle("input", inputColor);
-        errorStyle = terminal.createStyle("error", Color.RED.brighter().brighter());
+        final Style inputStyle = output.createStyle("input", inputColor);
+        errorStyle = output.createStyle("error", Color.RED.brighter().brighter());
 
         JPanel outputPanel = new JPanel(new BorderLayout());
         outputPanel.add(outputTitle, BorderLayout.NORTH);
-        outputPanel.add(terminal, BorderLayout.CENTER);
+        outputPanel.add(output, BorderLayout.CENTER);
         this.add(outputPanel, BorderLayout.CENTER);
 
         final Terminal input = new Terminal(true, Color.WHITE, owner, true, env, platform);
@@ -107,10 +106,10 @@ public class Interpreter extends JPanel {
                         if (isDone()) {
                             String text = input.getText();
                             history.add(text);
-                            terminal.appendLine(text, inputStyle);
+                            output.appendLine(text, inputStyle);
                             input.setText("");
                             execute(text);
-                       }
+                        }
                         keyEvent.consume();
                     }
                     if (keyEvent.getKeyCode() == KeyEvent.VK_UP) {
@@ -125,7 +124,7 @@ public class Interpreter extends JPanel {
             }
         });
 
-        terminal.appendLine("Welcome to the Kahlua interpreter");
+        output.appendLine("Welcome to the Kahlua interpreter");
         this.addComponentListener(new ComponentListener() {
             @Override
             public void componentResized(ComponentEvent componentEvent) {
@@ -145,7 +144,7 @@ public class Interpreter extends JPanel {
             }
         });
 
-        state = new KahluaThread(terminal.getPrintStream(), platform, env);
+        state = new KahluaThread(output.getPrintStream(), platform, env);
     }
 
     private boolean isControl(KeyEvent keyEvent) {
@@ -162,17 +161,17 @@ public class Interpreter extends JPanel {
                     LuaReturn result = caller.protectedCall(state, luaClosure);
                     if (result.isSuccess()) {
                         for (Object o : result) {
-                            terminal.appendLine(BaseLib.tostring(o, state));
+                            output.appendLine(BaseLib.tostring(o, state));
                         }
                     } else {
-                        terminal.appendLine(result.getErrorString(), errorStyle);
-                        terminal.appendLine(result.getLuaStackTrace(), errorStyle);
+                        output.appendLine(result.getErrorString(), errorStyle);
+                        output.appendLine(result.getLuaStackTrace(), errorStyle);
                         result.getJavaException().printStackTrace(System.err);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace(terminal.getPrintStream());
+                    e.printStackTrace(output.getPrintStream());
                 } catch (KahluaException e) {
-                    terminal.appendLine(e.getMessage(), errorStyle);
+                    output.appendLine(e.getMessage(), errorStyle);
                 }
                 outputTitle.setText("Output:");
             }
@@ -181,5 +180,9 @@ public class Interpreter extends JPanel {
 
     public boolean isDone() {
         return future == null || future.isDone();
+    }
+
+    public Terminal getOutput() {
+        return output;
     }
 }
