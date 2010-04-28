@@ -20,22 +20,39 @@
  THE SOFTWARE.
  */
 
-package se.krka.kahlua.integration.expose.caller;
+package se.krka.kahlua.integration.processor;
 
 import se.krka.kahlua.integration.expose.ReturnValues;
 
-import java.lang.reflect.InvocationTargetException;
+import se.krka.kahlua.integration.annotations.Desc;
+import se.krka.kahlua.integration.annotations.LuaClass;
+import se.krka.kahlua.integration.annotations.LuaMethod;
 
-public interface Caller {
-	void call(Object self, ReturnValues rv, Object[] params) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InstantiationException;
+
+
+
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+
+public class MethodParameterInformation implements Serializable {
+    public static final MethodParameterInformation EMPTY = new MethodParameterInformation(Collections.EMPTY_LIST);
+	private static final long serialVersionUID = -3059552311721486815L;
 	
-	Class<?>[] getParameterTypes();
-	
-	boolean needsMultipleReturnValues();
-	boolean hasSelf();
+    private final List<String> parameterNames;
 
-    Class<?> getVarargType();
-    boolean hasVararg();
-
-    String getDescriptor();
+	public MethodParameterInformation(List<String> parameterNames) {
+        this.parameterNames = parameterNames;
+    }
+    
+    public String getName(int index) {
+        if (index >= parameterNames.size()) {
+            return "arg" + (index + 1);
+        }
+        return parameterNames.get(index);
+    }
 }

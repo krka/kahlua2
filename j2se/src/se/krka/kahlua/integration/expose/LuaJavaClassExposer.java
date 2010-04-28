@@ -28,15 +28,15 @@ import se.krka.kahlua.integration.annotations.LuaConstructor;
 import se.krka.kahlua.integration.annotations.LuaMethod;
 import se.krka.kahlua.integration.expose.caller.ConstructorCaller;
 import se.krka.kahlua.integration.expose.caller.MethodCaller;
-import se.krka.kahlua.integration.processor.LuaClassDebugInformation;
-import se.krka.kahlua.integration.processor.LuaMethodDebugInformation;
+import se.krka.kahlua.integration.processor.ClassParameterInformation;
 import se.krka.kahlua.vm.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Map.Entry;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A tool to automatically expose java classes and
@@ -45,6 +45,7 @@ import java.util.Map.Entry;
  * and is therefore not supported in J2ME.
  */
 public class LuaJavaClassExposer {
+    private final Object key = new Object();
     private final LuaConverterManager manager;
     private final Platform platform;
     private final KahluaTable environment;
@@ -55,53 +56,13 @@ public class LuaJavaClassExposer {
         this.environment = environment;
     }
 
-    public KahluaTable getClassDebugInformation() {
-        KahluaTable map = KahluaUtil.getOrCreateTable(environment, platform, "__classdebuginfo");
-        return map;
-    }
-
-    @LuaMethod(global = true)
-    public KahluaTable getExposedClasses() {
-        KahluaTable t = platform.newTable();
-        KahluaTable classDebugInformation = getClassDebugInformation();
-        KahluaTableIterator iterator = classDebugInformation.iterator();
-        while (iterator.advance()) {
-            Class clazz = (Class) iterator.getKey();
-            LuaClassDebugInformation debugInfo = (LuaClassDebugInformation) iterator.getValue();
-            KahluaTable classTable = platform.newTable();
-            boolean hasDebug = debugInfo != null && debugInfo != LuaClassDebugInformation.NULL;
-            classTable.rawset("hasDebug", KahluaUtil.toBoolean(hasDebug));
-            if (hasDebug) {
-                KahluaTable methods = platform.newTable();
-                KahluaTable functions = platform.newTable();
-
-                for (Entry<String, LuaMethodDebugInformation> entry : debugInfo.methods.entrySet()) {
-                    LuaMethodDebugInformation debug = entry.getValue();
-                    if (debug.isMethod()) {
-                        methods.rawset(debug.getName(), debug);
-                    } else {
-                        functions.rawset(debug.getName(), debug);
-                    }
-                }
-
-                classTable.rawset("methods", methods);
-                classTable.rawset("functions", functions);
-            }
-            if (classDebugInformation.rawget(clazz.getSuperclass()) != null) {
-                classTable.rawset("super", clazz.getSuperclass().getName());
-            }
-            t.rawset(clazz.getName(), classTable);
+    public Map<Class<?>, ClassDebugInformation> getClassDebugInformation() {
+        Object classMap = environment.rawget(key);
+        if (classMap == null || !(classMap instanceof Map)) {
+            classMap = new HashMap<Class<?>, ClassDebugInformation>();
+            environment.rawset(key, classMap);
         }
-        return t;
-    }
-
-    @LuaMethod(global = true)
-    public LuaMethodDebugInformation getDebugInfo(Object functionObject) {
-        if (!(functionObject instanceof LuaJavaInvoker)) {
-            return null;
-        }
-        LuaJavaInvoker methodObject = (LuaJavaInvoker) functionObject;
-        return methodObject.getMethodDebugData();
+        return (Map<Class<?>, ClassDebugInformation>) classMap;
     }
 
     public void exposeClass(Class<?> clazz) {
@@ -164,31 +125,37 @@ public class LuaJavaClassExposer {
     public void exposeGlobalObjectFunction(KahluaTable environment, Object owner, Method method, String methodName) {
         Class<? extends Object> clazz = owner.getClass();
         readDebugData(clazz);
-        environment.rawset(methodName, getInvoker(owner, method, methodName, clazz));
-    }
-
-    private LuaJavaInvoker getInvoker(Object owner, Method method, String methodName, Class<? extends Object> clazz) {
-        return new LuaJavaInvoker(this, manager, clazz, methodName, new MethodCaller(method, owner, false));
+        LuaJavaInvoker invoker = getMethodInvoker(clazz, method, methodName, owner, false);
+        addInvoker(environment, methodName, invoker);
     }
 
     public void exposeGlobalClassFunction(KahluaTable environment, Class<?> clazz, Constructor<?> constructor, String methodName) {
         readDebugData(clazz);
-        environment.rawset(methodName, getInvoker(clazz, constructor, methodName));
+        LuaJavaInvoker invoker = getConstructorInvoker(clazz, constructor, methodName);
+        addInvoker(environment, methodName, invoker);
     }
 
-    private LuaJavaInvoker getInvoker(Class<?> clazz, Constructor<?> constructor, String methodName) {
+    private LuaJavaInvoker getMethodInvoker(Class<?> clazz, Method method, String methodName, Object owner, boolean hasSelf) {
+        return new LuaJavaInvoker(this, manager, clazz, methodName, new MethodCaller(method, owner, hasSelf));
+    }
+
+    private LuaJavaInvoker getConstructorInvoker(Class<?> clazz, Constructor<?> constructor, String methodName) {
         return new LuaJavaInvoker(this, manager, clazz, methodName, new ConstructorCaller(constructor));
+    }
+
+    private LuaJavaInvoker getMethodInvoker(Class<?> clazz, Method method, String methodName) {
+        return getMethodInvoker(clazz, method, methodName, null, true);
+    }
+
+    private LuaJavaInvoker getGlobalInvoker(Class<?> clazz, Method method, String methodName) {
+        return getMethodInvoker(clazz, method, methodName, null, false);
     }
 
     public void exposeGlobalClassFunction(KahluaTable environment, Class<?> clazz, Method method, String methodName) {
         readDebugData(clazz);
         if (Modifier.isStatic(method.getModifiers())) {
-            environment.rawset(methodName, getInvoker(clazz, method, methodName));
+            addInvoker(environment, methodName, getGlobalInvoker(clazz, method, methodName));
         }
-    }
-
-    private LuaJavaInvoker getInvoker(Class<?> clazz, Method method, String methodName) {
-        return getInvoker(null, method, methodName, clazz);
     }
 
     /**
@@ -225,7 +192,25 @@ public class LuaJavaClassExposer {
         }
         KahluaTable metaTable = getMetaTable(clazz);
         KahluaTable indexTable = getIndexTable(metaTable);
-        indexTable.rawset(methodName, new LuaJavaInvoker(this, manager, clazz, methodName, new MethodCaller(method, null, true)));
+
+        LuaJavaInvoker newInvoker = getMethodInvoker(clazz, method, methodName);
+        addInvoker(indexTable, methodName, newInvoker);
+    }
+
+    private void addInvoker(KahluaTable indexTable, String methodName, LuaJavaInvoker invoker) {
+        Object current = indexTable.rawget(methodName);
+        if (current != null) {
+            if (current instanceof LuaJavaInvoker) {
+                MultiLuaJavaInvoker multiInvoker = new MultiLuaJavaInvoker();
+                multiInvoker.addInvoker((LuaJavaInvoker) current);
+                multiInvoker.addInvoker(invoker);
+                indexTable.rawset(methodName, multiInvoker);
+            } else if (current instanceof MultiLuaJavaInvoker) {
+                ((MultiLuaJavaInvoker) current).addInvoker(invoker);
+            }
+        } else {
+            indexTable.rawset(methodName, invoker);
+        }
     }
 
     private void setupMetaTables(Class<?> clazz) {
@@ -280,7 +265,7 @@ public class LuaJavaClassExposer {
             String name = method.getName();
             if (Modifier.isPublic(method.getModifiers())) {
                 if (Modifier.isStatic(method.getModifiers())) {
-                    container.rawset(name, getInvoker(clazz, method, name));
+                    exposeGlobalClassFunction(container, clazz, method, name);
                 } else {
                     exposeMethod(clazz, method, name);
                 }
@@ -299,7 +284,7 @@ public class LuaJavaClassExposer {
         }
         for (Constructor constructor : clazz.getConstructors()) {
             if (Modifier.isPublic(constructor.getModifiers())) {
-                container.rawset("new", getInvoker(clazz, constructor, "new"));
+                addInvoker(container, "new", getConstructorInvoker(clazz, constructor, "new"));
             }
         }
     }
@@ -356,22 +341,42 @@ public class LuaJavaClassExposer {
         return clazz != null && getMetaTable(clazz) != null;
     }
 
-    LuaClassDebugInformation getDebugdata(Class<?> clazz) {
-        return (LuaClassDebugInformation) getClassDebugInformation().rawget(clazz);
+    ClassDebugInformation getDebugdata(Class<?> clazz) {
+        return getClassDebugInformation().get(clazz);
     }
 
     private void readDebugData(Class<?> clazz) {
         if (getDebugdata(clazz) == null) {
-            LuaClassDebugInformation debugInfo = null;
+            ClassParameterInformation parameterInfo = null;
             try {
-                debugInfo = LuaClassDebugInformation.getFromStream(clazz);
+                parameterInfo = ClassParameterInformation.getFromStream(clazz);
             } catch (Exception e) {
             }
-            if (debugInfo == null) {
-                debugInfo = LuaClassDebugInformation.NULL;
+            if (parameterInfo == null) {
+                parameterInfo = new ClassParameterInformation(clazz);
             }
-            KahluaTable classDebugInformation = getClassDebugInformation();
-			classDebugInformation.rawset(clazz, debugInfo);
+            ClassDebugInformation debugInfo = new ClassDebugInformation(clazz, parameterInfo);
+
+            Map<Class<?>, ClassDebugInformation> information = getClassDebugInformation();
+            information.put(clazz, debugInfo);
 		}
 	}
+
+    @LuaMethod(global = true, name = "definition")
+    public String getFunctionDefinition(Object function) {
+        if (function == null) {
+            return null;
+        } else if (function instanceof LuaJavaInvoker) {
+            MethodDebugInformation data = ((LuaJavaInvoker) function).getMethodDebugData();
+            return data.toString();
+        } else if (function instanceof MultiLuaJavaInvoker) {
+            StringBuilder builder = new StringBuilder();
+            for (LuaJavaInvoker invoker : ((MultiLuaJavaInvoker) function).getInvokers()) {
+                builder.append(invoker.getMethodDebugData().toString()).append("\n");
+            }
+            return builder.toString();
+        } else {
+            return null;
+        }
+    }
 }

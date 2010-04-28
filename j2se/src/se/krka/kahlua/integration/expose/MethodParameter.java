@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2009 Kristofer Karlsson <kristofer.karlsson@gmail.com>
+ Copyright (c) 2010 Kristofer Karlsson <kristofer.karlsson@gmail.com>
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -20,22 +20,28 @@
  THE SOFTWARE.
  */
 
-package se.krka.kahlua.integration.expose.caller;
+package se.krka.kahlua.integration.expose;
 
-import se.krka.kahlua.integration.expose.ReturnValues;
+public class MethodParameter {
+    private final String name;
+    private final String type;
+    private final String description;
 
-import java.lang.reflect.InvocationTargetException;
+    public MethodParameter(String name, String type, String description) {
+        this.name = name;
+        this.type = type;
+        this.description = description;
+    }
 
-public interface Caller {
-	void call(Object self, ReturnValues rv, Object[] params) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InstantiationException;
-	
-	Class<?>[] getParameterTypes();
-	
-	boolean needsMultipleReturnValues();
-	boolean hasSelf();
+    public String getName() {
+        return name;
+    }
 
-    Class<?> getVarargType();
-    boolean hasVararg();
+    public String getType() {
+        return type;
+    }
 
-    String getDescriptor();
+    public String getDescription() {
+        return description;
+    }
 }

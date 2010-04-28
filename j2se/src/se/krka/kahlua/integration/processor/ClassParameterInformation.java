@@ -28,30 +28,43 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LuaClassDebugInformation implements Serializable {
-	public static final LuaClassDebugInformation NULL = new LuaClassDebugInformation();
-
+public class ClassParameterInformation implements Serializable {
 	private static final long serialVersionUID = 7634190901254143200L;
 
 	private final String packageName;
 	private final String simpleClassName;
 
-	public Map<String, LuaMethodDebugInformation> methods = new HashMap<String, LuaMethodDebugInformation>();
+	public Map<String, MethodParameterInformation> methods = new HashMap<String, MethodParameterInformation>();
 	
-	private LuaClassDebugInformation() {
+	private ClassParameterInformation() {
 		packageName = null;
 		simpleClassName = null;
 	}
 	
-	public LuaClassDebugInformation(String packageName, String simpleClassName) {
+	public ClassParameterInformation(String packageName, String simpleClassName) {
 		this.packageName = packageName;
 		this.simpleClassName = simpleClassName;
 	}
-	
-	public String getPackageName() {
+
+    public ClassParameterInformation(Class<?> clazz) {
+        this.packageName = clazz.getPackage().getName();
+        this.simpleClassName = clazz.getSimpleName();
+
+        for (Constructor<?> constructor : clazz.getConstructors()) {
+            methods.put(DescriptorUtil.getDescriptor(constructor), MethodParameterInformation.EMPTY);
+        }
+        for (Method method : clazz.getMethods()) {
+            methods.put(DescriptorUtil.getDescriptor(method), MethodParameterInformation.EMPTY);
+        }
+
+    }
+
+    public String getPackageName() {
 		return packageName;
 	}
 	
@@ -68,14 +81,14 @@ public class LuaClassDebugInformation implements Serializable {
 	
 	
 	
-	public static LuaClassDebugInformation getFromStream(Class<?> clazz) throws IOException, ClassNotFoundException {
+	public static ClassParameterInformation getFromStream(Class<?> clazz) throws IOException, ClassNotFoundException {
 		String fileName = getFileName(clazz);
 		InputStream stream = clazz.getResourceAsStream(fileName);
 		if (stream == null) {
 			return null;
 		}
 		ObjectInputStream objectStream = new ObjectInputStream(stream);
-		return (LuaClassDebugInformation) objectStream.readObject();
+		return (ClassParameterInformation) objectStream.readObject();
 	}
 
 	private static String getFileName(Class<?> clazz) {

@@ -8,8 +8,8 @@ import se.krka.kahlua.converter.LuaNumberConverter;
 import se.krka.kahlua.integration.doc.ApiDocumentationExporter;
 import se.krka.kahlua.integration.doc.DokuWikiPrinter;
 import se.krka.kahlua.integration.expose.LuaJavaClassExposer;
-import se.krka.kahlua.integration.processor.LuaClassDebugInformation;
-import se.krka.kahlua.integration.processor.LuaMethodDebugInformation;
+import se.krka.kahlua.integration.processor.ClassParameterInformation;
+import se.krka.kahlua.integration.processor.MethodParameterInformation;
 import se.krka.kahlua.j2se.J2SEPlatform;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
 import se.krka.kahlua.vm.KahluaTable;
@@ -186,17 +186,17 @@ public class AnnotationTest {
 
     @Test
 	public void testDebugData() throws SecurityException, IOException, ClassNotFoundException {
-		LuaClassDebugInformation classDebugInfo = LuaClassDebugInformation.getFromStream(InheritedAnnotationClass.class);
-		assertNotNull(classDebugInfo);
-		assertNotNull(classDebugInfo.methods);
-		assertFalse(classDebugInfo.methods.isEmpty());
+		ClassParameterInformation classParameterInfo = ClassParameterInformation.getFromStream(InheritedAnnotationClass.class);
+		assertNotNull(classParameterInfo);
+		assertNotNull(classParameterInfo.methods);
+		assertFalse(classParameterInfo.methods.isEmpty());
 	}
 
 	@Test
 	public void testGetDebugData() throws IOException {
 
 		factory.exposeClass(InheritedAnnotationClass.class);
-		factory.exposeClass(LuaMethodDebugInformation.class);
+		factory.exposeClass(MethodParameterInformation.class);
 		factory.exposeGlobalFunctions(factory);
 
 		state.getEnvironment().rawset("testObject1", new InheritedAnnotationClass());
@@ -245,6 +245,7 @@ public class AnnotationTest {
 		state.call(closure, null);
 	}
 
+    /*
 	@Test
 	public void testGetExposedClasses() {
 
@@ -258,6 +259,7 @@ public class AnnotationTest {
 		assertNotNull(exposed.get(InheritedAnnotationClass.class.getName()));
 		assertNotNull(exposed.get(BaseAnnotationClass.class.getName()));
 	}
+	*/
 
 	@Test
 	public void testConstructor() throws IOException {

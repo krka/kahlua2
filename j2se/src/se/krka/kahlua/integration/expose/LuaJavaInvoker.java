@@ -27,10 +27,9 @@ import java.lang.reflect.Array;
 
 import se.krka.kahlua.converter.LuaConverterManager;
 import se.krka.kahlua.integration.expose.caller.Caller;
-import se.krka.kahlua.integration.processor.LuaClassDebugInformation;
-import se.krka.kahlua.integration.processor.LuaMethodDebugInformation;
+import se.krka.kahlua.integration.processor.ClassParameterInformation;
+import se.krka.kahlua.integration.processor.MethodParameterInformation;
 import se.krka.kahlua.vm.JavaFunction;
-import se.krka.kahlua.vm.KahluaUtil;
 import se.krka.kahlua.vm.LuaCallFrame;
 
 /**
@@ -86,31 +85,28 @@ public class LuaJavaInvoker implements JavaFunction {
         return b ? 1 : 0;
     }
 
-    public int call(LuaCallFrame callFrame, int nArguments) {
-        final Object[] params = new Object[numMethodParams];
+    public MethodArguments prepareCall(LuaCallFrame callFrame, int nArguments) {
+        MethodArguments methodArguments = new MethodArguments(numMethodParams);
 
         int javaParamCounter = 0;
         int luaArgCounter = 0;
 
         // First handle the self argument
         int selfDecr = toInt(hasSelf);
-        final Object self;
         if (hasSelf) {
             if (nArguments <= 0) {
-                KahluaUtil.fail(syntaxErrorMessage("Expected a method call but got a function call."));
-                return 0;
+                methodArguments.fail(syntaxErrorMessage("Expected a method call but got a function call."));
+                return methodArguments;
             }
-            self = callFrame.get(0);
+            methodArguments.setSelf(callFrame.get(0));
             luaArgCounter++;
-        } else {
-            self = null;
         }
 
 		ReturnValues returnValues = new ReturnValues(manager, callFrame);
-
+        methodArguments.setReturnValues(returnValues);
         // Then handle the returnvalues parameter
         if (needsReturnValues) {
-            params[javaParamCounter] = returnValues;
+            methodArguments.getParams()[javaParamCounter] = returnValues;
             javaParamCounter++;
         }
 
@@ -121,11 +117,19 @@ public class LuaJavaInvoker implements JavaFunction {
 
             String errorMessage = "Expected " + expected + " arguments but got " + got + ".";
             errorMessage = syntaxErrorMessage(errorMessage);
-            KahluaUtil.fail(errorMessage);
+            methodArguments.fail(errorMessage);
+            return methodArguments;
         }
         for (int i = 0; i < parameterTypes.length; i++) {
             Object o = callFrame.get(luaArgCounter + i);
-            params[javaParamCounter + i] = convert(luaArgCounter + i - selfDecr, o, parameterTypes[i]);
+            int parameterIndex = luaArgCounter + i - selfDecr;
+            Class<?> parameterType = parameterTypes[i];
+            Object obj = convert(o, parameterType);
+            if (o != null && obj == null) {
+                methodArguments.fail(newError(parameterIndex, "No conversion found from " + o + " to " + parameterType));
+                return methodArguments;
+            }
+            methodArguments.getParams()[javaParamCounter + i] = obj;
         }
         javaParamCounter += parameterTypes.length;
         luaArgCounter += parameterTypes.length;
@@ -138,15 +142,34 @@ public class LuaJavaInvoker implements JavaFunction {
             }
             Object[] varargs = (Object[]) Array.newInstance(varargType, numVarargs);
             for (int i = 0; i < numVarargs; i++) {
-                varargs[i] = convert(luaArgCounter + i - selfDecr, callFrame.get(luaArgCounter + i), varargType);
+                Object o = callFrame.get(luaArgCounter + i);
+                int parameterIndex = luaArgCounter + i - selfDecr;
+                Object obj = convert(o, varargType);
+                varargs[i] = obj;
+                if (o != null && obj == null) {
+                    methodArguments.fail(newError(parameterIndex, "No conversion found from " + o + " to " + varargType));
+                    return methodArguments;
+                }
             }
-            params[javaParamCounter] = varargs;
+            methodArguments.getParams()[javaParamCounter] = varargs;
             javaParamCounter++;
             luaArgCounter += numVarargs;
         }
 
+        return methodArguments;
+    }
+
+    @Override
+    public int call(LuaCallFrame callFrame, int nArguments) {
+        MethodArguments methodArguments = prepareCall(callFrame, nArguments);
+        methodArguments.assertValid();
+        return call(methodArguments);
+    }
+
+    public int call(MethodArguments methodArguments) {
         try {
-            caller.call(self, returnValues, params);
+            ReturnValues returnValues = methodArguments.getReturnValues();
+            caller.call(methodArguments.getSelf(), returnValues, methodArguments.getParams());
             return returnValues.getNArguments();
         } catch (IllegalArgumentException e) {
             throw new RuntimeException(e);
@@ -159,15 +182,12 @@ public class LuaJavaInvoker implements JavaFunction {
         }
     }
 
-    private Object convert(int parameterIndex, Object o, Class<?> parameterType) {
+    private Object convert(Object o, Class<?> parameterType) {
         if (o == null) {
             return null;
         }
         Object value = manager.fromLuaToJava(o, parameterType);
-        if (value != null) {
-            return value;
-        }
-        throw newError(parameterIndex, "No conversion found from " + o + " to " + parameterType);
+        return value;
     }
 
     private String syntaxErrorMessage(String errorMessage) {
@@ -178,18 +198,18 @@ public class LuaJavaInvoker implements JavaFunction {
         return errorMessage;
     }
 
-	private RuntimeException newError(int i, String message) {
+	private String newError(int i, String message) {
 		int argumentIndex = i + 1;
 		String errorMessage = message + " at argument #" + argumentIndex;
 		String argumentName = getParameterName(i);
 		if (argumentName != null) {
 			errorMessage += ", " + argumentName;
 		}
-		return new RuntimeException(errorMessage);
+		return errorMessage;
 	}
 
 	private String getFunctionSyntax() {
-		LuaMethodDebugInformation methodDebug = getMethodDebugData();
+		MethodDebugInformation methodDebug = getMethodDebugData();
 		if (methodDebug != null) {
 			return methodDebug.getLuaDescription();
 		}
@@ -197,19 +217,18 @@ public class LuaJavaInvoker implements JavaFunction {
 	}
 
 
-	public LuaMethodDebugInformation getMethodDebugData() {
-		LuaClassDebugInformation debugInformation = exposer.getDebugdata(clazz);
+	public MethodDebugInformation getMethodDebugData() {
+        ClassDebugInformation debugInformation = exposer.getDebugdata(clazz);
 		if (debugInformation == null) {
 			return null;
 		}
-		LuaMethodDebugInformation methodDebug = debugInformation.methods.get(name);
-		return methodDebug;
+        return debugInformation.getMethods().get(caller.getDescriptor());
 	}
 
 	private String getParameterName(int i) {
-		LuaMethodDebugInformation methodDebug = getMethodDebugData();
+		MethodDebugInformation methodDebug = getMethodDebugData();
 		if (methodDebug != null) {
-			return methodDebug.getParameterName(i);
+			return methodDebug.getParameters().get(i).getName();
 		}
 		return null;
 	}
@@ -217,5 +236,7 @@ public class LuaJavaInvoker implements JavaFunction {
 	public String toString() {
 		return name;
 	}
+
+
 }
 

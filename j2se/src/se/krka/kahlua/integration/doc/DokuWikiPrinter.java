@@ -28,7 +28,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.List;
-import se.krka.kahlua.integration.processor.LuaMethodDebugInformation;
+
+import se.krka.kahlua.integration.expose.MethodDebugInformation;
+import se.krka.kahlua.integration.expose.MethodParameter;
+import se.krka.kahlua.integration.processor.MethodParameterInformation;
 
 public class DokuWikiPrinter {
 
@@ -59,25 +62,25 @@ public class DokuWikiPrinter {
 	}
 
 	private void printClassFunctions(Class<?> clazz) {
-		List<LuaMethodDebugInformation> functionsForClass = information.getFunctionsForClass(clazz);
+		List<MethodDebugInformation> functionsForClass = information.getFunctionsForClass(clazz);
 		if (functionsForClass.size() > 0) {
 			writer.printf("===== %s ====\n", clazz.getSimpleName());
 			writer.printf("In package: %s\n", clazz.getPackage().getName());
-			for (LuaMethodDebugInformation methodInfo: functionsForClass) {
+			for (MethodDebugInformation methodInfo: functionsForClass) {
 				printFunction(methodInfo, "====");				
 			}
 			writer.printf("\n----\n\n");
 		}
 	}
 
-	private void printFunction(LuaMethodDebugInformation methodInfo, String heading) {
-		writer.printf("%s %s %s\n", heading, methodInfo.getName(), heading);
+	private void printFunction(MethodDebugInformation methodInfo, String heading) {
+		writer.printf("%s %s %s\n", heading, methodInfo.getLuaName(), heading);
 		writer.printf("<code lua>%s</code>\n", methodInfo.getLuaDescription());
 
-		for (int i = 0; i < methodInfo.getNumberOfParameters(); i++) {
-			String name = methodInfo.getParameterName(i);
-			String type = methodInfo.getParameterType(i);
-			String description = methodInfo.getParameterDescription(i);
+        for (MethodParameter parameter : methodInfo.getParameters()) {
+			String name = parameter.getName();
+			String type = parameter.getType();
+			String description = parameter.getDescription();
 			if (description == null) {
 				writer.printf("  - **''%s''** ''%s''\n", type, name);
 			} else {
@@ -102,7 +105,7 @@ public class DokuWikiPrinter {
 
 	private void printClassHierarchy(Class<?> clazz, Class<?> parent) {
 		List<Class<?>> children = information.getChildrenForClass(clazz);
-		List<LuaMethodDebugInformation> methodsForClass = information.getMethodsForClass(clazz);
+		List<MethodDebugInformation> methodsForClass = information.getMethodsForClass(clazz);
 		if (children.size() > 0 || methodsForClass.size() > 0 || parent != null) {
 			writer.printf("===== %s =====\n", clazz.getSimpleName());
 			writer.printf("In package: ''%s''\n", clazz.getPackage().getName());
@@ -130,10 +133,10 @@ public class DokuWikiPrinter {
 	}
 
 	private void printMethods(Class<?> clazz) {
-		List<LuaMethodDebugInformation> methodsForClass = information.getMethodsForClass(clazz);
+		List<MethodDebugInformation> methodsForClass = information.getMethodsForClass(clazz);
 		if (methodsForClass.size() > 0) {
 			//writer.printf("==== Methods ====\n");
-			for (LuaMethodDebugInformation methodInfo: methodsForClass) {
+			for (MethodDebugInformation methodInfo: methodsForClass) {
 				printFunction(methodInfo, "====");
 			}
 		}

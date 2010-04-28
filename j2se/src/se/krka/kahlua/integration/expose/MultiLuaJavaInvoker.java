@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2009 Kristofer Karlsson <kristofer.karlsson@gmail.com>
+ Copyright (c) 2010 Kristofer Karlsson <kristofer.karlsson@gmail.com>
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -20,17 +20,37 @@
  THE SOFTWARE.
  */
 
-package se.krka.kahlua.integration.doc;
+package se.krka.kahlua.integration.expose;
 
-import se.krka.kahlua.integration.expose.MethodDebugInformation;
-import se.krka.kahlua.integration.processor.MethodParameterInformation;
+import se.krka.kahlua.vm.JavaFunction;
+import se.krka.kahlua.vm.LuaCallFrame;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public interface ApiInformation {
-	public List<Class<?>> getAllClasses();
-	public List<Class<?>> getRootClasses();
-	public List<Class<?>> getChildrenForClass(Class<?> clazz);
-	public List<MethodDebugInformation> getMethodsForClass(Class<?> clazz);
-	public List<MethodDebugInformation> getFunctionsForClass(Class<?> clazz);
+public class MultiLuaJavaInvoker implements JavaFunction {
+    private final List<LuaJavaInvoker> invokers = new ArrayList<LuaJavaInvoker>();
+
+    @Override
+    public int call(LuaCallFrame callFrame, int nArguments) {
+        MethodArguments methodArguments = null;
+        for (LuaJavaInvoker invoker : invokers) {
+            methodArguments = invoker.prepareCall(callFrame, nArguments);
+            if (methodArguments.isValid()) {
+                return invoker.call(methodArguments);
+            }
+        }
+        if (methodArguments != null) {
+            methodArguments.assertValid();
+        }
+        throw new RuntimeException("No implementation found");
+    }
+
+    public void addInvoker(LuaJavaInvoker invoker) {
+        invokers.add(invoker);
+    }
+
+    public List<LuaJavaInvoker> getInvokers() {
+        return invokers;
+    }
 }

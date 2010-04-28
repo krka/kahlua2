@@ -25,6 +25,7 @@ package se.krka.kahlua.integration.expose.caller;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import se.krka.kahlua.integration.expose.ReturnValues;
+import se.krka.kahlua.integration.processor.DescriptorUtil;
 
 public class ConstructorCaller extends AbstractCaller {
 
@@ -47,5 +48,10 @@ public class ConstructorCaller extends AbstractCaller {
 	public boolean hasSelf() {
 		return false;
 	}
+
+    @Override
+    public String getDescriptor() {
+        return DescriptorUtil.getDescriptor(constructor);
+    }
 
 }

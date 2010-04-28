@@ -28,15 +28,17 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import se.krka.kahlua.integration.processor.LuaClassDebugInformation;
-import se.krka.kahlua.integration.processor.LuaMethodDebugInformation;
+
+import se.krka.kahlua.integration.expose.ClassDebugInformation;
+import se.krka.kahlua.integration.expose.MethodDebugInformation;
+import se.krka.kahlua.integration.processor.ClassParameterInformation;
+import se.krka.kahlua.integration.processor.MethodParameterInformation;
 import se.krka.kahlua.vm.KahluaTable;
 import se.krka.kahlua.vm.KahluaTableIterator;
 
 public class ApiDocumentationExporter implements ApiInformation {
 
-	private final KahluaTable classes;
+	private final Map<Class<?>, ClassDebugInformation> classes;
 	
 	private final Map<Class<?>, List<Class<?>>> classHierarchy = new HashMap<Class<?>, List<Class<?>>>();
 	private final List<Class<?>> rootClasses = new ArrayList<Class<?>>();
@@ -53,24 +55,23 @@ public class ApiDocumentationExporter implements ApiInformation {
 		}
 	};
 
-	private Comparator<LuaMethodDebugInformation> methodSorter = new Comparator<LuaMethodDebugInformation>() {
+	private Comparator<MethodDebugInformation> methodSorter = new Comparator<MethodDebugInformation>() {
 		@Override
-		public int compare(LuaMethodDebugInformation arg0, LuaMethodDebugInformation arg1) {
-			return arg0.getName().compareTo(arg1.getName());
+		public int compare(MethodDebugInformation arg0, MethodDebugInformation arg1) {
+			return arg0.getLuaName().compareTo(arg1.getLuaName());
 		}
 	};
 
-	public ApiDocumentationExporter(KahluaTable classes) {
+	public ApiDocumentationExporter(Map<Class<?>, ClassDebugInformation> classes) {
 		this.classes = classes;
 		setupHierarchy();
 	}
 	
 	public void setupHierarchy() {
-        KahluaTableIterator iterator = classes.iterator();
-        while (iterator.advance()) {
-			Class<?> clazz = (Class<?>) iterator.getKey();
+        for (Map.Entry<Class<?>, ClassDebugInformation> entry : classes.entrySet()) {
+			Class<?> clazz = entry.getKey();
 			Class<?> zuper = clazz.getSuperclass();
-			if (classes.rawget(zuper) != null) {
+			if (classes.get(zuper) != null) {
 				List<Class<?>> list = classHierarchy.get(zuper);
 				if (list == null) {
 					list = new ArrayList<Class<?>>();
@@ -106,10 +107,10 @@ public class ApiDocumentationExporter implements ApiInformation {
 		return rootClasses;
 	}
 
-	private List<LuaMethodDebugInformation> getMethods(Class<?> clazz, boolean isMethod) {
-		ArrayList<LuaMethodDebugInformation> list = new ArrayList<LuaMethodDebugInformation>();
-		LuaClassDebugInformation information = (LuaClassDebugInformation) classes.rawget(clazz);
-		for (LuaMethodDebugInformation methodInfo: information.methods.values()) {
+	private List<MethodDebugInformation> getMethods(Class<?> clazz, boolean isMethod) {
+		List<MethodDebugInformation> list = new ArrayList<MethodDebugInformation>();
+		ClassDebugInformation information = classes.get(clazz);
+		for (MethodDebugInformation methodInfo: information.getMethods().values()) {
 			if (methodInfo.isMethod() == isMethod) {
 				list.add(methodInfo);
 			}
@@ -118,11 +119,11 @@ public class ApiDocumentationExporter implements ApiInformation {
 		return list;		
 	}
 	
-	public List<LuaMethodDebugInformation> getFunctionsForClass(Class<?> clazz) {
+	public List<MethodDebugInformation> getFunctionsForClass(Class<?> clazz) {
 		return getMethods(clazz, false);
 	}
 
-	public List<LuaMethodDebugInformation> getMethodsForClass(Class<?> clazz) {
+	public List<MethodDebugInformation> getMethodsForClass(Class<?> clazz) {
 		return getMethods(clazz, true);
 	}
 }

@@ -25,6 +25,7 @@ package se.krka.kahlua.integration.expose.caller;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import se.krka.kahlua.integration.expose.ReturnValues;
+import se.krka.kahlua.integration.processor.DescriptorUtil;
 
 public class MethodCaller extends AbstractCaller {
 
@@ -60,4 +61,9 @@ public class MethodCaller extends AbstractCaller {
 	public boolean hasSelf() {
 		return hasSelf;
 	}
+
+    @Override
+    public String getDescriptor() {
+        return DescriptorUtil.getDescriptor(method);
+    }
 }
