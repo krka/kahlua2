@@ -49,7 +49,7 @@ public class MethodDebugInformation {
     }
 
     public String getLuaDescription() {
-        return null;
+        return toString();
     }
 
     public boolean isMethod() {
@@ -71,7 +71,11 @@ public class MethodDebugInformation {
     @Override
     public String toString() {
         String separator = isMethod ? "obj:" : "";
-        return returnType + " " + separator + luaName + "(" + getParameterList() + ")";
+        String msg = returnType + " " + separator + luaName + "(" + getParameterList() + ")\n";
+        if (getReturnDescription() != null) {
+            msg += getReturnDescription() + "\n";
+        }
+        return msg;
     }
 
     private String getParameterList() {
@@ -87,4 +91,5 @@ public class MethodDebugInformation {
         }
         return builder.toString();
     }
+
 }

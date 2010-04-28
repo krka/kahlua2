@@ -94,11 +94,12 @@ public class LuaJavaInvoker implements JavaFunction {
         // First handle the self argument
         int selfDecr = toInt(hasSelf);
         if (hasSelf) {
-            if (nArguments <= 0) {
+            Object self = nArguments <= 0 ? null : callFrame.get(0);
+            if (self == null || !clazz.isInstance(self)) {
                 methodArguments.fail(syntaxErrorMessage("Expected a method call but got a function call."));
                 return methodArguments;
             }
-            methodArguments.setSelf(callFrame.get(0));
+            methodArguments.setSelf(self);
             luaArgCounter++;
         }
 
@@ -116,8 +117,7 @@ public class LuaJavaInvoker implements JavaFunction {
             int got = nArguments - selfDecr;
 
             String errorMessage = "Expected " + expected + " arguments but got " + got + ".";
-            errorMessage = syntaxErrorMessage(errorMessage);
-            methodArguments.fail(errorMessage);
+            methodArguments.fail(syntaxErrorMessage(errorMessage));
             return methodArguments;
         }
         for (int i = 0; i < parameterTypes.length; i++) {
@@ -126,7 +126,7 @@ public class LuaJavaInvoker implements JavaFunction {
             Class<?> parameterType = parameterTypes[i];
             Object obj = convert(o, parameterType);
             if (o != null && obj == null) {
-                methodArguments.fail(newError(parameterIndex, "No conversion found from " + o + " to " + parameterType));
+                methodArguments.fail(newError(parameterIndex, "No conversion found from " + o.getClass() + " to " + parameterType.getName()));
                 return methodArguments;
             }
             methodArguments.getParams()[javaParamCounter + i] = obj;
@@ -147,7 +147,7 @@ public class LuaJavaInvoker implements JavaFunction {
                 Object obj = convert(o, varargType);
                 varargs[i] = obj;
                 if (o != null && obj == null) {
-                    methodArguments.fail(newError(parameterIndex, "No conversion found from " + o + " to " + varargType));
+                    methodArguments.fail(newError(parameterIndex, "No conversion found from " + o.getClass() + " to " + varargType.getName()));
                     return methodArguments;
                 }
             }
@@ -237,6 +237,8 @@ public class LuaJavaInvoker implements JavaFunction {
 		return name;
 	}
 
-
+    public int getNumMethodParams() {
+        return numMethodParams;
+    }
 }
 

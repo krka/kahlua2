@@ -23,6 +23,7 @@
 package se.krka.kahlua.integration.expose;
 
 import se.krka.kahlua.converter.LuaConverterManager;
+import se.krka.kahlua.integration.annotations.Desc;
 import se.krka.kahlua.integration.annotations.LuaClass;
 import se.krka.kahlua.integration.annotations.LuaConstructor;
 import se.krka.kahlua.integration.annotations.LuaMethod;
@@ -237,7 +238,7 @@ public class LuaJavaClassExposer {
                 LuaMethod luaMethod = method.getAnnotation(LuaMethod.class);
 
                 String methodName;
-                if (luaMethod.name().equals(LuaMethod.UNASSIGNED)) {
+                if (luaMethod.name().equals("")) {
                     methodName = method.getName();
                 } else {
                     methodName = luaMethod.name();
@@ -309,7 +310,7 @@ public class LuaJavaClassExposer {
             if (luaMethod != null) {
 
                 String methodName;
-                if (luaMethod.name().equals(LuaMethod.UNASSIGNED)) {
+                if (luaMethod.name().equals("")) {
                     methodName = method.getName();
                 } else {
                     methodName = luaMethod.name();
@@ -363,7 +364,8 @@ public class LuaJavaClassExposer {
 	}
 
     @LuaMethod(global = true, name = "definition")
-    public String getFunctionDefinition(Object function) {
+    @Desc("returns a string that describes the function")
+    public String getFunctionDefinition(JavaFunction function) {
         if (function == null) {
             return null;
         } else if (function instanceof LuaJavaInvoker) {
@@ -372,7 +374,7 @@ public class LuaJavaClassExposer {
         } else if (function instanceof MultiLuaJavaInvoker) {
             StringBuilder builder = new StringBuilder();
             for (LuaJavaInvoker invoker : ((MultiLuaJavaInvoker) function).getInvokers()) {
-                builder.append(invoker.getMethodDebugData().toString()).append("\n");
+                builder.append(invoker.getMethodDebugData().toString());
             }
             return builder.toString();
         } else {
