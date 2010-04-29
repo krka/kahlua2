@@ -135,6 +135,12 @@ public class Menu extends HelperWindow {
         }
         visualList.setSelectionInterval(index, index);
         visualList.scrollRectToVisible(visualList.getCellBounds(index, index));
+        SwingUtilities.invokeLater(new Runnable(){
+            @Override
+            public void run() {
+                autoComplete.showDefinition();
+            }
+        });
     }
 
     public int getNumElements() {

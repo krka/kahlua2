@@ -284,7 +284,7 @@ public class AutoComplete extends JPanel {
         return nextPos;
     }
 
-    private void showDefinition() {
+    void showDefinition() {
         String def = getCurrentlySelectedWord().replace(':', '.');
         try {
             LuaClosure closure = LuaCompiler.loadstring("return definition(" + def + ")", "tmp", env);
@@ -410,15 +410,14 @@ public class AutoComplete extends JPanel {
             String current = this.current.toString();
             int from = Math.max(current.lastIndexOf('.'), current.lastIndexOf(':')) + 1;
             int len = current.length() - from;
-            if (selectedItem.length() > len) {
-				try {
-                    String newLetters = selectedItem.substring(len);
-                    component.getDocument().remove(this.current.getEnd() - len, len);
-                    component.getDocument().insertString(this.current.getEnd() - len, selectedItem, null);
-				} catch (BadLocationException e) {
-				}
-				this.current.increaseLength(selectedItem.length() - len);
-			}
+            try {
+                int insertPos = this.current.getEnd() - len;
+                component.getDocument().remove(insertPos, len);
+                component.getDocument().insertString(insertPos, selectedItem, null);
+            } catch (BadLocationException e) {
+            }
+            int addedLength = selectedItem.length() - len;
+            this.current.increaseLength(addedLength);
 		}
 		component.requestFocus();
 		component.setCaretPosition(current.getEnd());
