@@ -52,7 +52,8 @@ public class ClassParameterInformation implements Serializable {
 	}
 
     public ClassParameterInformation(Class<?> clazz) {
-        this.packageName = clazz.getPackage().getName();
+        Package p = clazz.getPackage();
+        this.packageName = p == null ? null : p.getName();
         this.simpleClassName = clazz.getSimpleName();
 
         for (Constructor<?> constructor : clazz.getConstructors()) {

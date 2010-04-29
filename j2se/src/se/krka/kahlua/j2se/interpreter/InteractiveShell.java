@@ -1,6 +1,7 @@
 package se.krka.kahlua.j2se.interpreter;
 
 import se.krka.kahlua.converter.LuaConverterManager;
+import se.krka.kahlua.integration.annotations.LuaMethod;
 import se.krka.kahlua.integration.expose.LuaJavaClassExposer;
 import se.krka.kahlua.j2se.J2SEPlatform;
 import se.krka.kahlua.vm.*;
@@ -26,16 +27,14 @@ public class InteractiveShell {
         KahluaTable staticBase = platform.newTable();
         env.rawset("Java", staticBase);
         exposer.exposeLikeJavaRecursively(Object.class, staticBase);
-        
-        env.rawset("sleep", new JavaFunction() {
-            @Override
-            public int call(LuaCallFrame callFrame, int nArguments) {
-                double seconds = KahluaUtil.getDoubleArg(callFrame, 1, "sleep");
+
+        exposer.exposeGlobalFunctions(new Object(){
+            @LuaMethod(global = true)
+            public void sleep(double seconds) {
                 try {
                     Thread.sleep((long) (seconds * 1000));
                 } catch (InterruptedException e) {
                 }
-                return 0;
             }
         });
 

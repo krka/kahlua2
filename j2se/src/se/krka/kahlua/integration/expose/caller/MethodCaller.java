@@ -39,6 +39,7 @@ public class MethodCaller extends AbstractCaller {
 		this.method = method;
 		this.owner = owner;
 		this.hasSelf = hasSelf;
+        method.setAccessible(true);
 		
 		hasReturnValue = !method.getReturnType().equals(Void.TYPE);
         if (hasReturnValue && needsMultipleReturnValues()) {
