@@ -30,30 +30,29 @@ import java.util.List;
 public class DescriptorUtil {
     public static String getDescriptor(
             String methodName,
-            String returnType,
             List<? extends VariableElement> parameters) {
         String parameterString = "";
         for (VariableElement parameter : parameters) {
             parameterString += ":" + parameter.getKind().name();
         }
 
-        return methodName + ":" + returnType + parameterString;
+        return methodName + parameterString;
     }
 
     public static String getDescriptor(Constructor constructor) {
         String parameters = getParameters(constructor.getParameterTypes());
-        return constructor.getName() + ":" + constructor.getDeclaringClass().getName() + parameters;
+        return "new" + parameters;
     }
 
     public static String getDescriptor(Method method) {
         String parameters = getParameters(method.getParameterTypes());
-        return method.getName() + ":" + method.getDeclaringClass().getName() + parameters;
+        return method.getName() + parameters;
     }
 
     private static String getParameters(Class<?>[] parameterTypes) {
         String parameters = "";
         for (Class clazz : parameterTypes) {
-            parameters += clazz.getName();
+            parameters += ":" + clazz.getName();
         }
         return parameters;
     }

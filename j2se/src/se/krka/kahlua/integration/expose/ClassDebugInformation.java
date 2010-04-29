@@ -30,9 +30,7 @@ import se.krka.kahlua.integration.processor.DescriptorUtil;
 import se.krka.kahlua.integration.processor.MethodParameterInformation;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,24 +40,40 @@ public class ClassDebugInformation {
     private final Map<String, MethodDebugInformation> methods = new HashMap<String, MethodDebugInformation>();
 
     public ClassDebugInformation(Class<?> clazz, ClassParameterInformation parameterInfo) {
-        for (Method method : clazz.getMethods()) {
+        addContent(clazz, parameterInfo);
+        addConstructors(clazz, parameterInfo);
+    }
+
+    private void addContent(Class<?> clazz, ClassParameterInformation parameterInfo) {
+        if (clazz == null) {
+            return;
+        }
+        addContent(clazz.getSuperclass(), parameterInfo);
+        for (Class<?> iface : clazz.getInterfaces()) {
+            addContent(iface, parameterInfo);
+        }
+
+        for (Method method : clazz.getDeclaredMethods()) {
             LuaMethod methodAnnotation = method.getAnnotation(LuaMethod.class);
             String defaultName = method.getName();
             int modifiers = method.getModifiers();
-            Class<?>[] parameterTypes = method.getParameterTypes();
+            Type[] parameterTypes = method.getGenericParameterTypes();
             String descriptor = DescriptorUtil.getDescriptor(method);
-            Class<?> returnTypeClass = method.getReturnType();
+            Type returnTypeClass = method.getGenericReturnType();
 
             Annotation[][] parameterAnnotations = method.getParameterAnnotations();
             Desc descriptionAnnotation = method.getAnnotation(Desc.class);
             addMethod(parameterInfo, parameterTypes, descriptor, returnTypeClass, parameterAnnotations, getName(methodAnnotation, defaultName), !isGlobal(methodAnnotation, isStatic(modifiers)), descriptionAnnotation);
         }
+    }
+
+    private void addConstructors(Class<?> clazz, ClassParameterInformation parameterInfo) {
         for (Constructor constructor : clazz.getConstructors()) {
             LuaConstructor methodAnnotation = (LuaConstructor) constructor.getAnnotation(LuaConstructor.class);
             String defaultName = "new";
-            Class<?>[] parameterTypes = constructor.getParameterTypes();
+            Type[] parameterTypes = constructor.getGenericParameterTypes();
             String descriptor = DescriptorUtil.getDescriptor(constructor);
-            Class<?> returnTypeClass = clazz;
+            Type returnTypeClass = clazz;
 
             Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
             Desc descriptionAnnotation = (Desc) constructor.getAnnotation(Desc.class);
@@ -69,37 +83,65 @@ public class ClassDebugInformation {
 
     private void addMethod(
             ClassParameterInformation parameterInfo,
-            Class<?>[] parameterTypes,
+            Type[] parameterTypes,
             String descriptor,
-            Class<?> returnTypeClass,
+            Type returnTypeClass,
             Annotation[][] parameterAnnotations,
             String luaName,
             boolean method,
             Desc descriptionAnnotation) {
         MethodParameterInformation parameterNames = parameterInfo.methods.get(descriptor);
+        if (methods.containsKey(descriptor)) {
+            return;
+        }
+        if (parameterNames == null) {
+            return;
+        }
 
         List<MethodParameter> parameters = new ArrayList<MethodParameter>();
 
 
         for (int i = 0; i < parameterTypes.length; i++) {
-            Class<?> type = parameterTypes[i];
+            Type type = parameterTypes[i];
             String name = parameterNames.getName(i);
             String typeName = getClassName(type);
             String description = getDescription(parameterAnnotations[i]);
             parameters.add(new MethodParameter(name, typeName, description));
         }
 
-        String returnType = returnTypeClass.getName();
+        String returnType = getClassName(returnTypeClass);
         String returnDescription = getDescription(descriptionAnnotation);
         MethodDebugInformation debugInfo = new MethodDebugInformation(luaName, method, parameters, returnType, returnDescription);
         methods.put(descriptor, debugInfo);
     }
 
-    private String getClassName(Class<?> type) {
-        if (type.isArray()) {
-            return getClassName(type.getComponentType()) + "[]";
+    private String getClassName(Type type) {
+        if (type instanceof Class) {
+            Class clazz = (Class) type;
+            if (clazz.isArray()) {
+                return getClassName(clazz.getComponentType()) + "[]";
+            }
+            return clazz.getName();
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType paramType = (ParameterizedType) type;
+            Type[] args = paramType.getActualTypeArguments();
+            String raw = getClassName(paramType.getRawType());
+            if (args.length == 0) {
+                return raw;
+            }
+            StringBuilder builder = new StringBuilder(raw);
+            builder.append("<");
+            for (int i = 0; i < args.length; i++) {
+                if (i > 0) {
+                    builder.append(", ");
+                }
+                builder.append(getClassName(args[i]));
+            }
+            builder.append(">");
+            return builder.toString();
+        } else {
+            return "";
         }
-        return type.getName();
     }
 
     private String getDescription(Annotation[] parameterAnnotation) {

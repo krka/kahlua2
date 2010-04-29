@@ -101,7 +101,7 @@ public class LuaDebugDataProcessor implements Processor, ElementVisitor<Void, Vo
 		String methodName = element.getSimpleName().toString();
 		
 
-        String descriptor = DescriptorUtil.getDescriptor(methodName, element.getReturnType().toString(), element.getParameters());
+        String descriptor = DescriptorUtil.getDescriptor(methodName, element.getParameters());
 
         List<String> parameterInfoList = new ArrayList<String>();
         for (VariableElement variableElement : element.getParameters()) {
