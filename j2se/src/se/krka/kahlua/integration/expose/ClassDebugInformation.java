@@ -23,6 +23,7 @@
 package se.krka.kahlua.integration.expose;
 
 import se.krka.kahlua.integration.annotations.Desc;
+import se.krka.kahlua.integration.annotations.LuaConstructor;
 import se.krka.kahlua.integration.annotations.LuaMethod;
 import se.krka.kahlua.integration.processor.ClassParameterInformation;
 import se.krka.kahlua.integration.processor.DescriptorUtil;
@@ -42,31 +43,40 @@ public class ClassDebugInformation {
 
     public ClassDebugInformation(Class<?> clazz, ClassParameterInformation parameterInfo) {
         for (Method method : clazz.getMethods()) {
-            Annotation[] methodAnnotations = method.getAnnotations();
+            LuaMethod methodAnnotation = method.getAnnotation(LuaMethod.class);
             String defaultName = method.getName();
             int modifiers = method.getModifiers();
             Class<?>[] parameterTypes = method.getParameterTypes();
             String descriptor = DescriptorUtil.getDescriptor(method);
             Class<?> returnTypeClass = method.getReturnType();
 
-            addMethod(parameterInfo, methodAnnotations, defaultName, parameterTypes, descriptor, returnTypeClass, isStatic(modifiers));
+            Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+            Desc descriptionAnnotation = method.getAnnotation(Desc.class);
+            addMethod(parameterInfo, parameterTypes, descriptor, returnTypeClass, parameterAnnotations, getName(methodAnnotation, defaultName), !isGlobal(methodAnnotation, isStatic(modifiers)), descriptionAnnotation);
         }
         for (Constructor constructor : clazz.getConstructors()) {
-            Annotation[] methodAnnotations = constructor.getAnnotations();
+            LuaConstructor methodAnnotation = (LuaConstructor) constructor.getAnnotation(LuaConstructor.class);
             String defaultName = "new";
             Class<?>[] parameterTypes = constructor.getParameterTypes();
             String descriptor = DescriptorUtil.getDescriptor(constructor);
             Class<?> returnTypeClass = clazz;
 
-            addMethod(parameterInfo, methodAnnotations, defaultName, parameterTypes, descriptor, returnTypeClass, true);
+            Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
+            Desc descriptionAnnotation = (Desc) constructor.getAnnotation(Desc.class);
+            addMethod(parameterInfo, parameterTypes, descriptor, returnTypeClass, parameterAnnotations, getName(methodAnnotation, defaultName), true, descriptionAnnotation);
         }
     }
 
-    private void addMethod(ClassParameterInformation parameterInfo, Annotation[] methodAnnotations, String defaultName, Class<?>[] parameterTypes, String descriptor, Class<?> returnTypeClass, boolean isStatic) {
+    private void addMethod(
+            ClassParameterInformation parameterInfo,
+            Class<?>[] parameterTypes,
+            String descriptor,
+            Class<?> returnTypeClass,
+            Annotation[][] parameterAnnotations,
+            String luaName,
+            boolean method,
+            Desc descriptionAnnotation) {
         MethodParameterInformation parameterNames = parameterInfo.methods.get(descriptor);
-
-        String luaName = getName(methodAnnotations, defaultName);
-        boolean isMethod = !isGlobal(methodAnnotations, isStatic);
 
         List<MethodParameter> parameters = new ArrayList<MethodParameter>();
 
@@ -75,21 +85,28 @@ public class ClassDebugInformation {
             Class<?> type = parameterTypes[i];
             String name = parameterNames.getName(i);
             String typeName = type.getName();
-            String description = getDescription(methodAnnotations);
+            String description = getDescription(parameterAnnotations[i]);
             parameters.add(new MethodParameter(name, typeName, description));
         }
 
         String returnType = returnTypeClass.getName();
-        String returnDescription = getDescription(methodAnnotations);
-        MethodDebugInformation debugInfo = new MethodDebugInformation(luaName, isMethod, parameters, returnType, returnDescription);
+        String returnDescription = getDescription(descriptionAnnotation);
+        MethodDebugInformation debugInfo = new MethodDebugInformation(luaName, method, parameters, returnType, returnDescription);
         methods.put(descriptor, debugInfo);
     }
 
-    private static String getDescription(Annotation[] annotations) {
-        for (Annotation annotation : annotations) {
-            if (annotation instanceof Desc) {
-                return ((Desc) annotation).value();
+    private String getDescription(Annotation[] parameterAnnotation) {
+        for (Annotation annotation : parameterAnnotation) {
+            if (annotation != null && annotation instanceof Desc) {
+                return getDescription((Desc) annotation);
             }
+        }
+        return null;
+    }
+
+    private static String getDescription(Desc annotation) {
+        if (annotation != null) {
+            return annotation.value();
         }
         return null;
     }
@@ -98,22 +115,28 @@ public class ClassDebugInformation {
         return (modifiers & Modifier.STATIC) != 0;
     }
 
-    private static boolean isGlobal(Annotation[] annotations, boolean defaultValue) {
-        for (Annotation annotation : annotations) {
-            if (annotation instanceof LuaMethod) {
-                return ((LuaMethod) annotation).global();
-            }
+    private static boolean isGlobal(LuaMethod annotation, boolean defaultValue) {
+        if (annotation != null) {
+            return annotation.global();
         }
         return defaultValue;
     }
 
-    private static String getName(Annotation[] annotations, String defaultName) {
-        for (Annotation annotation : annotations) {
-            if (annotation instanceof LuaMethod) {
-                String name = ((LuaMethod) annotation).name();
-                if (name != null && name.length() > 0) {
-                    return name;
-                }
+    private static String getName(LuaMethod annotation, String defaultName) {
+        if (annotation != null) {
+            String name = annotation.name();
+            if (name != null && name.length() > 0) {
+                return name;
+            }
+        }
+        return defaultName;
+    }
+
+    private static String getName(LuaConstructor annotation, String defaultName) {
+        if (annotation != null) {
+            String name = annotation.name();
+            if (name != null && name.length() > 0) {
+                return name;
             }
         }
         return defaultName;

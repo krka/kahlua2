@@ -25,7 +25,7 @@ public class InteractiveShell {
         exposer.exposeGlobalFunctions(exposer);
         KahluaTable staticBase = platform.newTable();
         env.rawset("Java", staticBase);
-        exposer.exposeLikeJava(ArrayList.class, staticBase);
+        exposer.exposeLikeJavaRecursively(Object.class, staticBase);
         
         env.rawset("sleep", new JavaFunction() {
             @Override

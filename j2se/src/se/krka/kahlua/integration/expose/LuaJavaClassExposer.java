@@ -379,4 +379,18 @@ public class LuaJavaClassExposer {
             return null;
         }
     }
+
+    public void exposeLikeJavaRecursively(Class<?> clazz, KahluaTable staticBase) {
+        if (clazz.isArray()) {
+            exposeLikeJavaRecursively(clazz.getComponentType(), staticBase);
+        } else if (!isExposed(clazz)) {
+            exposeLikeJava(clazz, staticBase);
+            for (Method method : clazz.getMethods()) {
+                exposeLikeJavaRecursively(method.getReturnType(), staticBase);
+                for (Class<?> aClass : method.getParameterTypes()) {
+                    exposeLikeJavaRecursively(aClass, staticBase);
+                }
+            }
+        }
+    }
 }
