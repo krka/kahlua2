@@ -54,4 +54,25 @@ public class BaseAnnotationClass {
         }
         return stringBuilder.toString();
     }
+
+
+    @LuaMethod
+    public String sameName(String s1, double f) {
+        return "wrong";
+    }
+
+    @LuaMethod
+    public String sameName(String s1, String s2, String s3) {
+        return "wrong";
+    }
+
+    @LuaMethod
+    public String sameName(String s1) {
+        return "wrong";
+    }
+    
+    @LuaMethod
+    public String sameName(String s1, String s2) {
+        return s1 + s2;
+    }
 }

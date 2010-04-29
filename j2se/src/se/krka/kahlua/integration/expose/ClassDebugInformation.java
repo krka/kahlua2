@@ -84,7 +84,7 @@ public class ClassDebugInformation {
         for (int i = 0; i < parameterTypes.length; i++) {
             Class<?> type = parameterTypes[i];
             String name = parameterNames.getName(i);
-            String typeName = type.getName();
+            String typeName = getClassName(type);
             String description = getDescription(parameterAnnotations[i]);
             parameters.add(new MethodParameter(name, typeName, description));
         }
@@ -93,6 +93,13 @@ public class ClassDebugInformation {
         String returnDescription = getDescription(descriptionAnnotation);
         MethodDebugInformation debugInfo = new MethodDebugInformation(luaName, method, parameters, returnType, returnDescription);
         methods.put(descriptor, debugInfo);
+    }
+
+    private String getClassName(Class<?> type) {
+        if (type.isArray()) {
+            return getClassName(type.getComponentType()) + "[]";
+        }
+        return type.getName();
     }
 
     private String getDescription(Annotation[] parameterAnnotation) {

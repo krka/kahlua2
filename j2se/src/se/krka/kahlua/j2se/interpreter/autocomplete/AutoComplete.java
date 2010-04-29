@@ -22,12 +22,11 @@
 
 package se.krka.kahlua.j2se.interpreter.autocomplete;
 
+import se.krka.kahlua.luaj.compiler.LuaCompiler;
 import se.krka.kahlua.stdlib.BaseLib;
-import se.krka.kahlua.vm.KahluaTable;
-import se.krka.kahlua.vm.KahluaTableIterator;
-import se.krka.kahlua.vm.KahluaThread;
-import se.krka.kahlua.vm.Platform;
+import se.krka.kahlua.vm.*;
 
+import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -40,6 +39,7 @@ import java.util.List;
 
 public class AutoComplete extends JPanel {
     private final Menu menu;
+    private final Tooltip tooltip;
 	private final JTextComponent component;
 	private final Window window;
     private final KahluaTable env;
@@ -54,6 +54,7 @@ public class AutoComplete extends JPanel {
         this.env = env;
         thread = new KahluaThread(platform, env);
         menu = new Menu(this, this.window);
+        tooltip = new Tooltip(this.window);
         current = new StringRef(component);
         add(this.component, BorderLayout.CENTER);
 
@@ -63,6 +64,7 @@ public class AutoComplete extends JPanel {
             }
         });
         component.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_MASK), "open");
+        component.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_MASK), "definition");
         component.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "esc");
         component.getActionMap().put("open", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -71,7 +73,16 @@ public class AutoComplete extends JPanel {
         });
         component.getActionMap().put("esc", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                menu.setVisible(false);
+                if (tooltip.isVisible()) {
+                    tooltip.setVisible(false);
+                } else {
+                    menu.setVisible(false);
+                }
+            }
+        });
+        component.getActionMap().put("definition", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                showDefinition();
             }
         });
         component.addMouseListener(new MouseAdapter() {
@@ -84,35 +95,45 @@ public class AutoComplete extends JPanel {
         });
         component.addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
-                if (e.isConsumed()) return;
+                if (e.isConsumed()) {
+                    return;
+                }
+
                 if (menu.isVisible()) {
                     switch (e.getKeyCode()) {
                         case KeyEvent.VK_ENTER:
                             menu.onSelected();
+                            tooltip.setVisible(false);
                             e.consume();
                             break;
                         case KeyEvent.VK_DOWN:
                             menu.moveDown();
+                            tooltip.setVisible(false);
                             e.consume();
                             break;
                         case KeyEvent.VK_UP:
                             menu.moveUp();
+                            tooltip.setVisible(false);
                             e.consume();
                             break;
                         case KeyEvent.VK_PAGE_DOWN:
                             menu.movePageDown();
+                            tooltip.setVisible(false);
                             e.consume();
                             break;
                         case KeyEvent.VK_PAGE_UP:
                             menu.movePageUp();
+                            tooltip.setVisible(false);
                             e.consume();
                             break;
                         case KeyEvent.VK_HOME:
                             menu.moveStart();
+                            tooltip.setVisible(false);
                             e.consume();
                             break;
                         case KeyEvent.VK_END:
                             menu.moveEnd();
+                            tooltip.setVisible(false);
                             e.consume();
                             break;
                     }
@@ -128,10 +149,14 @@ public class AutoComplete extends JPanel {
                 if (menu.isVisible()) {
                     menu.moveWindow(component);
                 }
+                if (tooltip.isVisible()) {
+                    tooltip.moveWindow(component);
+                }
             }
         });
         component.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
+                tooltip.setVisible(false);
                 if (menu.isVisible()) {
                     int beginIndex = e.getOffset();
                     int endIndex = beginIndex + e.getLength();
@@ -150,6 +175,7 @@ public class AutoComplete extends JPanel {
             }
 
             public void removeUpdate(DocumentEvent e) {
+                tooltip.setVisible(false);
                 if (menu.isVisible()) {
                     current.decreaseLength(e.getLength());
                     updateMenu();
@@ -157,10 +183,12 @@ public class AutoComplete extends JPanel {
             }
 
             public void changedUpdate(DocumentEvent e) {
+                tooltip.setVisible(false);
             }
         });
 	}
-	private Collection<CompletionItem> getCompletions(String scan) {
+
+    private Collection<CompletionItem> getCompletions(String scan) {
         Object cur = env;
         List<String> parts = stringSplit(scan, ".:");
         for (int i = 0; i < parts.size() - 1; i++) {
@@ -255,7 +283,35 @@ public class AutoComplete extends JPanel {
         return nextPos;
     }
 
+    private void showDefinition() {
+        String def = getCurrentlySelectedWord().replace(':', '.');
+        try {
+            Object[] objects = thread.pcall(LuaCompiler.loadstring("return definition(" + def + ")", "tmp", env));
+            if (objects[0] == Boolean.TRUE && objects.length >= 2 && objects[1] != null && objects[1] instanceof String) {
+                showDefinition((String) objects[1]);
+            }
+        } catch (IOException e) {
+            return;
+        }
+    }
+
+    private void showDefinition(String def) {
+        try {
+            int index = current.getStart();
+            Rectangle rect = component.getUI().modelToView(component, index);
+            if (menu.isVisible()) {
+                rect.grow(0, menu.getHeight());
+            }
+            tooltip.setDefinition(def);
+            tooltip.display(new Point(rect.x, rect.y + rect.height), component);
+            component.requestFocus();
+        } catch (BadLocationException e) {
+        }
+    }
+
+
     private void openMenu() {
+        tooltip.setVisible(false);
         setCurrent();
 		int index = current.getStart();
 		try {
@@ -263,10 +319,6 @@ public class AutoComplete extends JPanel {
             menu.display(new Point(rect.x, rect.y + rect.height), component);
             updateMenu();
             component.requestFocus();
-            menu.moveDown();
-            if (menu.getNumElements() == 1) {
-                menu.onSelected();
-            }
 		} catch (BadLocationException e) {
 		}
 	}
@@ -275,6 +327,33 @@ public class AutoComplete extends JPanel {
 		Collection<CompletionItem> completions = getCompletions(current.toString());
 		menu.setMatches(completions);
 	}
+
+    private String findDefinition() {
+        String source = component.getText();
+		int position = component.getCaretPosition();
+		int index = position;
+		while (index > 0) {
+            char current = source.charAt(index - 1);
+            if (validCharacter(current)) {
+                index--;
+            } else {
+                break;
+            }
+		}
+        while (position < component.getText().length()) {
+            char current = source.charAt(position);
+            if (validCharacter(current)) {
+                position++;
+            } else {
+                break;
+            }
+        }
+        try {
+            return component.getText(index, position - index);
+        } catch (BadLocationException e) {
+            return "";
+        }
+    }
 
 	private void setCurrent() {
         String source = component.getText();
@@ -296,19 +375,37 @@ public class AutoComplete extends JPanel {
                 current == '.' || current == ':';
     }
 
-    void setCurrent(String scan) {
+    public String getCompletedCurrent() {
+        setCurrent();
+        String current = this.current.toString();
+        int end = Math.max(current.lastIndexOf('.'), current.lastIndexOf(':')) + 1;
+        return current.substring(0, end);
+    }
+
+    public String getCurrentlySelectedWord() {
+        CompletionItem completionItem = null;
+        if (menu.isVisible()) {
+            completionItem = menu.getCurrentItem();
+        }
+        if (completionItem == null) {
+            return findDefinition();
+        }
+        return getCompletedCurrent() + completionItem.getText();
+    }
+
+    void setCurrent(String selectedItem) {
 		menu.setVisible(false);
-		if (scan != null) {
+		if (selectedItem != null) {
             String current = this.current.toString();
             int from = Math.max(current.lastIndexOf('.'), current.lastIndexOf(':')) + 1;
             int len = current.length() - from;
-            if (scan.length() > len) {
-				String newLetters = scan.substring(len);
+            if (selectedItem.length() > len) {
 				try {
-					component.getDocument().insertString(this.current.getEnd(), newLetters, null);
+                    String newLetters = selectedItem.substring(len);
+                    component.getDocument().insertString(this.current.getEnd(), newLetters, null);
 				} catch (BadLocationException e) {
 				}
-				this.current.increaseLength(newLetters.length());
+				this.current.increaseLength(selectedItem.length() - len);
 			}
 		}
 		component.requestFocus();

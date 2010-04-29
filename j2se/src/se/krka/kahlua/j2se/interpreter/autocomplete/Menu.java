@@ -32,17 +32,16 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.*;
 
-class Menu extends JWindow {
+public class Menu extends HelperWindow {
     private final JList visualList;
     private final SmartListModel listModel;
     private final AutoComplete autoComplete;
-    private Point position;
+    private CompletionItem currentItem;
 
     public Menu(AutoComplete autoComplete, Window window) {
         super(window);
         this.autoComplete = autoComplete;
         listModel = new SmartListModel();
-        position = new Point(0, 0);
         visualList = new JList(listModel) {
             public int getVisibleRowCount() {
                 return Math.min(listModel.getSize(), 10);
@@ -71,23 +70,9 @@ class Menu extends JWindow {
     }
 
     void onSelected() {
-        CompletionItem completionItem = (CompletionItem) visualList.getSelectedValue();
+        CompletionItem completionItem = getCurrentItem();
         if (completionItem != null) {
             autoComplete.setCurrent(completionItem.getText());
-        }
-    }
-
-    public void display(Point aPoint, JTextComponent component) {
-        position = aPoint;
-        Point p = component.getLocationOnScreen();
-        setLocation(new Point(p.x + aPoint.x, p.y + aPoint.y));
-        setVisible(true);
-    }
-
-    public void moveWindow(JTextComponent component) {
-        if (position != null) {
-            Point p = component.getLocationOnScreen();
-            setLocation(new Point(p.x + position.x, p.y + position.y));
         }
     }
 
@@ -96,6 +81,9 @@ class Menu extends JWindow {
         if (matches.isEmpty()) {
             setVisible(false);
             return;
+        }
+        if (getNumElements() > 0 && visualList.getSelectedIndex() < 0) {
+            moveStart();
         }
         pack();
         pack();
@@ -151,5 +139,9 @@ class Menu extends JWindow {
 
     public int getNumElements() {
         return listModel.getSize();
+    }
+
+    public CompletionItem getCurrentItem() {
+        return (CompletionItem) visualList.getSelectedValue();
     }
 }

@@ -28,8 +28,6 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Inherited
 public @interface LuaMethod {
-	String UNASSIGNED = "[unassigned]";
-
-	public String name() default UNASSIGNED;
+	public String name() default "";
 	public boolean global() default false;
 }

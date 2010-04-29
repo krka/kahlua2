@@ -65,5 +65,5 @@ public class InheritedAnnotationClass extends BaseAnnotationClass {
 	public static String staticMethod() {
 		return "Hello world";
 	}
-	
+
 }

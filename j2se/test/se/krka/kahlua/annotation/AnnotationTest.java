@@ -19,6 +19,7 @@ import se.krka.kahlua.vm.Platform;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.Map;
 
 import static junit.framework.Assert.*;
@@ -40,6 +41,7 @@ public class AnnotationTest {
 		new KahluaTableConverter(platform).install(manager);
 
 		factory = new LuaJavaClassExposer(manager, platform, env);
+        factory.exposeGlobalFunctions(factory);
 	}
 
 	@Test
@@ -103,7 +105,7 @@ public class AnnotationTest {
 			fail();
 		} catch (Exception e) {
 			assertNotNull(e.getMessage());
-			assertEquals("No conversion found from class java.lang.String to class java.lang.Integer at argument #2, imba", e.getMessage());
+			assertEquals("No conversion found from class java.lang.String to int at argument #2, arg2", e.getMessage());
 		}
 	}
 
@@ -119,7 +121,7 @@ public class AnnotationTest {
 			state.call(closure, null);
 			fail();
 		} catch (Exception e) {
-			assertEquals(e.getMessage(), "Expected 2 arguments but got 1. Correct syntax: obj:inheritedMethodWithArgs(zomg, imba)");
+            assertEquals("Expected 2 arguments but got 1. Correct syntax: void obj:inheritedMethodWithArgs(java.lang.String arg1, int arg2)", e.getMessage());
 		}
 	}
 
@@ -135,7 +137,7 @@ public class AnnotationTest {
 			state.call(closure, null);
 			fail();
 		} catch (Exception e) {
-			assertEquals(e.getMessage(), "Expected 4 arguments but got 1. Correct syntax: myGlobalFunction(s, d, b, i)");
+			assertEquals(e.getMessage(), "Expected 4 arguments but got 1. Correct syntax: void myGlobalFunction(java.lang.String arg1, double arg2, boolean arg3, int arg4)");
 		}
 	}
 
@@ -182,57 +184,6 @@ public class AnnotationTest {
 		closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
 		state.call(closure, null);
 
-	}
-
-    @Test
-	public void testDebugData() throws SecurityException, IOException, ClassNotFoundException {
-		ClassParameterInformation classParameterInfo = ClassParameterInformation.getFromStream(InheritedAnnotationClass.class);
-		assertNotNull(classParameterInfo);
-		assertNotNull(classParameterInfo.methods);
-		assertFalse(classParameterInfo.methods.isEmpty());
-	}
-
-	@Test
-	public void testGetDebugData() throws IOException {
-
-		factory.exposeClass(InheritedAnnotationClass.class);
-		factory.exposeClass(MethodParameterInformation.class);
-		factory.exposeGlobalFunctions(factory);
-
-		state.getEnvironment().rawset("testObject1", new InheritedAnnotationClass());
-
-		String testString = "assert(testObject1, '0')" +
-				"assert(testObject1.inheritedMethodWithMultipleReturns2, '1');" +
-				"d = getDebugInfo(testObject1.inheritedMethodWithMultipleReturns2)" +
-				"assert(d ~= nil, '2')" +
-				"local name, type, desc = d:getParameter(1)" +
-				"assert(name == 'a')" +
-				"assert(type == 'String')" +
-				"assert(desc == nil)" +
-				"assert(nil == d:getParameter(2))" +
-				"";
-
-
-		LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
-		state.call(closure, null);
-
-		testString = "assert(testObject1, '0')" +
-				"assert(testObject1.inheritedMethodWithArgs, '1');" +
-				"d = getDebugInfo(testObject1.inheritedMethodWithArgs)" +
-				"assert(d ~= nil, '2')" +
-				"local name, type, desc = d:getParameter(1)" +
-				"assert(name == 'zomg', name)" +
-				"assert(type == 'String', type)" +
-				"assert(desc == nil, desc)" +
-				"local name, type, desc = d:getParameter(2)" +
-				"assert(name == 'imba', name)" +
-				"assert(type == 'int', type)" +
-				"assert(desc == nil, desc)" +
-				"assert(nil == d:getParameter(3))" +
-				"";
-
-		closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
-		state.call(closure, null);
 	}
 
 	@Test
@@ -306,7 +257,7 @@ public class AnnotationTest {
 			state.call(closure, null);
 			fail();
 		} catch (Exception e) {
-			assertEquals("No conversion found from class se.krka.kahlua.j2se.KahluaTableImpl to class java.lang.String at argument #2, strings", e.getMessage());
+			assertEquals("No conversion found from class se.krka.kahlua.j2se.KahluaTableImpl to java.lang.String at argument #2, arg2", e.getMessage());
 		}
 	}
 
@@ -319,9 +270,19 @@ public class AnnotationTest {
 			state.call(closure, null);
 			fail();
 		} catch (Exception e) {
-			assertEquals("Expected 1 arguments but got 0. Correct syntax: obj:withVarargs(joinWith, strings)", e.getMessage());
+			assertEquals("Expected 1 arguments but got 0. Correct syntax: java.lang.String obj:withVarargs(java.lang.String arg1, java.lang.String[] arg2)", e.getMessage());
 		}
-
 	}
+
+    @Test
+    public void testSameName() throws IOException {
+        factory.exposeClass(InheritedAnnotationClass.class);
+        String testString = "foo = NewBase();\nlocal s = foo:sameName('hello', 'world');\nassert(s == 'helloworld');";
+        LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
+        Object[] objects = state.pcall(closure, null);
+        //System.out.println(Arrays.toString(objects));
+        assertEquals(Boolean.TRUE, objects[0]);
+
+    }
 
 }

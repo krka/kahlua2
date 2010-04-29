@@ -26,10 +26,18 @@ import se.krka.kahlua.vm.JavaFunction;
 import se.krka.kahlua.vm.LuaCallFrame;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class MultiLuaJavaInvoker implements JavaFunction {
     private final List<LuaJavaInvoker> invokers = new ArrayList<LuaJavaInvoker>();
+    private static final Comparator<? super LuaJavaInvoker> COMPARATOR = new Comparator<LuaJavaInvoker>() {
+        @Override
+        public int compare(LuaJavaInvoker o1, LuaJavaInvoker o2) {
+            return o2.getNumMethodParams() - o1.getNumMethodParams();
+        }
+    };
 
     @Override
     public int call(LuaCallFrame callFrame, int nArguments) {
@@ -48,6 +56,7 @@ public class MultiLuaJavaInvoker implements JavaFunction {
 
     public void addInvoker(LuaJavaInvoker invoker) {
         invokers.add(invoker);
+        Collections.sort(invokers, COMPARATOR);
     }
 
     public List<LuaJavaInvoker> getInvokers() {
