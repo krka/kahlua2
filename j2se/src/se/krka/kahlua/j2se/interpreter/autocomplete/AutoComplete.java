@@ -301,6 +301,7 @@ public class AutoComplete extends JPanel {
 
     private void showDefinition(String def) {
         try {
+            setCurrent();
             int index = current.getStart();
             Rectangle rect = component.getUI().modelToView(component, index);
             if (menu.isVisible()) {
