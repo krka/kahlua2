@@ -219,9 +219,10 @@ public class AutoComplete extends JPanel {
                     if (o != null && o instanceof String) {
                         String key = (String) o;
                         Object value = iter.getValue();
-                        if (key.startsWith(needle)) {
-                            String extraInfo = getExtraInfo(value);
-                            returnSet.add(new CompletionItem(key, extraInfo));
+                        String extraInfo = getExtraInfo(value);
+                        CompletionItem item = new CompletionItem(key, extraInfo, needle);
+                        if (item.getScore() > 0) {
+                            returnSet.add(item);
                         }
                     }
                 }
@@ -286,10 +287,13 @@ public class AutoComplete extends JPanel {
     private void showDefinition() {
         String def = getCurrentlySelectedWord().replace(':', '.');
         try {
-            Object[] objects = thread.pcall(LuaCompiler.loadstring("return definition(" + def + ")", "tmp", env));
+            LuaClosure closure = LuaCompiler.loadstring("return definition(" + def + ")", "tmp", env);
+            Object[] objects = thread.pcall(closure);
             if (objects[0] == Boolean.TRUE && objects.length >= 2 && objects[1] != null && objects[1] instanceof String) {
                 showDefinition((String) objects[1]);
             }
+        } catch (KahluaException e) {
+            return;
         } catch (IOException e) {
             return;
         }
@@ -402,7 +406,8 @@ public class AutoComplete extends JPanel {
             if (selectedItem.length() > len) {
 				try {
                     String newLetters = selectedItem.substring(len);
-                    component.getDocument().insertString(this.current.getEnd(), newLetters, null);
+                    component.getDocument().remove(this.current.getEnd() - len, len);
+                    component.getDocument().insertString(this.current.getEnd() - len, selectedItem, null);
 				} catch (BadLocationException e) {
 				}
 				this.current.increaseLength(selectedItem.length() - len);

@@ -67,4 +67,8 @@ class StringRef {
             throw new RuntimeException(e);
         }
     }
+
+    public int getLen() {
+        return len;
+    }
 }

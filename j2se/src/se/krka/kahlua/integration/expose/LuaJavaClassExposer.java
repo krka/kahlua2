@@ -284,7 +284,8 @@ public class LuaJavaClassExposer {
             }
         }
         for (Constructor constructor : clazz.getConstructors()) {
-            if (Modifier.isPublic(constructor.getModifiers())) {
+            int modifiers = constructor.getModifiers();
+            if (!Modifier.isInterface(modifiers) && !Modifier.isAbstract(modifiers) && Modifier.isPublic(modifiers)) {
                 addInvoker(container, "new", getConstructorInvoker(clazz, constructor, "new"));
             }
         }

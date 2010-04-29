@@ -23,12 +23,41 @@
 package se.krka.kahlua.j2se.interpreter.autocomplete;
 
 public class CompletionItem implements Comparable<CompletionItem> {
+    private final String userInput;
+
     private final String text;
     private final String value;
+    private final int score;
 
-    public CompletionItem(String text, String value) {
+    public CompletionItem(String text, String value, String userInput) {
         this.text = text;
         this.value = value;
+        this.userInput = userInput;
+        score = calculateScore();
+    }
+
+    private int calculateScore() {
+        int totalScore = 1;
+        String lowerText = text.toLowerCase();
+        String lowerInput = userInput.toLowerCase();
+        int runningIndex = 0;
+        for (int pos = 0; pos < lowerInput.length(); pos++) {
+            char realC = userInput.charAt(pos);
+            
+            int index;
+            if (Character.isUpperCase(realC)) {
+                index = text.indexOf(realC, runningIndex);
+            } else {
+                char c = lowerInput.charAt(pos);
+                index = lowerText.indexOf(c, runningIndex);
+            }
+            if (index == -1) {
+                return 0;
+            }
+            totalScore += 1000 - (pos - index);
+            runningIndex = index + 1;
+        }
+        return totalScore;
     }
 
     @Override
@@ -46,6 +75,14 @@ public class CompletionItem implements Comparable<CompletionItem> {
 
     @Override
     public int compareTo(CompletionItem o) {
+        int scoreDifference = getScore() - o.getScore();
+        if (scoreDifference != 0) {
+            return scoreDifference;
+        }
         return text.compareTo(o.text);
+    }
+
+    public int getScore() {
+        return score;
     }
 }
