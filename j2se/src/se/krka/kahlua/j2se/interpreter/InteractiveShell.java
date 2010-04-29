@@ -1,7 +1,6 @@
 package se.krka.kahlua.j2se.interpreter;
 
 import se.krka.kahlua.converter.LuaConverterManager;
-import se.krka.kahlua.integration.annotations.LuaMethod;
 import se.krka.kahlua.integration.expose.LuaJavaClassExposer;
 import se.krka.kahlua.j2se.J2SEPlatform;
 import se.krka.kahlua.vm.*;
@@ -9,8 +8,6 @@ import se.krka.kahlua.vm.*;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import java.util.ArrayList;
-import java.util.List;
 
 public class InteractiveShell {
     public static void main(final String[] args) {
@@ -28,15 +25,7 @@ public class InteractiveShell {
         env.rawset("Java", staticBase);
         exposer.exposeLikeJavaRecursively(Object.class, staticBase);
 
-        exposer.exposeGlobalFunctions(new Object(){
-            @LuaMethod(global = true)
-            public void sleep(double seconds) {
-                try {
-                    Thread.sleep((long) (seconds * 1000));
-                } catch (InterruptedException e) {
-                }
-            }
-        });
+        exposer.exposeGlobalFunctions(new Sleeper());
 
         InteractiveShell shell = new InteractiveShell(frame, platform, env);
     }

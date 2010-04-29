@@ -59,7 +59,7 @@
 		<mkdir dir="${test.lua.output.dir}"/>
 	</target>
 
-	<target name="compile" depends="setup, compile-core, compile-cldc11, compile-j2se" description="Compiles Kahlua">
+	<target name="compile" depends="setup, compile-core, compile-cldc11, compile-j2se, annotation-processor-j2se" description="Compiles Kahlua">
 	</target>
 	
 	<target name="build" depends="compile, build-stdlib" description="Builds Kahlua">
@@ -109,6 +109,31 @@
 
 			<src path="${j2se.src.dir}"/>
 		</javac>
+	</target>
+
+	<target name="annotation-processor-j2se" depends="compile-j2se">
+		<delete dir="${build.dir}/annotation-tmp" />
+		<mkdir dir="${build.dir}/annotation-tmp" />
+		<javac
+				destdir="${build.dir}/annotation-tmp"
+				debug="on"
+				deprecation="on"
+				optimize="on"
+				>
+			<classpath>
+				<pathelement location="${classes.dir}/core" />
+				<pathelement location="${classes.dir}/j2se" />
+			</classpath>
+			<src path="${j2se.src.dir}"/>
+			<compilerarg value="-processor"/>
+			<compilerarg value="se.krka.kahlua.integration.processor.LuaDebugDataProcessor"/>
+		</javac>
+		<move toDir="${classes.dir}/j2se">
+			<fileset dir="${build.dir}/annotation-tmp">
+				<include name="**/*.luadebugdata" />
+			</fileset>
+		</move>
+		<delete dir="${build.dir}/annotation-tmp" />
 	</target>
 
     <target name="package" depends="setup, build" description="Package the final kahlua jar">

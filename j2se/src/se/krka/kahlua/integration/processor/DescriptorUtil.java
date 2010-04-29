@@ -22,6 +22,7 @@
 
 package se.krka.kahlua.integration.processor;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -33,7 +34,7 @@ public class DescriptorUtil {
             List<? extends VariableElement> parameters) {
         String parameterString = "";
         for (VariableElement parameter : parameters) {
-            parameterString += ":" + parameter.getKind().name();
+            parameterString += ":" + parameter.asType().toString();
         }
 
         return methodName + parameterString;
