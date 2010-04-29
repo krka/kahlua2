@@ -144,4 +144,8 @@ public class Menu extends HelperWindow {
     public CompletionItem getCurrentItem() {
         return (CompletionItem) visualList.getSelectedValue();
     }
+
+    public boolean hasSelection() {
+        return visualList.getSelectedIndex() >= 0;
+    }
 }

@@ -319,10 +319,16 @@ public class AutoComplete extends JPanel {
         setCurrent();
 		int index = current.getStart();
 		try {
-            Rectangle rect = component.getUI().modelToView(component, index);
-            menu.display(new Point(rect.x, rect.y + rect.height), component);
-            updateMenu();
-            component.requestFocus();
+            boolean hasSelection = menu.isVisible() && menu.hasSelection();
+            if (hasSelection) {
+                menu.onSelected();
+            } else {
+                Rectangle rect = component.getUI().modelToView(component, index);
+                menu.display(new Point(rect.x, rect.y + rect.height), component);
+                updateMenu();
+                component.requestFocus();
+            }
+
 		} catch (BadLocationException e) {
 		}
 	}
