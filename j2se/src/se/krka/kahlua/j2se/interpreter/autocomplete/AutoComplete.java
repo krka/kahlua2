@@ -29,6 +29,8 @@ import se.krka.kahlua.vm.*;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -44,8 +46,10 @@ public class AutoComplete extends JPanel {
 	private final Window window;
     private final KahluaTable env;
 
-	private StringRef current;
-    private KahluaThread thread;
+    private final WordFinder wordFinder;
+
+    private final KahluaThread thread;
+    private final LuaAutoCompleteSet characterSet;
 
     public AutoComplete(JFrame window, final JTextComponent component, Platform platform, KahluaTable env) {
 		super(new BorderLayout());
@@ -53,9 +57,10 @@ public class AutoComplete extends JPanel {
 		this.component = component;
         this.env = env;
         thread = new KahluaThread(platform, env);
+        characterSet = new LuaAutoCompleteSet();
+        wordFinder = new WordFinder(component.getDocument(), characterSet);
         menu = new Menu(this, this.window);
         tooltip = new Tooltip(this.window);
-        current = new StringRef(component);
         add(this.component, BorderLayout.CENTER);
 
         component.addFocusListener(new FocusAdapter() {
@@ -76,7 +81,7 @@ public class AutoComplete extends JPanel {
                 if (tooltip.isVisible()) {
                     tooltip.setVisible(false);
                 } else {
-                    menu.setVisible(false);
+                    hideAll();
                 }
             }
         });
@@ -89,7 +94,7 @@ public class AutoComplete extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 if (menu.isVisible()) {
-                    menu.setVisible(false);
+                    hideAll();
                 }
             }
         });
@@ -142,7 +147,7 @@ public class AutoComplete extends JPanel {
         });
         window.addComponentListener(new ComponentAdapter() {
             public void componentHidden(ComponentEvent e) {
-                menu.setVisible(false);
+                hideAll();
             }
 
             public void componentMoved(ComponentEvent e) {
@@ -154,43 +159,46 @@ public class AutoComplete extends JPanel {
                 }
             }
         });
+        component.addCaretListener(new CaretListener() {
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                if (menu.isVisible()) {
+                    if (!menu.isWorkingAt(e.getDot())) {
+                        hideAll();
+                    }
+                }
+
+            }
+        });
         component.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
-                tooltip.setVisible(false);
                 if (menu.isVisible()) {
-                    int beginIndex = e.getOffset();
-                    int endIndex = beginIndex + e.getLength();
-                    String newCharacters = component.getText().substring(beginIndex, endIndex);
-                    for (char c : newCharacters.toCharArray()) {
-                        if (!validCharacter(c)) {
-                            current.clear();
-                            menu.setMatches(Collections.<CompletionItem>emptyList());
-                            menu.setVisible(false);
-                            return;
-                        }
-                    }
-                    current.increaseLength(e.getLength());
                     updateMenu();
                 }
             }
 
             public void removeUpdate(DocumentEvent e) {
-                tooltip.setVisible(false);
                 if (menu.isVisible()) {
-                    current.decreaseLength(e.getLength());
                     updateMenu();
                 }
             }
 
             public void changedUpdate(DocumentEvent e) {
-                tooltip.setVisible(false);
+                if (menu.isVisible()) {
+                    updateMenu();
+                }
             }
         });
 	}
 
+    private void hideAll() {
+        tooltip.setVisible(false);
+        menu.close();
+    }
+
     private Collection<CompletionItem> getCompletions(String scan) {
         Object cur = env;
-        List<String> parts = stringSplit(scan, ".:");
+        List<String> parts = characterSet.split(scan);
         for (int i = 0; i < parts.size() - 1; i++) {
             if (cur == null) {
                 return Collections.emptyList();
@@ -253,37 +261,6 @@ public class AutoComplete extends JPanel {
         return thread.tableGet(metaTable, "__index");
     }
 
-    private List stringSplit(String s, String separators) {
-        List<String> ret = new ArrayList<String>();
-        int pos = 0;
-        while (true) {
-            int nextPos = findNext(s, separators, pos);
-            if (nextPos == -1) {
-                ret.add(s.substring(pos));
-                return ret;
-            } else {
-                ret.add(s.substring(pos, nextPos));
-                pos = nextPos + 1;
-            }
-        }
-    }
-
-    private int findNext(String s, String chars, int pos) {
-        int nextPos = -1;
-        for (int i = 0; i < chars.length(); i++) {
-            char c = chars.charAt(i);
-            int tmp = s.indexOf(c, pos);
-            if (tmp != -1) {
-                if (nextPos == -1) {
-                    nextPos = tmp;
-                } else {
-                    nextPos = Math.min(nextPos, tmp);
-                }
-            }
-        }
-        return nextPos;
-    }
-
     void showDefinition() {
         String def = getCurrentlySelectedWord().replace(':', '.');
         try {
@@ -301,8 +278,8 @@ public class AutoComplete extends JPanel {
 
     private void showDefinition(String def) {
         try {
-            setCurrent();
-            int index = current.getStart();
+            Word word = wordFinder.findBothWays(component.getCaretPosition());
+            int index = word.getStart();
             Rectangle rect = component.getUI().modelToView(component, index);
             if (menu.isVisible()) {
                 rect.grow(0, menu.getHeight());
@@ -317,80 +294,30 @@ public class AutoComplete extends JPanel {
 
     private void openMenu() {
         tooltip.setVisible(false);
-        setCurrent();
-		int index = current.getStart();
-		try {
-            boolean hasSelection = menu.isVisible() && menu.hasSelection();
-            if (hasSelection) {
-                menu.onSelected();
-            } else {
-                Rectangle rect = component.getUI().modelToView(component, index);
-                menu.display(new Point(rect.x, rect.y + rect.height), component);
-                updateMenu();
-                component.requestFocus();
-            }
-
-		} catch (BadLocationException e) {
-		}
-	}
-
-	private void updateMenu() {
-		Collection<CompletionItem> completions = getCompletions(current.toString());
-		menu.setMatches(completions);
-	}
-
-    private String findDefinition() {
-        String source = component.getText();
-		int position = component.getCaretPosition();
-		int index = position;
-		while (index > 0) {
-            char current = source.charAt(index - 1);
-            if (validCharacter(current)) {
-                index--;
-            } else {
-                break;
-            }
-		}
-        while (position < component.getText().length()) {
-            char current = source.charAt(position);
-            if (validCharacter(current)) {
-                position++;
-            } else {
-                break;
-            }
+        if (menu.isVisible() && menu.hasSelection()) {
+            menu.onSelected();
+        } else {
+            updateMenu();
         }
+	}
+
+    private void updateMenu() {
         try {
-            return component.getText(index, position - index);
+            Word word = wordFinder.findBackwards(component.getCaretPosition());
+            int index = word.getStart();
+            Rectangle rect = component.getUI().modelToView(component, index);
+            menu.display(new Point(rect.x, rect.y + rect.height), component);
+            Collection<CompletionItem> completions = getCompletions(word.toString());
+            menu.setMatches(word, completions);
+            component.requestFocus();
         } catch (BadLocationException e) {
-            return "";
         }
-    }
-
-	private void setCurrent() {
-        String source = component.getText();
-		int position = component.getCaretPosition();
-		int index = position;
-		while (index > 0) {
-            char current = source.charAt(index - 1);
-            if (validCharacter(current)) {
-                index--;
-            } else {
-                break;
-            }
-		}
-        current.set(index, position - index);
-	}
-
-    private boolean validCharacter(char current) {
-        return Character.isJavaIdentifierPart(current) ||
-                current == '.' || current == ':';
     }
 
     public String getCompletedCurrent() {
-        setCurrent();
-        String current = this.current.toString();
-        int end = Math.max(current.lastIndexOf('.'), current.lastIndexOf(':')) + 1;
-        return current.substring(0, end);
+        Word word = wordFinder.findBothWays(component.getCaretPosition());
+        word = wordFinder.withoutLastPart(word);
+        return word.toString();
     }
 
     public String getCurrentlySelectedWord() {
@@ -399,28 +326,26 @@ public class AutoComplete extends JPanel {
             completionItem = menu.getCurrentItem();
         }
         if (completionItem == null) {
-            return findDefinition();
+            return wordFinder.findBothWays(component.getCaretPosition()).toString();
         }
         return getCompletedCurrent() + completionItem.getText();
     }
 
-    void setCurrent(String selectedItem) {
-		menu.setVisible(false);
-		if (selectedItem != null) {
-            String current = this.current.toString();
-            int from = Math.max(current.lastIndexOf('.'), current.lastIndexOf(':')) + 1;
-            int len = current.length() - from;
+    void finishAutocomplete(final Word word, final String selectedItem) {
+        hideAll();
+        if (selectedItem != null) {
+            final Word fullWord = wordFinder.findBothWays(component.getCaretPosition());
+            final Word firstPart = wordFinder.withoutLastPart(word);
+            final String newText = firstPart.toString() + selectedItem;
+            final int startPos = fullWord.getStart();
             try {
-                int insertPos = this.current.getEnd() - len;
-                component.getDocument().remove(insertPos, len);
-                component.getDocument().insertString(insertPos, selectedItem, null);
+                component.getDocument().remove(startPos, fullWord.length());
+                component.getDocument().insertString(firstPart.getStart(), newText, null);
             } catch (BadLocationException e) {
+                return;
             }
-            int addedLength = selectedItem.length() - len;
-            this.current.increaseLength(addedLength);
+            component.requestFocus();
+            component.setCaretPosition(firstPart.getStart() + newText.length());
 		}
-		component.requestFocus();
-		component.setCaretPosition(current.getEnd());
-        current.clear();
 	}
 }

@@ -24,7 +24,6 @@ package se.krka.kahlua.j2se.interpreter.autocomplete;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
-import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -36,7 +35,7 @@ public class Menu extends HelperWindow {
     private final JList visualList;
     private final SmartListModel listModel;
     private final AutoComplete autoComplete;
-    private CompletionItem currentItem;
+    private Word currentWord;
 
     public Menu(AutoComplete autoComplete, Window window) {
         super(window);
@@ -72,14 +71,15 @@ public class Menu extends HelperWindow {
     void onSelected() {
         CompletionItem completionItem = getCurrentItem();
         if (completionItem != null) {
-            autoComplete.setCurrent(completionItem.getText());
+            autoComplete.finishAutocomplete(currentWord, completionItem.getText());
         }
     }
 
-    public void setMatches(Collection<CompletionItem> matches) {
+    public void setMatches(Word currentWord, Collection<CompletionItem> matches) {
+        this.currentWord = currentWord;
         listModel.setContent(matches);
         if (matches.isEmpty()) {
-            setVisible(false);
+            close();
             return;
         }
         if (getNumElements() > 0 && visualList.getSelectedIndex() < 0) {
@@ -153,5 +153,17 @@ public class Menu extends HelperWindow {
 
     public boolean hasSelection() {
         return visualList.getSelectedIndex() >= 0;
+    }
+
+    public boolean isWorkingAt(int dot) {
+        if (!isVisible()) {
+            return false;
+        }
+        return dot >= currentWord.getStart() && dot <= currentWord.getEnd();
+    }
+
+    public void close() {
+        currentWord = null;
+        setVisible(false);
     }
 }

@@ -23,33 +23,26 @@
 package se.krka.kahlua.j2se.interpreter.autocomplete;
 
 import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
+import javax.swing.text.Document;
 
-class StringRef {
-    private final JTextComponent component;
-    private int start;
-    private int len;
+public class Word {
+    private final Document document;
+    private final int start;
+    private final int end;
 
-    public StringRef(JTextComponent component) {
-        this.component = component;
-    }
-
-    public void set(int start, int len) {
+    public Word(Document document, int start, int end) {
+        this.document = document;
         this.start = start;
-        this.len = len;
+        this.end = end;
     }
 
-    public void clear() {
-        set(0, 0);
-    }
-
-    public void increaseLength(int toAdd) {
-        int max = component.getText().length() - start;
-        len = Math.min(max, len + toAdd);
-    }
-
-    public void decreaseLength(int toRemove) {
-        len = Math.max(0, len - toRemove);
+    @Override
+    public String toString() {
+        try {
+            return document.getText(start, end - start);
+        } catch (BadLocationException e) {
+            return "<invalid word>";
+        }
     }
 
     public int getStart() {
@@ -57,18 +50,10 @@ class StringRef {
     }
 
     public int getEnd() {
-        return start + len;
+        return end;
     }
 
-    public String toString() {
-        try {
-            return component.getText(start, len);
-        } catch (BadLocationException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public int getLen() {
-        return len;
+    public int length() {
+        return end - start;
     }
 }
