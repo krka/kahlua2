@@ -1,3 +1,6 @@
+* Add vararg to luaDescription
+* Add ReturnValues to luaDescription
+
 * Add easier object introspection, i.e. methods(obj)
 * Add callback for when unknown classes appear (maybe)
 

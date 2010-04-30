@@ -42,14 +42,6 @@ public class SmartListModel<T> extends AbstractListModel {
         return delegate.get(index);
     }
 
-    public void clear() {
-        int oldSize = getSize();
-        if (oldSize != 0) {
-            delegate.clear();
-            this.fireIntervalRemoved(this, 0, oldSize - 1);
-        }
-    }
-
     public void setContent(Collection<T> matches) {
         if (getSize() > 0) {
             this.fireIntervalRemoved(this, 0, getSize() - 1);
