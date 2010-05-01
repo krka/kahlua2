@@ -23,20 +23,20 @@
 package se.krka.kahlua.j2se.interpreter.autocomplete;
 
 public class CompletionItem implements Comparable<CompletionItem> {
-    private final String userInput;
-
     private final String text;
     private final String value;
-    private final int score;
+    private int score;
 
-    public CompletionItem(String text, String value, String userInput) {
+    public CompletionItem(String text, String value) {
         this.text = text;
         this.value = value;
-        this.userInput = userInput;
-        score = calculateScore();
     }
 
-    private int calculateScore() {
+    public void updateScore(String userInput) {
+        score = calculateScore(userInput);
+    }
+
+    private int calculateScore(String userInput) {
         int totalScore = 1;
         String lowerText = text.toLowerCase();
         String lowerInput = userInput.toLowerCase();

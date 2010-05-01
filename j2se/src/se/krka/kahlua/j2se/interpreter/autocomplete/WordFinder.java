@@ -58,14 +58,33 @@ public class WordFinder {
         }
     }
 
-    public synchronized Word findLastPart(Word word) {
+    public Word findForward(Word word) {
+        return findForward(word.getStart());
+    }
+
+    public Word findForward(int startPos) {
         try {
             updateSegment();
-            int start = getStartWithSeparator(word.getEnd());
-            return new Word(document, start, word.getEnd());
+            int start = startPos;
+            int end = getEnd(start);
+            return new Word(document, start, end);
         } catch (BadLocationException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public synchronized Word findLastPart(int position) {
+        try {
+            updateSegment();
+            int start = getStartWithSeparator(position);
+            return new Word(document, start, position);
+        } catch (BadLocationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public synchronized Word findLastPart(Word word) {
+        return findLastPart(word.getEnd());
     }
 
     public Word withoutLastPart(Word word) {
@@ -122,4 +141,5 @@ public class WordFinder {
     private void updateSegment() throws BadLocationException {
         document.getText(document.getStartPosition().getOffset(), document.getEndPosition().getOffset(), segment);
     }
+
 }

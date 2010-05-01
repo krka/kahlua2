@@ -32,15 +32,18 @@ import java.awt.event.MouseEvent;
 import java.util.*;
 
 public class Menu extends HelperWindow {
+    private final JLabel title;
     private final JList visualList;
     private final SmartListModel listModel;
     private final AutoComplete autoComplete;
-    private Word currentWord;
+    private int startPos;
+    private final JScrollPane scrollPane;
 
     public Menu(AutoComplete autoComplete, Window window) {
         super(window);
         this.autoComplete = autoComplete;
         listModel = new SmartListModel();
+        title = new JLabel("Matches");
         visualList = new JList(listModel) {
             public int getVisibleRowCount() {
                 return Math.min(listModel.getSize(), 10);
@@ -48,9 +51,12 @@ public class Menu extends HelperWindow {
         };
         visualList.setCellRenderer(new CompletionRenderer());
         visualList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        JScrollPane scrollPane = new JScrollPane(visualList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane = new JScrollPane(visualList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
-        setContentPane(scrollPane);
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(title, BorderLayout.NORTH);
+        panel.add(scrollPane, BorderLayout.CENTER);
+        setContentPane(panel);
         visualList.addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -71,16 +77,21 @@ public class Menu extends HelperWindow {
     void onSelected() {
         CompletionItem completionItem = getCurrentItem();
         if (completionItem != null) {
-            autoComplete.finishAutocomplete(currentWord, completionItem.getText());
+            autoComplete.finishAutocomplete(startPos, completionItem.getText());
         }
     }
 
-    public void setMatches(Word currentWord, Collection<CompletionItem> matches) {
-        this.currentWord = currentWord;
+    public void setMatches(Collection<CompletionItem> matches) {
         listModel.setContent(matches);
         if (matches.isEmpty()) {
-            close();
+            title.setText("No matches.");
+            scrollPane.setVisible(false);
+            pack();
+            pack();
             return;
+        } else {
+            title.setText("Matches:");
+            scrollPane.setVisible(true);
         }
         if (getNumElements() > 0 && visualList.getSelectedIndex() < 0) {
             moveStart();
@@ -155,15 +166,21 @@ public class Menu extends HelperWindow {
         return visualList.getSelectedIndex() >= 0;
     }
 
-    public boolean isWorkingAt(int dot) {
+    public boolean isWorkingAt(Word word, int dot) {
         if (!isVisible()) {
             return false;
         }
-        return dot >= currentWord.getStart() && dot <= currentWord.getEnd();
+        if (word.getStart() != startPos) {
+            return false;
+        }
+        return dot >= word.getStart() && dot <= word.getEnd();
     }
 
     public void close() {
-        currentWord = null;
         setVisible(false);
+    }
+
+    public void setStartPos(int startpos) {
+        this.startPos = startpos;
     }
 }

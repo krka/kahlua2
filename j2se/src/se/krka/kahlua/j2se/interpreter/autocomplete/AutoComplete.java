@@ -50,6 +50,13 @@ public class AutoComplete extends JPanel {
 
     private final KahluaThread thread;
     private final LuaAutoCompleteSet characterSet;
+    private List<CompletionItem> allMatches;
+    private Runnable updateMenu = new Runnable() {
+        @Override
+        public void run() {
+            updateMenu();
+        }
+    };
 
     public AutoComplete(JFrame window, final JTextComponent component, Platform platform, KahluaTable env) {
 		super(new BorderLayout());
@@ -163,7 +170,8 @@ public class AutoComplete extends JPanel {
             @Override
             public void caretUpdate(CaretEvent e) {
                 if (menu.isVisible()) {
-                    if (!menu.isWorkingAt(e.getDot())) {
+                    Word currentWord = wordFinder.findLastPart(e.getDot());
+                    if (!menu.isWorkingAt(currentWord, e.getDot())) {
                         hideAll();
                     }
                 }
@@ -173,19 +181,19 @@ public class AutoComplete extends JPanel {
         component.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 if (menu.isVisible()) {
-                    updateMenu();
+                    SwingUtilities.invokeLater(updateMenu);
                 }
             }
 
             public void removeUpdate(DocumentEvent e) {
                 if (menu.isVisible()) {
-                    updateMenu();
+                    SwingUtilities.invokeLater(updateMenu);
                 }
             }
 
             public void changedUpdate(DocumentEvent e) {
                 if (menu.isVisible()) {
-                    updateMenu();
+                    SwingUtilities.invokeLater(updateMenu);
                 }
             }
         });
@@ -196,7 +204,7 @@ public class AutoComplete extends JPanel {
         menu.close();
     }
 
-    private Collection<CompletionItem> getCompletions(String scan) {
+    private List<CompletionItem> getCompletions(String scan) {
         Object cur = env;
         List<String> parts = characterSet.split(scan);
         for (int i = 0; i < parts.size() - 1; i++) {
@@ -205,16 +213,15 @@ public class AutoComplete extends JPanel {
             }
             cur = getTableEntry(cur, parts.get(i));
         }
-        String lastPart = parts.isEmpty() ? "" : parts.get(parts.size() - 1);
 
-        Set<CompletionItem> returnSet = new TreeSet<CompletionItem>();
+        List<CompletionItem> returnSet = new ArrayList<CompletionItem>();
 
-        populateSet(returnSet, cur, lastPart);
+        populateList(returnSet, cur);
 
         return returnSet;
 	}
 
-    private void populateSet(Set<CompletionItem> returnSet, Object obj, String needle) {
+    private void populateList(Collection<CompletionItem> returnSet, Object obj) {
         for (int i = 0; i < 20; i++) {
             if (obj == null) {
                 return;
@@ -228,10 +235,7 @@ public class AutoComplete extends JPanel {
                         String key = (String) o;
                         Object value = iter.getValue();
                         String extraInfo = getExtraInfo(value);
-                        CompletionItem item = new CompletionItem(key, extraInfo, needle);
-                        if (item.getScore() > 0) {
-                            returnSet.add(item);
-                        }
+                        returnSet.add(new CompletionItem(key, extraInfo));
                     }
                 }
             }
@@ -294,21 +298,50 @@ public class AutoComplete extends JPanel {
 
     private void openMenu() {
         tooltip.setVisible(false);
-        if (menu.isVisible() && menu.hasSelection()) {
-            menu.onSelected();
+        if (menu.isVisible()) {
+            if (menu.hasSelection()) {
+                menu.onSelected();
+            }
         } else {
+            updateMatches();
             updateMenu();
         }
 	}
 
+    private void updateMatches() {
+        allMatches = getCompletions(wordFinder.findBackwards(component.getCaretPosition()).toString());
+    }
+
     private void updateMenu() {
         try {
             Word word = wordFinder.findBackwards(component.getCaretPosition());
+            Word lastPart = wordFinder.findLastPart(word);
+            lastPart = wordFinder.findForward(lastPart);
+
+            if (menu.isVisible() && !menu.isWorkingAt(lastPart, component.getCaretPosition())) {
+                hideAll();
+            }
+
+
             int index = word.getStart();
-            Rectangle rect = component.getUI().modelToView(component, index);
-            menu.display(new Point(rect.x, rect.y + rect.height), component);
-            Collection<CompletionItem> completions = getCompletions(word.toString());
-            menu.setMatches(word, completions);
+            if (!menu.isVisible()) {
+                Rectangle rect = component.getUI().modelToView(component, index);
+                menu.display(new Point(rect.x, rect.y + rect.height), component);
+                menu.setStartPos(lastPart.getStart());
+
+            }
+
+            String lastPartString = lastPart.toString();
+
+            Collection<CompletionItem> completions = new TreeSet<CompletionItem>();
+
+            for (CompletionItem match : allMatches) {
+                match.updateScore(lastPartString);
+                if (match.getScore() > 0) {
+                    completions.add(match);
+                }
+            }
+            menu.setMatches(completions);
             component.requestFocus();
         } catch (BadLocationException e) {
         }
@@ -331,21 +364,19 @@ public class AutoComplete extends JPanel {
         return getCompletedCurrent() + completionItem.getText();
     }
 
-    void finishAutocomplete(final Word word, final String selectedItem) {
+    void finishAutocomplete(int startPos, final String selectedItem) {
+        Word word = wordFinder.findForward(startPos);
         hideAll();
         if (selectedItem != null) {
-            final Word fullWord = wordFinder.findBothWays(component.getCaretPosition());
-            final Word firstPart = wordFinder.withoutLastPart(word);
-            final String newText = firstPart.toString() + selectedItem;
-            final int startPos = fullWord.getStart();
+            final String newText = selectedItem;
             try {
-                component.getDocument().remove(startPos, fullWord.length());
-                component.getDocument().insertString(firstPart.getStart(), newText, null);
+                component.getDocument().remove(startPos, word.length());
+                component.getDocument().insertString(startPos, newText, null);
             } catch (BadLocationException e) {
                 return;
             }
             component.requestFocus();
-            component.setCaretPosition(firstPart.getStart() + newText.length());
+            component.setCaretPosition(word.getStart() + newText.length());
 		}
 	}
 }
