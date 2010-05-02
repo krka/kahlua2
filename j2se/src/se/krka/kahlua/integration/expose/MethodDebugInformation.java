@@ -40,8 +40,13 @@ public class MethodDebugInformation {
         this.parameters = parameters;
         this.luaName = luaName;
         this.isMethod = isMethod;
-        this.returnType = returnType;
         this.returnDescription = returnDescription;
+
+        if (parameters.size() > 0 && parameters.get(0).getType().equals(ReturnValues.class.getName())) {
+            returnType = "...";
+            parameters.remove(0);
+        }
+        this.returnType = returnType;
     }
 
     public String getLuaName() {
@@ -49,7 +54,12 @@ public class MethodDebugInformation {
     }
 
     public String getLuaDescription() {
-        return toString();
+        String separator = isMethod ? "obj:" : "";
+        String msg = returnType + " " + separator + luaName + "(" + getParameterList() + ")\n";
+        if (getReturnDescription() != null) {
+            msg += getReturnDescription() + "\n";
+        }
+        return msg;
     }
 
     public boolean isMethod() {
@@ -70,12 +80,7 @@ public class MethodDebugInformation {
 
     @Override
     public String toString() {
-        String separator = isMethod ? "obj:" : "";
-        String msg = returnType + " " + separator + luaName + "(" + getParameterList() + ")\n";
-        if (getReturnDescription() != null) {
-            msg += getReturnDescription() + "\n";
-        }
-        return msg;
+        return getLuaDescription();
     }
 
     private String getParameterList() {

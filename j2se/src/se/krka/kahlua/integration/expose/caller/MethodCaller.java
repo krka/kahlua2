@@ -40,7 +40,7 @@ public class MethodCaller extends AbstractCaller {
 		this.owner = owner;
 		this.hasSelf = hasSelf;
         method.setAccessible(true);
-		
+
 		hasReturnValue = !method.getReturnType().equals(Void.TYPE);
         if (hasReturnValue && needsMultipleReturnValues()) {
             throw new IllegalArgumentException("Must have a void return type if first argument is a ReturnValues: got: " + method.getReturnType());
