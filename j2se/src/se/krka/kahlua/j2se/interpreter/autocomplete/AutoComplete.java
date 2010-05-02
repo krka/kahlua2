@@ -68,11 +68,6 @@ public class AutoComplete {
         menu = new Menu(this, this.window);
         tooltip = new Tooltip(this.window);
 
-        component.addFocusListener(new FocusAdapter() {
-            public void focusLost(FocusEvent e) {
-                component.requestFocus();
-            }
-        });
         component.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_MASK), "open");
         component.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_MASK), "definition");
         component.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "esc");

@@ -81,9 +81,7 @@ public class OutputTerminal extends JPanel {
     }
 
     public synchronized void appendLua(String text) {
-        if (currentType != Type.LUA) {
-            createLuaPane();
-        }
+        createLuaPane();
         append(text, current);
     }
 

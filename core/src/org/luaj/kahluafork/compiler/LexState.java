@@ -119,7 +119,6 @@ public class LexState {
 	byte[] buff;  /* buffer for tokens */
 	int nbuff; /* length of buffer */
 	String source;  /* current source name */
-	byte decpoint;  /* locale decimal point */
 
 	/* ORDER RESERVED */
 	final static String luaX_tokens [] = {
@@ -298,7 +297,6 @@ public class LexState {
 	}
 
 	void setinput(int firstByte, Reader z, String source ) {
-		this.decpoint = '.';
 		this.lookahead.token = TK_EOS; /* no look-ahead token */
 		this.z = z;
 		this.fs = null;
@@ -332,25 +330,20 @@ public class LexState {
 		return true;
 	}
 
-	void buffreplace(byte from, byte to) {
-		int n = nbuff;
-		byte[] p = buff;
-		while ((--n) >= 0)
-			if (p[n] == from)
-				p[n] = to;
-	}
-
 	boolean str2d(String str, Token token) {
-		double d;
-		str = str.trim(); // TODO: get rid of this
-		if ( str.startsWith("0x") ) {
-			d = Long.parseLong(str.substring(2), 16);
-		}
-		else
-			d = Double.parseDouble(str);
-		token.r = d;
-		return true;
-	}
+        try {
+            double d;
+            if (str.startsWith("0x")) {
+                d = Long.parseLong(str.substring(2), 16);
+            } else {
+                d = Double.parseDouble(str);
+            }
+            token.r = d;
+            return true;
+        } catch (NumberFormatException e) {
+            throw new KahluaException(e);
+        }
+    }
 
 	//
 	// TODO: reexamine this source and see if it should be ported differently
@@ -391,10 +384,7 @@ public class LexState {
 		while (isalnum(current) || current == '_')
 			save_and_next();
 		save('\0');
-		buffreplace((byte)'.', decpoint); /* follow locale for decimal point */
 		String str = new String(buff, 0, nbuff);
-//		if (!str2d(str, seminfo)) /* format error? */
-//			trydecpoint(str, seminfo); /* try to update decimal point separator */
 		str2d(str, token);
 	}
 

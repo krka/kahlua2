@@ -8,17 +8,19 @@ import se.krka.kahlua.integration.expose.LuaJavaClassExposer;
 import se.krka.kahlua.j2se.J2SEPlatform;
 import se.krka.kahlua.vm.*;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class InteractiveShell {
-    public static void main(final String[] args) {
-        JFrame frame = new JFrame("Kahlua interpreter");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    private final JMenuItem newInterpreter;
+    private final JMenu windowMenu;
+    private final AtomicInteger counter = new AtomicInteger();
 
+    public static void main(final String[] args) {
         final Platform platform = new J2SEPlatform();
-        KahluaTable env = platform.newEnvironment();
+        final KahluaTable env = platform.newEnvironment();
 
         LuaConverterManager manager = new LuaConverterManager();
         LuaNumberConverter.install(manager);
@@ -33,20 +35,68 @@ public class InteractiveShell {
 
         exposer.exposeGlobalFunctions(new Sleeper());
 
-        InteractiveShell shell = new InteractiveShell(frame, platform, env);
+        new InteractiveShell(platform, env);
     }
 
-    public InteractiveShell(JFrame frame, Platform platform, KahluaTable env) {
-        JPanel interpreter1 = new Interpreter(platform, env, frame);
-        JPanel interpreter2 = new Interpreter(platform, env, frame);
+    public InteractiveShell(final Platform platform, final KahluaTable env) {
+        final JFrame frame = new JFrame("Kahlua interpreter");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JTabbedPane tabs = new JTabbedPane();
-        tabs.setFocusable(false);
-        tabs.add("First", interpreter1);
-        tabs.add("Second", interpreter2);
-        frame.getContentPane().add(tabs);
-        frame.pack();
+        final JDesktopPane mdi = new JDesktopPane();
+        frame.getContentPane().add(mdi);
+
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu mainMenu = new JMenu("Main");
+        menuBar.add(mainMenu);
+
+        windowMenu = new JMenu("Windows");
+        menuBar.add(windowMenu);
+
+        newInterpreter = new JMenuItem("New interpreter");
+        newInterpreter.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String name = "Window " + counter.incrementAndGet();
+                final JInternalFrame intframe = new JInternalFrame(name,true,true,true,true);
+                intframe.setDefaultCloseOperation(JInternalFrame.HIDE_ON_CLOSE);
+                JPanel interpreter1 = new Interpreter(platform, env, frame);
+
+                JMenuItem item = new JMenuItem(name);
+                item.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        intframe.moveToFront();
+                        intframe.setVisible(true);
+                    }
+                });
+                windowMenu.add(item);
+
+
+                intframe.setSize(600, 400);
+                intframe.getContentPane().add(interpreter1);
+                intframe.setVisible(true);
+                intframe.moveToFront();
+                mdi.add(intframe);
+
+            }
+        });
+        mainMenu.add(newInterpreter);
+        JMenuItem exit = new JMenuItem("Exit");
+        exit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+            }
+        });
+        mainMenu.add(exit);
+
+
+        frame.setJMenuBar(menuBar);
+
+        frame.setSize(800, 600);
         frame.setVisible(true);
-    }
 
+        newInterpreter.doClick();
+    }
 }

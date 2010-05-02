@@ -168,7 +168,7 @@ public class Interpreter extends JPanel {
                     }
                 } catch (IOException e) {
                     e.printStackTrace(output.getPrintStream());
-                } catch (KahluaException e) {
+                } catch (RuntimeException e) {
                     output.appendError(e.getMessage()+"\n");
                 }
                 outputTitle.setText("Output:");
