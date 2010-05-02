@@ -43,7 +43,7 @@ public class Menu extends HelperWindow {
         super(window);
         this.autoComplete = autoComplete;
         listModel = new SmartListModel();
-        title = new JLabel("Matches");
+        title = new JLabel("No matches");
         visualList = new JList(listModel) {
             public int getVisibleRowCount() {
                 return Math.min(listModel.getSize(), 10);
@@ -84,13 +84,13 @@ public class Menu extends HelperWindow {
     public void setMatches(Collection<CompletionItem> matches) {
         listModel.setContent(matches);
         if (matches.isEmpty()) {
-            title.setText("No matches.");
+            title.setVisible(true);
             scrollPane.setVisible(false);
             pack();
             pack();
             return;
         } else {
-            title.setText("Matches:");
+            title.setVisible(false);
             scrollPane.setVisible(true);
         }
         if (getNumElements() > 0 && visualList.getSelectedIndex() < 0) {

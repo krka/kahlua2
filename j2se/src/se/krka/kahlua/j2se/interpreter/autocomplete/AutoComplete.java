@@ -39,7 +39,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
-public class AutoComplete extends JPanel {
+public class AutoComplete {
     private final Menu menu;
     private final Tooltip tooltip;
 	private final JTextComponent component;
@@ -59,7 +59,6 @@ public class AutoComplete extends JPanel {
     };
 
     public AutoComplete(JFrame window, final JTextComponent component, Platform platform, KahluaTable env) {
-		super(new BorderLayout());
 		this.window = window;
 		this.component = component;
         this.env = env;
@@ -68,7 +67,6 @@ public class AutoComplete extends JPanel {
         wordFinder = new WordFinder(component.getDocument(), characterSet);
         menu = new Menu(this, this.window);
         tooltip = new Tooltip(this.window);
-        add(this.component, BorderLayout.CENTER);
 
         component.addFocusListener(new FocusAdapter() {
             public void focusLost(FocusEvent e) {
@@ -309,42 +307,47 @@ public class AutoComplete extends JPanel {
 	}
 
     private void updateMatches() {
-        allMatches = getCompletions(wordFinder.findBackwards(component.getCaretPosition()).toString());
+        try {
+            Word word = wordFinder.findBackwards(component.getCaretPosition());
+            Word lastPart = wordFinder.findForward(wordFinder.findLastPart(word));
+            int index = word.getStart();
+            Rectangle rect = component.getUI().modelToView(component, index);
+            menu.display(new Point(rect.x, rect.y + rect.height), component);
+            menu.setStartPos(lastPart.getStart());
+
+            allMatches = getCompletions(wordFinder.findBackwards(component.getCaretPosition()).toString());
+        } catch (BadLocationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void updateMenu() {
-        try {
-            Word word = wordFinder.findBackwards(component.getCaretPosition());
-            Word lastPart = wordFinder.findLastPart(word);
-            lastPart = wordFinder.findForward(lastPart);
+        Word lastPart = findLastPart();
 
-            if (menu.isVisible() && !menu.isWorkingAt(lastPart, component.getCaretPosition())) {
-                hideAll();
-            }
-
-
-            int index = word.getStart();
-            if (!menu.isVisible()) {
-                Rectangle rect = component.getUI().modelToView(component, index);
-                menu.display(new Point(rect.x, rect.y + rect.height), component);
-                menu.setStartPos(lastPart.getStart());
-
-            }
-
-            String lastPartString = lastPart.toString();
-
-            Collection<CompletionItem> completions = new TreeSet<CompletionItem>();
-
-            for (CompletionItem match : allMatches) {
-                match.updateScore(lastPartString);
-                if (match.getScore() > 0) {
-                    completions.add(match);
-                }
-            }
-            menu.setMatches(completions);
-            component.requestFocus();
-        } catch (BadLocationException e) {
+        boolean visible = menu.isVisible();
+        if (visible && !menu.isWorkingAt(lastPart, component.getCaretPosition())) {
+            hideAll();
+            return;
         }
+
+        String lastPartString = lastPart.toString();
+
+        Collection<CompletionItem> completions = new TreeSet<CompletionItem>();
+
+        for (CompletionItem match : allMatches) {
+            match.updateScore(lastPartString);
+            if (match.getScore() > 0) {
+                completions.add(match);
+            }
+        }
+        menu.setMatches(completions);
+        component.requestFocus();
+    }
+
+    private Word findLastPart() {
+        Word word = wordFinder.findBackwards(component.getCaretPosition());
+        Word lastPart = wordFinder.findForward(wordFinder.findLastPart(word));
+        return lastPart;
     }
 
     public String getCompletedCurrent() {

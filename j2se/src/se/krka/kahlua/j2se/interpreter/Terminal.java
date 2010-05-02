@@ -22,58 +22,36 @@
 
 package se.krka.kahlua.j2se.interpreter;
 
-import se.krka.kahlua.j2se.interpreter.autocomplete.AutoComplete;
-import se.krka.kahlua.vm.KahluaTable;
-import se.krka.kahlua.vm.Platform;
-
 import javax.swing.*;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
+import javax.swing.text.StyledEditorKit;
+import java.awt.*;
 import java.awt.event.KeyListener;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
 
 public class Terminal extends JPanel {
-    private final JTextPane textPane;
+    private final JEditorPane textPane;
     private final JScrollPane scrollPane;
-    private final JScrollBar scrollbar;
-    private final Style defaultStyle;
 
-    private final PrintStream printStream = new PrintStream(new OutputStream() {
-        @Override
-        public void write(int b) throws IOException {
-            append(String.valueOf((char) b), null);
-        }
-    });
-
-    public Terminal(boolean editable, Color foreground, JFrame owner, boolean autoComplete, KahluaTable env, Platform platform) {
+    public Terminal(boolean editable, Color background, Color foreground) {
         super(new BorderLayout());
-        textPane = new JTextPane();
+        textPane = new JEditorPane();
+        StyledEditorKit editorKit = new StyledEditorKit();
+        textPane.setEditorKit(editorKit);
+        textPane.setDocument(editorKit.createDefaultDocument());
+
         textPane.setFont(new Font("Monospaced", Font.PLAIN, 16));
-        setBackground(Color.BLACK);
+        setBackground(background);
         setForeground(foreground);
-        defaultStyle = createStyle("default", foreground);
-        textPane.setAutoscrolls(editable);
+        textPane.setCaretColor(foreground);
+
         textPane.setEditable(editable);
         textPane.setCaretPosition(0);
-        textPane.setCaretColor(Color.WHITE);
 
         JComponent scrollChild = textPane;
-        if (autoComplete) {
-            scrollChild = new AutoComplete(owner, textPane, platform, env);
-        }
 
         scrollPane = new JScrollPane(
                 scrollChild,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollbar = scrollPane.getVerticalScrollBar();
         this.add(scrollPane, BorderLayout.CENTER);
     }
 
@@ -89,70 +67,12 @@ public class Terminal extends JPanel {
         }
     }
 
-    public PrintStream getPrintStream() {
-        return printStream;
-    }
-
-    public Style createStyle(String name, Color color) {
-        Style style = textPane.addStyle(name, null);
-        StyleConstants.setForeground(style, color);
-        return style;
-    }
-
-    public void appendLine(String s, Style style) {
-        if (!s.endsWith("\n")) {
-            s = s + "\n";
-        }
-        append(s, style);
-    }
-
-	public void append(String text, Style style) {
-        if (style == null) {
-            style = defaultStyle;
-        }
-        StyledDocument doc = (StyledDocument) textPane.getDocument();
-        int len = doc.getLength();
-        try {
-            final int value = scrollbar.getValue();
-            boolean atBottom = isAtBottom(value);
-            doc.setLogicalStyle(len, style);
-            doc.insertString(len, text, null);
-
-            if (atBottom) {
-                textPane.setCaretPosition(doc.getLength());
-            } else {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        scrollbar.setValue(value);
-                    }
-                });
-            }
-        } catch (BadLocationException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private boolean isAtBottom(int value) {
-        int maximum = scrollbar.getMaximum();
-        int amount = scrollbar.getVisibleAmount();
-        return value >= maximum - amount - 16;
-    }
-
-    public void setCaretColor(Color color) {
-        textPane.setCaretColor(color);
-    }
-
     public String getText() {
         return textPane.getText();
     }
 
     public void setText(String s) {
         textPane.setText(s);
-    }
-
-    public void appendLine(String s) {
-        appendLine(s, null);
     }
 
     public void requestFocus() {
@@ -164,7 +84,7 @@ public class Terminal extends JPanel {
         textPane.addKeyListener(l);
     }
 
-    public JTextPane getTextPane() {
+    public JEditorPane getTextPane() {
         return textPane;
     }
 }

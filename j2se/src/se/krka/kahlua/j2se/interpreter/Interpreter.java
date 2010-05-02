@@ -26,19 +26,14 @@ import se.krka.kahlua.converter.LuaConverterManager;
 import se.krka.kahlua.integration.LuaCaller;
 import se.krka.kahlua.integration.LuaReturn;
 import se.krka.kahlua.integration.expose.LuaJavaClassExposer;
+import se.krka.kahlua.j2se.interpreter.autocomplete.AutoComplete;
+import se.krka.kahlua.j2se.interpreter.jsyntax.JSyntaxUtil;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
 import se.krka.kahlua.stdlib.BaseLib;
-import se.krka.kahlua.vm.KahluaException;
-import se.krka.kahlua.vm.KahluaTable;
-import se.krka.kahlua.vm.LuaClosure;
-import se.krka.kahlua.vm.KahluaThread;
-import se.krka.kahlua.vm.Platform;
+import se.krka.kahlua.vm.*;
 
 import javax.swing.*;
-import javax.swing.text.Style;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
@@ -49,13 +44,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class Interpreter extends JPanel {
+
     private final KahluaThread state;
-    private final Terminal output;
+    private final OutputTerminal output;
     private final JLabel outputTitle = new JLabel("Output:");
     private final JLabel inputTitle = new JLabel("Input:");
 
-
-    private final Style errorStyle;
     private final History history = new History();
     private final ExecutorService executors = Executors.newSingleThreadExecutor();
     private Future<?> future;
@@ -67,22 +61,26 @@ public class Interpreter extends JPanel {
     public Interpreter(Platform platform, KahluaTable env, JFrame owner) {
         super(new BorderLayout());
 
+        JSyntaxUtil.setup();
+
         exposer = new LuaJavaClassExposer(manager, platform, env);
         exposer.exposeGlobalFunctions(this);
 
-        output = new Terminal(false, Color.WHITE, owner, false, null, null);
+        output = new OutputTerminal(Color.BLACK);
         output.setPreferredSize(new Dimension(800, 400));
-
-        Color inputColor = Color.GREEN.brighter().brighter().brighter();
-        final Style inputStyle = output.createStyle("input", inputColor);
-        errorStyle = output.createStyle("error", Color.RED.brighter().brighter());
 
         JPanel outputPanel = new JPanel(new BorderLayout());
         outputPanel.add(outputTitle, BorderLayout.NORTH);
         outputPanel.add(output, BorderLayout.CENTER);
         this.add(outputPanel, BorderLayout.CENTER);
 
-        final Terminal input = new Terminal(true, Color.WHITE, owner, true, env, platform);
+        final Terminal input = new Terminal(true, Color.BLACK, Color.WHITE);
+
+        JSyntaxUtil.installSyntax(input.getTextPane());
+        new AutoComplete(owner, input.getTextPane(), platform, env);
+
+
+
         input.setPreferredSize(new Dimension(800, 100));
         JPanel inputPanel = new JPanel(new BorderLayout());
         inputPanel.add(inputTitle, BorderLayout.NORTH);
@@ -106,7 +104,7 @@ public class Interpreter extends JPanel {
                         if (isDone()) {
                             String text = input.getText();
                             history.add(text);
-                            output.appendLine(text, inputStyle);
+                            output.appendLua(text);
                             input.setText("");
                             execute(text);
                         }
@@ -124,7 +122,7 @@ public class Interpreter extends JPanel {
             }
         });
 
-        output.appendLine("Welcome to the Kahlua interpreter");
+        output.appendInfo("Welcome to the Kahlua interpreter\n");
         this.addComponentListener(new ComponentListener() {
             @Override
             public void componentResized(ComponentEvent componentEvent) {
@@ -161,17 +159,17 @@ public class Interpreter extends JPanel {
                     LuaReturn result = caller.protectedCall(state, luaClosure);
                     if (result.isSuccess()) {
                         for (Object o : result) {
-                            output.appendLine(BaseLib.tostring(o, state));
+                            output.appendOutput(BaseLib.tostring(o, state)+"\n");
                         }
                     } else {
-                        output.appendLine(result.getErrorString(), errorStyle);
-                        output.appendLine(result.getLuaStackTrace(), errorStyle);
+                        output.appendError(result.getErrorString()+"\n");
+                        output.appendError(result.getLuaStackTrace()+"\n");
                         result.getJavaException().printStackTrace(System.err);
                     }
                 } catch (IOException e) {
                     e.printStackTrace(output.getPrintStream());
                 } catch (KahluaException e) {
-                    output.appendLine(e.getMessage(), errorStyle);
+                    output.appendError(e.getMessage()+"\n");
                 }
                 outputTitle.setText("Output:");
             }
@@ -191,9 +189,5 @@ public class Interpreter extends JPanel {
 
     public boolean isDone() {
         return future == null || future.isDone();
-    }
-
-    public Terminal getOutput() {
-        return output;
     }
 }

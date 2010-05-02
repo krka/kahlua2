@@ -20,12 +20,18 @@
 	<property name="test.emma.coverage.dir"     value="${test.dir}/coverage"/>
 
 	<path id="cldc11.dependencies">
+        <pathelement path="${classes.dir}/core"/>
 		<pathelement location="${basedir}/lib/cldcapi11.jar" />
 	</path>
 
+    <path id="j2se.dependencies">
+        <pathelement path="${classes.dir}/core"/>
+        <pathelement location="${basedir}/lib/jsyntaxpane-0.9.5.jar" />
+    </path>
+
 	<path id="main.classpath">
-		<pathelement path="${classes.dir}/core"/>
 		<pathelement path="${classes.dir}/j2se"/>
+        <path refid="j2se.dependencies" />
 	</path>
 
 	<path id="test.classpath">
@@ -102,13 +108,14 @@
 		<javac
 			destdir="${classes.dir}/j2se"
 			debug="true"
+            classpathref="j2se.dependencies"
 		>
-			<classpath>
-				<pathelement location="${classes.dir}/core" />
-			</classpath>
-
 			<src path="${j2se.src.dir}"/>
 		</javac>
+        <copy todir="${classes.dir}/j2se">
+            <fileset dir="${basedir}/j2se/resources">
+            </fileset>
+        </copy>
 	</target>
 
 	<target name="annotation-processor-j2se" depends="compile-j2se">
@@ -119,11 +126,8 @@
 				debug="on"
 				deprecation="on"
 				optimize="on"
+                classpathref="main.classpath"
 				>
-			<classpath>
-				<pathelement location="${classes.dir}/core" />
-				<pathelement location="${classes.dir}/j2se" />
-			</classpath>
 			<src path="${j2se.src.dir}"/>
 			<compilerarg value="-processor"/>
 			<compilerarg value="se.krka.kahlua.integration.processor.LuaDebugDataProcessor"/>
