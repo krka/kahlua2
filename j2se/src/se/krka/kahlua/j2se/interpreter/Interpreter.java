@@ -51,7 +51,7 @@ public class Interpreter extends JPanel {
     private final JLabel inputTitle = new JLabel("Input:");
 
     private final History history = new History();
-    private final ExecutorService executors = Executors.newSingleThreadExecutor();
+    private final ExecutorService executors = Executors.newSingleThreadExecutor(new DaemonizedThreadFactory(Executors.defaultThreadFactory()));
     private Future<?> future;
 
     final LuaConverterManager manager = new LuaConverterManager();
@@ -190,4 +190,5 @@ public class Interpreter extends JPanel {
     public boolean isDone() {
         return future == null || future.isDone();
     }
+
 }
