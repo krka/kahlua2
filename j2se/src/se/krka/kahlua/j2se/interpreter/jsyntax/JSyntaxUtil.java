@@ -54,6 +54,6 @@ public class JSyntaxUtil {
     }
 
     public static void installSyntax(final JEditorPane textPane) {
-        textPane.setContentType("text/kahlua");
+        textPane.setEditorKit(new KahluaKit());
     }
 }

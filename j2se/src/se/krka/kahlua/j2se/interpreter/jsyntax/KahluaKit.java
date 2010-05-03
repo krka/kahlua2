@@ -30,4 +30,5 @@ public class KahluaKit extends DefaultSyntaxKit {
     public KahluaKit() {
         super(new LuaLexer());
     }
+
 }

@@ -6,17 +6,23 @@ import se.krka.kahlua.converter.LuaConverterManager;
 import se.krka.kahlua.converter.LuaNumberConverter;
 import se.krka.kahlua.integration.expose.LuaJavaClassExposer;
 import se.krka.kahlua.j2se.J2SEPlatform;
-import se.krka.kahlua.vm.*;
+import se.krka.kahlua.vm.KahluaTable;
+import se.krka.kahlua.vm.Platform;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class InteractiveShell {
     private final JMenuItem newInterpreter;
     private final JMenu windowMenu;
     private final AtomicInteger counter = new AtomicInteger();
+    private final List<JInternalFrame> windows;
 
     public static void main(final String[] args) {
         final Platform platform = new J2SEPlatform();
@@ -53,12 +59,15 @@ public class InteractiveShell {
         windowMenu = new JMenu("Windows");
         menuBar.add(windowMenu);
 
+        windows = new ArrayList<JInternalFrame>();
+
         newInterpreter = new JMenuItem("New interpreter");
         newInterpreter.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String name = "Window " + counter.incrementAndGet();
                 final JInternalFrame intframe = new JInternalFrame(name,true,true,true,true);
+                windows.add(intframe);
                 intframe.setDefaultCloseOperation(JInternalFrame.HIDE_ON_CLOSE);
                 JPanel interpreter1 = new Interpreter(platform, env, frame);
 
@@ -98,5 +107,19 @@ public class InteractiveShell {
         frame.setVisible(true);
 
         newInterpreter.doClick();
+        try {
+            findWindow("Window 1").setMaximum(true);
+        } catch (PropertyVetoException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    private JInternalFrame findWindow(String name) {
+        for (JInternalFrame component : windows) {
+            if (component.getTitle().equals(name)) {
+                return component;
+            }
+        }
+        return null;
     }
 }
