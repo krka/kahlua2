@@ -1,3 +1,6 @@
+* Integrate with Kahlua-test
+* Add paran support to lua.flex in jsyntaxpane
+ 
 * Add easier object introspection, i.e. methods(obj)
 * Add callback for when unknown classes appear (maybe)
 * Convert to using KahluaTest

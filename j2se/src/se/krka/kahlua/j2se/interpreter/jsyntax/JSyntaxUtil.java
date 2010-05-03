@@ -25,10 +25,12 @@ package se.krka.kahlua.j2se.interpreter.jsyntax;
 import jsyntaxpane.DefaultSyntaxKit;
 import jsyntaxpane.SyntaxStyle;
 import jsyntaxpane.SyntaxStyles;
+import jsyntaxpane.util.Configuration;
 
 import javax.swing.*;
 import java.awt.*;
 import java.lang.reflect.Field;
+import java.util.Properties;
 
 public class JSyntaxUtil {
     private static boolean initialized;
@@ -40,21 +42,18 @@ public class JSyntaxUtil {
         initialized = true;
 
         // Hack to set jsyntax default color
-        try {
-            for (Field field : SyntaxStyles.class.getDeclaredFields()) {
-                if (field.getName().equals("DEFAULT_STYLE")) {
-                    field.setAccessible(true);
-                    field.set(null, new SyntaxStyle(Color.WHITE, false, false));
-                }
-            }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        Properties config = new Properties();
+        config.put("DEFAULT", "0xffffff, 0");
+        SyntaxStyles.getInstance().mergeStyles(config);
+
         DefaultSyntaxKit.initKit();
     }
 
     public static KahluaKit installSyntax(final JEditorPane textPane) {
         KahluaKit kahluaKit = new KahluaKit();
+        Properties config = new Properties();
+        config.put("CaretColor", "0xffffff");
+        kahluaKit.setConfig(config);
         textPane.setEditorKit(kahluaKit);
         return kahluaKit;
     }

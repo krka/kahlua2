@@ -31,12 +31,15 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
 public class OutputTerminal extends JPanel {
     private final JScrollPane scrollpane;
+    private boolean scrollDown;
 
     private static enum Type {
         NONE, LUA, OUTPUT, ERROR, INFO
@@ -77,6 +80,15 @@ public class OutputTerminal extends JPanel {
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollpane.getVerticalScrollBar().setUnitIncrement(20);
         scrollpane.getVerticalScrollBar().setBlockIncrement(200);
+        scrollpane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+            @Override
+            public void adjustmentValueChanged(AdjustmentEvent e) {
+                if (scrollDown) {
+                    e.getAdjustable().setValue(e.getAdjustable().getMaximum());
+                    scrollDown = false;
+                }
+            }
+        });
         scrollpane.setAutoscrolls(true);
 
         add(scrollpane, BorderLayout.CENTER);
@@ -138,19 +150,16 @@ public class OutputTerminal extends JPanel {
     }
 
     private synchronized void append(final String text, final JTextComponent current) {
+        JScrollBar vert = scrollpane.getVerticalScrollBar();
+        boolean isAtBottom = vert.getValue() + vert.getVisibleAmount() >= vert.getMaximum() - 32;
+        scrollDown = !vert.getValueIsAdjusting() && isAtBottom;
+
         try {
             Document document = current.getDocument();
             document.insertString(document.getLength(), text, null);
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
-        SwingUtilities.invokeLater(new Runnable(){
-            @Override
-            public void run() {
-                JScrollBar vert = scrollpane.getVerticalScrollBar();
-                vert.setValue(vert.getMaximum());
-            }
-        });
     }
 
     private void createLuaPane() {
