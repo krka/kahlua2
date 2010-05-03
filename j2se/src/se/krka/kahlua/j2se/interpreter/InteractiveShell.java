@@ -12,8 +12,7 @@ import se.krka.kahlua.vm.Platform;
 import javax.swing.*;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
-import javax.swing.event.InternalFrameListener;
-import java.awt.*;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
@@ -45,11 +44,27 @@ public class InteractiveShell {
 
         exposer.exposeGlobalFunctions(new Sleeper());
 
-        new InteractiveShell(platform, env);
+        InteractiveShell shell = new InteractiveShell("Kahlua interactive shell", platform, env);
+        shell.appendWelcome();
+        shell.appendKeybindings();
     }
 
-    public InteractiveShell(final Platform platform, final KahluaTable env) {
-        frame = new JFrame("Kahlua interpreters");
+    public void appendKeybindings() {
+        getWindow(0).getInterpreter().getOutput().appendInfo("Useful shortcuts:\n" +
+                "Ctrl-enter -- execute script\n" +
+                "Ctrl-space -- autocomplete global variables\n" +
+                "Ctrl-p -- show definition (if available)\n" +
+                "Ctrl-up/down -- browse input history\n" +
+                ""
+        );
+    }
+
+    public void appendWelcome() {
+        getWindow(0).getInterpreter().getOutput().appendInfo("Welcome to the Kahlua interpreter\n");
+    }
+
+    public InteractiveShell(String name, final Platform platform, final KahluaTable env) {
+        frame = new JFrame(name);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         final JDesktopPane mdi = new JDesktopPane();
@@ -66,24 +81,42 @@ public class InteractiveShell {
         tileWindows.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Rectangle bounds = mdi.getBounds();
-                int heightPerFrame = (int) bounds.getHeight();
-                int widthPerFrame = (int) (bounds.getWidth() / interpreters.size());
-
-                int x = 0;
-                for (InternalInterpreterFrame window : interpreters) {
-                    try {
-                        window.setMaximum(false);
-                    } catch (PropertyVetoException e1) {
-                        e1.printStackTrace();
-                    }
-                    window.setBounds(x, 0, widthPerFrame, heightPerFrame);
-                    window.setVisible(true);
-                    x += widthPerFrame;
-                }
+                tile(mdi, interpreters, 1, interpreters.size());
             }
         });
         windowMenu.add(tileWindows);
+        JMenuItem tileWindowsHorizontally = new JMenuItem("Tile horizontally");
+        tileWindowsHorizontally.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tile(mdi, interpreters, interpreters.size(), 1);
+            }
+        });
+        windowMenu.add(tileWindowsHorizontally);
+        JMenuItem tileWindowsGrid = new JMenuItem("Tile as grid");
+        tileWindowsGrid.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int size = interpreters.size();
+                int n = (int) Math.ceil(Math.sqrt(size));
+                int m = (int) Math.ceil((double)size / n);
+
+                if (n == m) {
+                    int waste = n*m - size;
+                    if (waste > 0) {
+                        n = n - 1;
+                        m = m + 1;
+                    }
+                }
+                if (n > m) {
+                    int tmp = n;
+                    n = m;
+                    m = tmp;
+                }
+                tile(mdi, interpreters, n, m);
+            }
+        });
+        windowMenu.add(tileWindowsGrid);
         windowMenu.add(new JSeparator(JSeparator.HORIZONTAL));
 
         interpreters = new ArrayList<InternalInterpreterFrame>();
@@ -156,6 +189,37 @@ public class InteractiveShell {
             getWindow(0).setMaximum(true);
         } catch (PropertyVetoException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    private static void tile(JDesktopPane mdi,
+                             List<InternalInterpreterFrame> interpreters,
+                             int numX, int numY) {
+        if (numX == 0 || numY == 0) {
+            return;
+        }
+        Rectangle bounds = mdi.getBounds();
+        int heightPerFrame = (int) (bounds.getHeight() / numX);
+        int widthPerFrame = (int) (bounds.getWidth() / numY);
+
+        int x = 0;
+        int y = 0;
+        for (InternalInterpreterFrame window : interpreters) {
+            try {
+                window.setMaximum(false);
+            } catch (PropertyVetoException e1) {
+                e1.printStackTrace();
+            }
+            window.setBounds(x, y, widthPerFrame, heightPerFrame);
+            window.setVisible(true);
+            x += widthPerFrame;
+            if (x + widthPerFrame > bounds.getWidth()) {
+                x = 0;
+                y += heightPerFrame;
+                if (y + heightPerFrame > bounds.getHeight()) {
+                    y = 0;
+                }
+            }
         }
     }
 

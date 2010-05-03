@@ -122,7 +122,6 @@ public class Interpreter extends JPanel {
             }
         });
 
-        output.appendInfo("Welcome to the Kahlua interpreter\n");
         this.addComponentListener(new ComponentListener() {
             @Override
             public void componentResized(ComponentEvent componentEvent) {
