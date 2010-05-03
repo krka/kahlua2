@@ -22,7 +22,9 @@
 
 package se.krka.kahlua.j2se.interpreter;
 
+import jsyntaxpane.components.LineNumbersRuler;
 import se.krka.kahlua.j2se.interpreter.jsyntax.JSyntaxUtil;
+import se.krka.kahlua.j2se.interpreter.jsyntax.KahluaKit;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
@@ -164,7 +166,9 @@ public class OutputTerminal extends JPanel {
         scrollpane.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
 
         view.add(scrollpane);
-        JSyntaxUtil.installSyntax(pane);
+        KahluaKit kahluaKit = JSyntaxUtil.installSyntax(pane);
+        kahluaKit.deinstallComponent(pane, LineNumbersRuler.class.getName());
+
         current = pane;
         currentType = Type.LUA;
         setBorder(current);

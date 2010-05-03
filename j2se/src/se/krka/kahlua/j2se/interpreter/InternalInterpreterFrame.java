@@ -20,42 +20,28 @@
  THE SOFTWARE.
  */
 
-package se.krka.kahlua.j2se.interpreter.jsyntax;
-
-import jsyntaxpane.DefaultSyntaxKit;
-import jsyntaxpane.SyntaxStyle;
-import jsyntaxpane.SyntaxStyles;
+package se.krka.kahlua.j2se.interpreter;
 
 import javax.swing.*;
-import java.awt.*;
-import java.lang.reflect.Field;
 
-public class JSyntaxUtil {
-    private static boolean initialized;
+public class InternalInterpreterFrame extends JInternalFrame {
+    private final Interpreter interpreter;
+    private JMenuItem item;
 
-    public static void setup() {
-        if (initialized) {
-            return;
-        }
-        initialized = true;
-
-        // Hack to set jsyntax default color
-        try {
-            for (Field field : SyntaxStyles.class.getDeclaredFields()) {
-                if (field.getName().equals("DEFAULT_STYLE")) {
-                    field.setAccessible(true);
-                    field.set(null, new SyntaxStyle(Color.WHITE, false, false));
-                }
-            }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        DefaultSyntaxKit.initKit();
+    public InternalInterpreterFrame(Interpreter interpreter, String name) {
+        super(name, true, true, true);
+        this.interpreter = interpreter;
     }
 
-    public static KahluaKit installSyntax(final JEditorPane textPane) {
-        KahluaKit kahluaKit = new KahluaKit();
-        textPane.setEditorKit(kahluaKit);
-        return kahluaKit;
+    public Interpreter getInterpreter() {
+        return interpreter;
+    }
+
+    public void setMenuItem(JMenuItem item) {
+        this.item = item;
+    }
+
+    public JMenuItem getItem() {
+        return item;
     }
 }

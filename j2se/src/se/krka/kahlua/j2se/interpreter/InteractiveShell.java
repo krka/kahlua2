@@ -10,6 +10,10 @@ import se.krka.kahlua.vm.KahluaTable;
 import se.krka.kahlua.vm.Platform;
 
 import javax.swing.*;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
+import javax.swing.event.InternalFrameListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
@@ -22,8 +26,7 @@ public class InteractiveShell {
     private final JMenuItem newInterpreter;
     private final JMenu windowMenu;
     private final AtomicInteger counter = new AtomicInteger();
-    private final List<JInternalFrame> windows;
-    private final List<Interpreter> interpreters;
+    private final ArrayList<InternalInterpreterFrame> interpreters;
 
     public static void main(final String[] args) {
         final Platform platform = new J2SEPlatform();
@@ -59,23 +62,55 @@ public class InteractiveShell {
 
         windowMenu = new JMenu("Windows");
         menuBar.add(windowMenu);
+        JMenuItem tileWindows = new JMenuItem("Tile vertically");
+        tileWindows.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Rectangle bounds = mdi.getBounds();
+                int heightPerFrame = (int) bounds.getHeight();
+                int widthPerFrame = (int) (bounds.getWidth() / interpreters.size());
 
-        windows = new ArrayList<JInternalFrame>();
-        interpreters = new ArrayList<Interpreter>();
+                int x = 0;
+                for (InternalInterpreterFrame window : interpreters) {
+                    try {
+                        window.setMaximum(false);
+                    } catch (PropertyVetoException e1) {
+                        e1.printStackTrace();
+                    }
+                    window.setBounds(x, 0, widthPerFrame, heightPerFrame);
+                    window.setVisible(true);
+                    x += widthPerFrame;
+                }
+            }
+        });
+        windowMenu.add(tileWindows);
+        windowMenu.add(new JSeparator(JSeparator.HORIZONTAL));
+
+        interpreters = new ArrayList<InternalInterpreterFrame>();
 
         newInterpreter = new JMenuItem("New interpreter");
         newInterpreter.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String name = "Window " + counter.incrementAndGet();
-                final JInternalFrame frame = new JInternalFrame(name,true,true,true,true);
+                int index = counter.incrementAndGet();
+                String name = "Window " + index;
+                final Interpreter interpreter = new Interpreter(platform, env, InteractiveShell.this.frame);
+                final InternalInterpreterFrame frame = new InternalInterpreterFrame(interpreter, name);
+
                 frame.setDefaultCloseOperation(JInternalFrame.HIDE_ON_CLOSE);
-                Interpreter interpreter = new Interpreter(platform, env, InteractiveShell.this.frame);
+                frame.addInternalFrameListener(new InternalFrameAdapter() {
 
-                windows.add(frame);
-                interpreters.add(interpreter);
+                    @Override
+                    public void internalFrameClosing(InternalFrameEvent e) {
+                        interpreters.remove(frame);
+                        windowMenu.remove(frame.getItem());
+                        frame.dispose();
+                    }
+                });
 
-                JMenuItem item = new JMenuItem(name);
+                interpreters.add(frame);
+
+                final JMenuItem item = new JMenuItem(name);
                 item.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -83,18 +118,24 @@ public class InteractiveShell {
                         frame.setVisible(true);
                     }
                 });
+                frame.setMenuItem(item);
                 windowMenu.add(item);
 
 
+                mdi.add(frame);
                 frame.setSize(600, 400);
                 frame.getContentPane().add(interpreter);
-                frame.setVisible(true);
-                frame.moveToFront();
-                mdi.add(frame);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        item.doClick();
+                    }
+                });
 
             }
         });
         mainMenu.add(newInterpreter);
+
         JMenuItem exit = new JMenuItem("Exit");
         exit.addActionListener(new ActionListener() {
             @Override
@@ -118,12 +159,7 @@ public class InteractiveShell {
         }
     }
 
-    public JInternalFrame getWindow(int index) {
-        return windows.get(index);
-    }
-
-    public Interpreter getInterpreter(int index) {
+    public InternalInterpreterFrame getWindow(int index) {
         return interpreters.get(index);
     }
-
 }
