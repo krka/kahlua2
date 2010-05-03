@@ -191,4 +191,11 @@ public class Interpreter extends JPanel {
         return future == null || future.isDone();
     }
 
+    public KahluaThread getState() {
+        return state;
+    }
+
+    public OutputTerminal getOutput() {
+        return output;
+    }
 }
