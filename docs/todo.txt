@@ -1,3 +1,4 @@
+* Add a webstart for interpreter demo
 * Integrate with Kahlua-test
  
 * Add easier object introspection, i.e. methods(obj)
