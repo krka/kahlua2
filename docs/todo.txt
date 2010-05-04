@@ -1,3 +1,10 @@
+* Add padding in editor
+* Remove auto-inserting pairs
+* Use constant width everywhere
+* Add pp to kahlua interpreter
+* Fix autocomplete list rendering bug (setfenv -> setf...)
+* Move autocomplete list value field to the tooltip
+
 * Add a webstart for interpreter demo
 * Integrate with Kahlua-test
  
