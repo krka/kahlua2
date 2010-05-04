@@ -23,8 +23,8 @@
 package se.krka.kahlua.j2se.interpreter;
 
 import javax.swing.*;
-import javax.swing.text.StyledEditorKit;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.event.KeyListener;
 
 public class Terminal extends JPanel {
@@ -34,11 +34,8 @@ public class Terminal extends JPanel {
     public Terminal(boolean editable, Color background, Color foreground) {
         super(new BorderLayout());
         textPane = new JEditorPane();
-        StyledEditorKit editorKit = new StyledEditorKit();
-        textPane.setEditorKit(editorKit);
-        textPane.setDocument(editorKit.createDefaultDocument());
+        textPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        textPane.setFont(new Font("Monospaced", Font.PLAIN, 16));
         setBackground(background);
         setForeground(foreground);
         textPane.setCaretColor(foreground);

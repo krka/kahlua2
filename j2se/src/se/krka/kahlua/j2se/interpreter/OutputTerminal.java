@@ -22,24 +22,26 @@
 
 package se.krka.kahlua.j2se.interpreter;
 
-import jsyntaxpane.components.LineNumbersRuler;
 import se.krka.kahlua.j2se.interpreter.jsyntax.JSyntaxUtil;
-import se.krka.kahlua.j2se.interpreter.jsyntax.KahluaKit;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import java.awt.*;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.event.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-public class OutputTerminal extends JPanel {
+public class OutputTerminal extends JPanel implements FocusListener {
     private final JScrollPane scrollpane;
     private boolean scrollDown;
+    private static final Border EMPTY_BORDER = BorderFactory.createEmptyBorder(1, 5, 1, 5);
+    private final Font font;
 
     private static enum Type {
         NONE, LUA, OUTPUT, ERROR, INFO
@@ -60,9 +62,10 @@ public class OutputTerminal extends JPanel {
         }
     });
 
-    public OutputTerminal(Color background) {
+    public OutputTerminal(Color background, Font font) {
         super(new BorderLayout());
         this.background = background;
+        this.font = font;
         view = new JPanel();
         view.setBorder(BorderFactory.createEmptyBorder());
         view.setLayout(new BoxLayout(view, BoxLayout.Y_AXIS));
@@ -89,8 +92,8 @@ public class OutputTerminal extends JPanel {
                 }
             }
         });
-        scrollpane.setAutoscrolls(true);
 
+        setFocusable(true);
         add(scrollpane, BorderLayout.CENTER);
     }
 
@@ -137,16 +140,19 @@ public class OutputTerminal extends JPanel {
 
     private void createPane(Color color) {
         JTextArea pane = new JTextArea();
-        setBorder(pane);
+        pane.setFont(font);
+        setup(pane);
         pane.setBackground(background);
         pane.setForeground(color);
         view.add(pane);
         current = pane;
     }
 
-    private void setBorder(JTextComponent pane) {
-        pane.setBorder(BorderFactory.createEmptyBorder());
+    private void setup(JTextComponent pane) {
+        pane.setBorder(EMPTY_BORDER);
         pane.setEditable(false);
+        pane.setFocusable(true);
+        pane.addFocusListener(this);
     }
 
     private synchronized void append(final String text, final JTextComponent current) {
@@ -166,24 +172,26 @@ public class OutputTerminal extends JPanel {
         JEditorPane pane = new JEditorPane();
         pane.setBackground(background);
 
-        // Scrollpane is only used to make jsyntax happy.
-        JScrollPane scrollpane = new JScrollPane(
-                pane,
-                JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-
-        scrollpane.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-
-        view.add(scrollpane);
-        KahluaKit kahluaKit = JSyntaxUtil.installSyntax(pane);
-        kahluaKit.deinstallComponent(pane, LineNumbersRuler.class.getName());
+        JSyntaxUtil.installSyntax(pane);
+        view.add(pane);
 
         current = pane;
         currentType = Type.LUA;
-        setBorder(current);
+        setup(current);
     }
 
     public PrintStream getPrintStream() {
         return printStream;
     }
+
+
+    @Override
+    public void focusGained(FocusEvent e) {
+        this.requestFocus();
+    }
+
+    @Override
+    public void focusLost(FocusEvent e) {
+    }
+    
 }

@@ -513,12 +513,14 @@ public final class BaseLib implements JavaFunction {
 			return "function 0x" + System.identityHashCode(o);
 		}
 
-		Object tostringFun = state.getMetaOp(o, "__tostring");
-		if (tostringFun != null) {
-			String res = (String) state.call(tostringFun, o, null, null);
+        if (state != null) {
+            Object tostringFun = state.getMetaOp(o, "__tostring");
+            if (tostringFun != null) {
+                String res = (String) state.call(tostringFun, o, null, null);
 
-			return res;
-		}
+                return res;
+            }
+        }
 
         return o.toString();
 	}

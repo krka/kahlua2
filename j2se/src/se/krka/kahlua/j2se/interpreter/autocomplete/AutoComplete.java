@@ -65,8 +65,8 @@ public class AutoComplete {
         thread = new KahluaThread(platform, env);
         characterSet = new LuaAutoCompleteSet();
         wordFinder = new WordFinder(component.getDocument(), characterSet);
-        menu = new Menu(this, this.window);
         tooltip = new Tooltip(this.window);
+        menu = new Menu(this, this.window);
 
         component.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_MASK), "open");
         component.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_MASK), "definition");
@@ -265,6 +265,7 @@ public class AutoComplete {
             Object[] objects = thread.pcall(closure);
             if (objects[0] == Boolean.TRUE && objects.length >= 2 && objects[1] != null && objects[1] instanceof String) {
                 showDefinition((String) objects[1]);
+                return;
             }
         } catch (KahluaException e) {
             return;

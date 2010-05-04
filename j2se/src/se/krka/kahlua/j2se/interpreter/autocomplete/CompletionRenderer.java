@@ -25,23 +25,9 @@ package se.krka.kahlua.j2se.interpreter.autocomplete;
 import javax.swing.*;
 import java.awt.*;
 
-public class CompletionRenderer extends JPanel implements ListCellRenderer {
-
-    private final JLabel left = new JLabel();
-    private final JLabel right = new JLabel();
-    private final JPanel spacer = new JPanel();
-
+public class CompletionRenderer extends JLabel implements ListCellRenderer {
     public CompletionRenderer() {
-        setLayout(new BorderLayout());
-        spacer.setMinimumSize(new Dimension(40, 1));
-
-        left.setOpaque(true);
-        right.setOpaque(true);
-        spacer.setOpaque(true);
-
-        add(left, BorderLayout.WEST);
-        add(spacer, BorderLayout.CENTER);
-        add(right, BorderLayout.EAST);
+        setOpaque(true);
     }
 
     @Override
@@ -53,8 +39,7 @@ public class CompletionRenderer extends JPanel implements ListCellRenderer {
             boolean cellHasFocus) {
 
         CompletionItem item = (CompletionItem) value;
-        left.setText(item.getText());
-        right.setText(item.getValue());
+        setText(item.getText());
 
         Color back;
         Color front;
@@ -66,18 +51,12 @@ public class CompletionRenderer extends JPanel implements ListCellRenderer {
             front = list.getForeground();
         }
 
-        setColor(left, back, front);
-        setColor(right, back, front);
-        setColor(spacer, back, front);
+        setBackground(back);
+        setForeground(front);
 
         setEnabled(list.isEnabled());
         setFont(list.getFont());        
 
         return this;
-    }
-
-    private void setColor(JComponent component, Color back, Color front) {
-        component.setBackground(back);
-        component.setForeground(front);
     }
 }

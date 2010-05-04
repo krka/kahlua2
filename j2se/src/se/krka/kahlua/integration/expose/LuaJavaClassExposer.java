@@ -30,6 +30,7 @@ import se.krka.kahlua.integration.annotations.LuaMethod;
 import se.krka.kahlua.integration.expose.caller.ConstructorCaller;
 import se.krka.kahlua.integration.expose.caller.MethodCaller;
 import se.krka.kahlua.integration.processor.ClassParameterInformation;
+import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.*;
 
 import java.lang.reflect.Constructor;
@@ -365,21 +366,21 @@ public class LuaJavaClassExposer {
 	}
 
     @LuaMethod(global = true, name = "definition")
-    @Desc("returns a string that describes the function")
-    public String getFunctionDefinition(JavaFunction function) {
-        if (function == null) {
+    @Desc("returns a string that describes the object")
+    public String getFunctionDefinition(Object obj) {
+        if (obj == null) {
             return null;
-        } else if (function instanceof LuaJavaInvoker) {
-            MethodDebugInformation data = ((LuaJavaInvoker) function).getMethodDebugData();
+        } else if (obj instanceof LuaJavaInvoker) {
+            MethodDebugInformation data = ((LuaJavaInvoker) obj).getMethodDebugData();
             return data.toString();
-        } else if (function instanceof MultiLuaJavaInvoker) {
+        } else if (obj instanceof MultiLuaJavaInvoker) {
             StringBuilder builder = new StringBuilder();
-            for (LuaJavaInvoker invoker : ((MultiLuaJavaInvoker) function).getInvokers()) {
+            for (LuaJavaInvoker invoker : ((MultiLuaJavaInvoker) obj).getInvokers()) {
                 builder.append(invoker.getMethodDebugData().toString());
             }
             return builder.toString();
         } else {
-            return null;
+            return BaseLib.tostring(obj, null);
         }
     }
 

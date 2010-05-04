@@ -66,18 +66,36 @@ public class Interpreter extends JPanel {
         exposer = new LuaJavaClassExposer(manager, platform, env);
         exposer.exposeGlobalFunctions(this);
 
-        output = new OutputTerminal(Color.BLACK);
+        final Terminal input = new Terminal(true, Color.BLACK, Color.WHITE);
+
+        JSyntaxUtil.installSyntax(input.getTextPane());
+        new AutoComplete(owner, input.getTextPane(), platform, env);
+
+
+        output = new OutputTerminal(Color.BLACK, input.getTextPane().getFont());
         output.setPreferredSize(new Dimension(800, 400));
+        output.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() != 0) {
+                    input.getTextPane().requestFocus();
+                    Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(e);
+                }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+            }
+        });
 
         JPanel outputPanel = new JPanel(new BorderLayout());
         outputPanel.add(outputTitle, BorderLayout.NORTH);
         outputPanel.add(output, BorderLayout.CENTER);
         this.add(outputPanel, BorderLayout.CENTER);
-
-        final Terminal input = new Terminal(true, Color.BLACK, Color.WHITE);
-
-        JSyntaxUtil.installSyntax(input.getTextPane());
-        new AutoComplete(owner, input.getTextPane(), platform, env);
 
 
 
