@@ -55,7 +55,7 @@ public class MethodDebugInformation {
 
     public String getLuaDescription() {
         String separator = isMethod ? "obj:" : "";
-        String msg = returnType + " " + separator + luaName + "(" + getParameterList() + ")\n";
+        String msg = TypeUtil.removePackages(returnType) + " " + separator + luaName + "(" + getLuaParameterList() + ")\n";
         if (getReturnDescription() != null) {
             msg += getReturnDescription() + "\n";
         }
@@ -81,6 +81,21 @@ public class MethodDebugInformation {
     @Override
     public String toString() {
         return getLuaDescription();
+    }
+
+    private String getLuaParameterList() {
+        StringBuilder builder = new StringBuilder();
+        boolean first = true;
+        for (MethodParameter parameter : parameters) {
+            if (first) {
+                first = false;
+            } else {
+                builder.append(", ");
+            }
+            String type = TypeUtil.removePackages(parameter.getType());
+            builder.append(type).append(" ").append(parameter.getName());
+        }
+        return builder.toString();
     }
 
     private String getParameterList() {

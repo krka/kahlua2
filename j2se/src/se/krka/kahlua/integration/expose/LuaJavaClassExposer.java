@@ -367,7 +367,7 @@ public class LuaJavaClassExposer {
 
     @LuaMethod(global = true, name = "definition")
     @Desc("returns a string that describes the object")
-    public String getFunctionDefinition(Object obj) {
+    public String getDefinition(Object obj) {
         if (obj == null) {
             return null;
         } else if (obj instanceof LuaJavaInvoker) {

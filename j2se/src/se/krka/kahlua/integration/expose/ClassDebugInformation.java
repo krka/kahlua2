@@ -31,10 +31,7 @@ import se.krka.kahlua.integration.processor.MethodParameterInformation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ClassDebugInformation {
     private final Map<String, MethodDebugInformation> methods = new HashMap<String, MethodDebugInformation>();
@@ -122,6 +119,11 @@ public class ClassDebugInformation {
                 return getClassName(clazz.getComponentType()) + "[]";
             }
             return clazz.getName();
+        } else if (type instanceof WildcardType) {
+            WildcardType wildcardType = (WildcardType) type;
+            Type[] upper = wildcardType.getUpperBounds();
+            Type[] lower = wildcardType.getLowerBounds();
+            return handleBounds("?", upper, lower);
         } else if (type instanceof ParameterizedType) {
             ParameterizedType paramType = (ParameterizedType) type;
             Type[] args = paramType.getActualTypeArguments();
@@ -139,9 +141,53 @@ public class ClassDebugInformation {
             }
             builder.append(">");
             return builder.toString();
-        } else {
-            return "";
+        } else if (type instanceof TypeVariable) {
+            TypeVariable<?> typeVariable = (TypeVariable<?>) type;
+            return typeVariable.getName();
+        } else if (type instanceof GenericArrayType) {
+            GenericArrayType arrayType = (GenericArrayType) type;
+            return getClassName(arrayType.getGenericComponentType()) + "[]";
         }
+
+        System.out.println("got unknown: " + type + ", " + type.getClass());
+        return "unknown";
+    }
+
+    private String handleBounds(String s, Type[] upper, Type[] lower) {
+        if (upper != null) {
+            if (upper.length == 1 && upper[0] == Object.class) {
+                return s;
+            }
+            if (upper.length >= 1) {
+                StringBuilder list = new StringBuilder();
+                boolean first = true;
+                for (Type typeExtends : upper) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        list.append(", ");
+                    }
+                    list.append(getClassName(typeExtends));
+                }
+                return s + " extends " + list.toString();
+            }
+        }
+        if (lower != null) {
+            if (lower.length > 0) {
+                StringBuilder list = new StringBuilder();
+                boolean first = true;
+                for (Type typeExtends : lower) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        list.append(", ");
+                    }
+                    list.append(getClassName(typeExtends));
+                }
+                return s + " super " + list.toString();
+            }
+        }
+        return "unknown type";
     }
 
     private String getDescription(Annotation[] parameterAnnotation) {
