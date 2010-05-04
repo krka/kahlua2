@@ -35,6 +35,8 @@ public class Tooltip extends HelperWindow {
         textArea.setBackground(new Color(255, 255, 230));
         textArea.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
         setContentPane(textArea);
+        setFocusable(false);
+        textArea.setFocusable(false);
     }
 
     public void setDefinition(String def) {
