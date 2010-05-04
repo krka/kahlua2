@@ -172,7 +172,7 @@ public class OutputTerminal extends JPanel implements FocusListener {
         JEditorPane pane = new JEditorPane();
         pane.setBackground(background);
 
-        JSyntaxUtil.installSyntax(pane);
+        JSyntaxUtil.installSyntax(pane, false);
         view.add(pane);
 
         current = pane;

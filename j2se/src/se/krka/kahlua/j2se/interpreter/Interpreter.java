@@ -48,7 +48,6 @@ public class Interpreter extends JPanel {
     private final KahluaThread thread;
     private final OutputTerminal output;
     private final JLabel outputTitle = new JLabel("Output:");
-    private final JLabel inputTitle = new JLabel("Input:");
 
     private final History history = new History();
     private final ExecutorService executors = Executors.newSingleThreadExecutor(new DaemonizedThreadFactory(Executors.defaultThreadFactory()));
@@ -68,7 +67,7 @@ public class Interpreter extends JPanel {
 
         final Terminal input = new Terminal(true, Color.BLACK, Color.WHITE);
 
-        JSyntaxUtil.installSyntax(input.getTextPane());
+        JSyntaxUtil.installSyntax(input.getTextPane(), true);
         new AutoComplete(owner, input.getTextPane(), platform, env);
 
 
@@ -101,7 +100,6 @@ public class Interpreter extends JPanel {
 
         input.setPreferredSize(new Dimension(800, 100));
         JPanel inputPanel = new JPanel(new BorderLayout());
-        inputPanel.add(inputTitle, BorderLayout.NORTH);
         inputPanel.add(input, BorderLayout.CENTER);
         this.add(inputPanel, BorderLayout.SOUTH);
 

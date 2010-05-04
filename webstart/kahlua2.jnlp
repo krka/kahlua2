@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <jnlp spec="1.0+"
       codebase="http://github.com/downloads/krka/kahlua2/"
-      href="kahlua2.jnlp">
+      href="@NAME@.jnlp">
 
   <information>
-    <title>Kahlua</title>
+    <title>Kahlua 2</title>
     <vendor>Kahlua</vendor>
     <homepage href="http://code.google.com/p/kahlua"/>
     <description kind="short">Kahlua is a Lua implementation in Java</description>
@@ -15,7 +15,7 @@
       <all-permissions/>
   </security>
   <resources>
-    <jar href="kahlua2demo.jar"/>
+    <jar href="@NAME@.jar"/>
   </resources>
 
   <application-desc main-class="se.krka.kahlua.j2se.interpreter.InteractiveShell"/>

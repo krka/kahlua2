@@ -6,8 +6,9 @@
 
 	<property name="deploy.dir" location="${baseDir}/webstart"/>
 
-	<property name="webstart.build.dir" value="${baseDir}/bin/webstart/build"/>
-	<property name="webstart.jar.name" value="kahlua2demo.jar"/>
+	<property name="webstart.build.dir" value="${baseDir}/bin/webstart"/>
+	<property name="webstart.jar.name" value="${name}.jar"/>
+	<property name="webstart.signed.dir" value="${webstart.build.dir}/${name}"/>
 
 
 	<property name="libs.dir" value="${webstart.build.dir}"/>
@@ -23,8 +24,10 @@
 		</genkey>
 	</target>
 
-	<property name="webstart.signed.dir" value="${baseDir}/bin/webstart/signed"/>
 	<target name="build-webstart">
+		<fail unless="name" message="usage: ant -f webstart.xml build-webstart -Dname=kahlua2-v1"/>
+		
+		<delete dir="${webstart.build.dir}" />
 		<mkdir dir="${webstart.build.dir}"/>
 
 		<manifestclasspath taskname="setup-manifest" property="dist.manifest.classpath" jarfile="${webstart.build.dir}/${webstart.jar.name}">
@@ -46,6 +49,11 @@
 			</path>
 			<flattenmapper/>
 		</signjar>
-		<copy todir="${webstart.signed.dir}" file="${deploy.dir}/kahlua2.jnlp" />
+		<copy tofile="${webstart.signed.dir}/${name}.jnlp" file="${deploy.dir}/kahlua2.jnlp" />
+		<replace		
+			file="${webstart.signed.dir}/${name}.jnlp"
+			token="@NAME@"
+			value="${name}"
+			/>
 	</target>
 </project>	
