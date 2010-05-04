@@ -25,6 +25,7 @@ package se.krka.kahlua.j2se.interpreter.autocomplete;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
 import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.*;
+import sun.awt.NullComponentPeer;
 
 import java.io.IOException;
 import java.util.*;
@@ -67,7 +68,16 @@ public class AutoComplete {
         wordFinder = new WordFinder(component.getDocument(), characterSet);
         tooltip = new Tooltip(this.window);
         menu = new Menu(this, this.window);
+        component.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+            }
 
+            @Override
+            public void focusLost(FocusEvent e) {
+                hideAll();
+            }
+        });
         component.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_MASK), "open");
         component.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_MASK), "definition");
         component.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "esc");
@@ -378,4 +388,8 @@ public class AutoComplete {
             component.setCaretPosition(word.getStart() + newText.length());
 		}
 	}
+
+    public JComponent getComponent() {
+        return component;
+    }
 }

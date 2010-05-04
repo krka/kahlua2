@@ -25,10 +25,7 @@ package se.krka.kahlua.j2se.interpreter.autocomplete;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.*;
 
 public class Menu extends HelperWindow {
@@ -39,7 +36,7 @@ public class Menu extends HelperWindow {
     private int startPos;
     private final JScrollPane scrollPane;
 
-    public Menu(AutoComplete autoComplete, Window window) {
+    public Menu(final AutoComplete autoComplete, Window window) {
         super(window);
         this.autoComplete = autoComplete;
         listModel = new SmartListModel();
@@ -49,6 +46,7 @@ public class Menu extends HelperWindow {
                 return Math.min(listModel.getSize(), 10);
             }
         };
+        visualList.setFocusable(false);
         visualList.setCellRenderer(new CompletionRenderer());
         visualList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         scrollPane = new JScrollPane(visualList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
