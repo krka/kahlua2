@@ -31,36 +31,36 @@ import se.krka.kahlua.stdlib.OsLib;
 import se.krka.kahlua.vm.*;
 
 public class Test {
-	private static KahluaThread getState(File dir) throws FileNotFoundException, IOException {
+	private static KahluaThread getThread(File dir) throws FileNotFoundException, IOException {
         Platform platform = new J2SEPlatform();
-        KahluaThread state = new KahluaThread(System.out, platform, platform.newEnvironment());
-		OsLib.register(state.getEnvironment(), platform);
-		LuaCompiler.register(state.getEnvironment());
+        KahluaThread thread = new KahluaThread(System.out, platform, platform.newEnvironment());
+		OsLib.register(platform, thread.getEnvironment());
+		LuaCompiler.register(thread.getEnvironment());
 
-        state.getEnvironment().rawset("newobject", new JavaFunction(){
+        thread.getEnvironment().rawset("newobject", new JavaFunction(){
             @Override
             public int call(LuaCallFrame callFrame, int nArguments) {
                 return callFrame.push(new Object());
             }
         });
 
-		//state = runLua(dir, state, new File(dir, "stdlib.lbc"));
+		//thread = runLua(dir, thread, new File(dir, "stdlib.lbc"));
 		File testhelper = new File(dir, "testhelper.lua");
-		LuaClosure closure = LuaCompiler.loadis(new FileInputStream(testhelper), testhelper.getName(), state.getEnvironment());
-		state.call(closure, null);
-		return state;
+		LuaClosure closure = LuaCompiler.loadis(new FileInputStream(testhelper), testhelper.getName(), thread.getEnvironment());
+		thread.call(closure, null);
+		return thread;
 	}
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		File dir = new File(args[0]);
 
-		KahluaThread state = getState(dir);
+		KahluaThread thread = getThread(dir);
 		
-		Object runTest = state.getEnvironment().rawget("testCall");
+		Object runTest = thread.getEnvironment().rawget("testCall");
 		KahluaUtil.luaAssert(runTest != null, "Could not find testCall");
-		Object generateReportClosure = state.getEnvironment().rawget("generatereport");
+		Object generateReportClosure = thread.getEnvironment().rawget("generatereport");
 		KahluaUtil.luaAssert(generateReportClosure != null, "Could not find generatereport");
-		Object mergeTestsClosure = state.getEnvironment().rawget("mergetests");
+		Object mergeTestsClosure = thread.getEnvironment().rawget("mergetests");
 		KahluaUtil.luaAssert(mergeTestsClosure != null, "Could not find mergetests");
 
 		File[] children = null;
@@ -82,14 +82,14 @@ public class Test {
 			children = dir.listFiles();
 		}
 
-		KahluaTable testsuites = state.getPlatform().newTable();
+		KahluaTable testsuites = thread.getPlatform().newTable();
 		for (int i = 0; i < children.length; i++) {
 			File child = children[i];
 			if (child != null && !child.getName().contains("testhelper") && child.getName().endsWith(".lua")) {
-				LuaClosure closure = LuaCompiler.loadis(new FileInputStream(child), child.getName(), state.getEnvironment());
-				//LuaClosure closure = LuaPrototype.loadByteCode(new FileInputStream(child), state.getEnvironment());
+				LuaClosure closure = LuaCompiler.loadis(new FileInputStream(child), child.getName(), thread.getEnvironment());
+				//LuaClosure closure = LuaPrototype.loadByteCode(new FileInputStream(child), thread.getEnvironment());
 				System.out.println("Running " + child + "...");
-				Object[] results = state.pcall(runTest, new Object[] {child.getName(), closure});
+				Object[] results = thread.pcall(runTest, new Object[] {child.getName(), closure});
 				if (results[0] != Boolean.TRUE) {
 					Object errorMessage = results[1];
 					System.out.println("Crash at " + child + ": " +  errorMessage);
@@ -106,14 +106,14 @@ public class Test {
 				}
 			}
 		}
-		Object[] results = state.pcall(mergeTestsClosure, new Object[] {"Kahlua", testsuites});
+		Object[] results = thread.pcall(mergeTestsClosure, new Object[] {"Kahlua", testsuites});
 		if (results[0] != Boolean.TRUE) {
 			KahluaUtil.fail("" + results[1] + ", " + results[2]);
 		}
 		Object testParent = results[1];
 		
 		System.out.println("Generating report...");
-		results = state.pcall(generateReportClosure, new Object[] {testParent});
+		results = thread.pcall(generateReportClosure, new Object[] {testParent});
 		if (results[0] == Boolean.TRUE) {
 			File f = new File("testsuite/testreport.html");
 			System.out.println(f.getCanonicalPath());

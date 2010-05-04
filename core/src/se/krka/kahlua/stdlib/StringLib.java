@@ -81,14 +81,14 @@ public final class StringLib implements JavaFunction {
 		this.methodId = index;
 	}
 
-	public static void register(KahluaTable env, Platform platform) {
+	public static void register(Platform platform, KahluaTable env) {
 		KahluaTable string = platform.newTable();
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
 			string.rawset(names[i], functions[i]);
 		}
 
 		string.rawset("__index", string);
-        KahluaTable metatables = KahluaUtil.getClassMetatables(env, platform);
+        KahluaTable metatables = KahluaUtil.getClassMetatables(platform, env);
         metatables.rawset(STRING_CLASS, string);
 		env.rawset("string", string);
 	}
@@ -1475,7 +1475,7 @@ public final class StringLib implements JavaFunction {
 			}
 			Object res = null;
 			if (type == BaseLib.TYPE_FUNCTION) {
-				res = ms.callFrame.coroutine.state.call(repl, match, null, null);
+				res = ms.callFrame.coroutine.thread.call(repl, match, null, null);
 			} else if (type == BaseLib.TYPE_TABLE) {
 				res = ((KahluaTable)repl).rawget(match);
 			}
@@ -1487,7 +1487,7 @@ public final class StringLib implements JavaFunction {
 	}
 
 	private static String addString(MatchState ms, Object repl, StringPointer s, StringPointer e) {
-		String replTemp = BaseLib.tostring(repl, ms.callFrame.coroutine.state);
+		String replTemp = BaseLib.tostring(repl, ms.callFrame.coroutine.thread);
 		StringPointer replStr = new StringPointer (replTemp);
 		StringBuffer buf = new StringBuffer();
 		for (int i = 0; i < replTemp.length(); i++) {

@@ -45,7 +45,7 @@ import java.util.concurrent.Future;
 
 public class Interpreter extends JPanel {
 
-    private final KahluaThread state;
+    private final KahluaThread thread;
     private final OutputTerminal output;
     private final JLabel outputTitle = new JLabel("Output:");
     private final JLabel inputTitle = new JLabel("Input:");
@@ -159,7 +159,7 @@ public class Interpreter extends JPanel {
             }
         });
 
-        state = new KahluaThread(output.getPrintStream(), platform, env);
+        thread = new KahluaThread(output.getPrintStream(), platform, env);
     }
 
     private boolean isControl(KeyEvent keyEvent) {
@@ -173,10 +173,10 @@ public class Interpreter extends JPanel {
                 outputTitle.setText("Output: [running...]");
                 try {
                     LuaClosure luaClosure = smartCompile(text);
-                    LuaReturn result = caller.protectedCall(state, luaClosure);
+                    LuaReturn result = caller.protectedCall(thread, luaClosure);
                     if (result.isSuccess()) {
                         for (Object o : result) {
-                            output.appendOutput(BaseLib.tostring(o, state)+"\n");
+                            output.appendOutput(BaseLib.tostring(o, thread)+"\n");
                         }
                     } else {
                         output.appendError(result.getErrorString()+"\n");
@@ -196,10 +196,10 @@ public class Interpreter extends JPanel {
     private LuaClosure smartCompile(String text) throws IOException {
         LuaClosure luaClosure;
         try {
-            luaClosure = LuaCompiler.loadstring("return " + text, "<interpreter>", state.getEnvironment());
+            luaClosure = LuaCompiler.loadstring("return " + text, "<interpreter>", thread.getEnvironment());
         } catch (KahluaException e) {
             // Ignore it and try without "return "
-            luaClosure = LuaCompiler.loadstring(text, "<interpreter>", state.getEnvironment());
+            luaClosure = LuaCompiler.loadstring(text, "<interpreter>", thread.getEnvironment());
         }
         return luaClosure;
     }
@@ -208,8 +208,8 @@ public class Interpreter extends JPanel {
         return future == null || future.isDone();
     }
 
-    public KahluaThread getState() {
-        return state;
+    public KahluaThread getThread() {
+        return thread;
     }
 
     public OutputTerminal getOutput() {

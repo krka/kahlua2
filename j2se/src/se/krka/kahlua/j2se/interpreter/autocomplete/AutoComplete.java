@@ -62,7 +62,7 @@ public class AutoComplete {
 		this.window = window;
 		this.component = component;
         this.env = env;
-        thread = new KahluaThread(platform, env);
+        thread = KahluaUtil.getWorkerThread(platform, env);
         characterSet = new LuaAutoCompleteSet();
         wordFinder = new WordFinder(component.getDocument(), characterSet);
         tooltip = new Tooltip(this.window);

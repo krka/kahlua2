@@ -94,13 +94,6 @@ public class KahluaThread {
         this.platform = platform;
 		out = stream;
         currentCoroutine = new Coroutine(this, environment);
-
-        LuaClosure closure = KahluaUtil.loadByteCodeFromResource("/stdlib",
-                environment);
-        if (closure == null) {
-            KahluaUtil.fail("Could not load /stdlib.lbc");
-        }
-        call(closure, null, null, null);
 	}
 
     // For debugging purposes only
@@ -915,7 +908,7 @@ public class KahluaThread {
 							nextCallFrame.push(e.getMessage());
 							nextCallFrame.push(currentCoroutine.stackTrace);
 
-							currentCoroutine.state.currentCoroutine = parent;
+							currentCoroutine.thread.currentCoroutine = parent;
 							currentCoroutine = parent;
 							callFrame = currentCoroutine.currentCallFrame();
 							closure = callFrame.closure;
@@ -1158,7 +1151,7 @@ public class KahluaThread {
 		}
 
         if (metatable == null) {
-            KahluaTable metatables = KahluaUtil.getClassMetatables(getEnvironment(), platform);
+            KahluaTable metatables = KahluaUtil.getClassMetatables(platform, getEnvironment());
             metatable = (KahluaTable) metatables.rawget(o.getClass());
         }
 

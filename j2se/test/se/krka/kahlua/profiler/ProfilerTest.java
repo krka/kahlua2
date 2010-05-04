@@ -16,7 +16,7 @@ public class ProfilerTest {
 	public void simpleTest() throws IOException {
         Platform platform = new J2SEPlatform();
         KahluaTable env = platform.newEnvironment();
-        KahluaThread state = new KahluaThread(platform, env);
+        KahluaThread thread = new KahluaThread(platform, env);
 
 		LuaClosure fun = LuaCompiler.loadstring(
 				"s='a';for i=1,10 do s=s..s;end;function bar(i)\n" +				// 1
@@ -37,22 +37,22 @@ public class ProfilerTest {
 						"foo()\n" +					// 16
 						"foo()\n",					// 17
 				"test.lua",
-				state.getEnvironment());
+				thread.getEnvironment());
 
         // Warmup to let the jvm optimize
         /*
         for (int i = 0; i < 10; i++) {
-            state.pcall(fun);
+            thread.pcall(fun);
         }
         */
 
         // Set up the sampler
         BufferedProfiler bufferedProfiler = new BufferedProfiler();
-		Sampler sampler = new Sampler(state, 1, bufferedProfiler);
+		Sampler sampler = new Sampler(thread, 1, bufferedProfiler);
 
         // Run the sampler and the code
 		sampler.start();
-		state.pcall(fun);
+		thread.pcall(fun);
 		sampler.stop();
 
 		PrintWriter writer = new PrintWriter(System.out);

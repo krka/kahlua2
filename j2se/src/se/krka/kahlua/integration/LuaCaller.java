@@ -33,17 +33,17 @@ public class LuaCaller {
 		this.converterManager = converterManager;
 	}
 
-	public Object[] pcall(KahluaThread state, Object functionObject, Object... args) {
+	public Object[] pcall(KahluaThread thread, Object functionObject, Object... args) {
 		if (args != null) {
 			for (int i = args.length - 1; i >= 0; i--) {
 				args[i] = converterManager.fromJavaToLua(args[i]);
 			}
 		}
-		Object[] results = state.pcall(functionObject, args);
+		Object[] results = thread.pcall(functionObject, args);
 		return results;
 	}
 
-	public LuaReturn protectedCall(KahluaThread state, Object functionObject, Object... args) {
-		return LuaReturn.createReturn(pcall(state, functionObject, args));
+	public LuaReturn protectedCall(KahluaThread thread, Object functionObject, Object... args) {
+		return LuaReturn.createReturn(pcall(thread, functionObject, args));
 	}
 }

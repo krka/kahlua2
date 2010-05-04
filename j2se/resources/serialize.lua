@@ -179,5 +179,5 @@ function serialize(value, multiline, indent)
 end
 
 function pp(value)
-   print(serialize(value, true))
+    return serialize(value, true)
 end

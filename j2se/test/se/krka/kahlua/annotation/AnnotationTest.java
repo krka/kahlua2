@@ -8,8 +8,6 @@ import se.krka.kahlua.converter.LuaNumberConverter;
 import se.krka.kahlua.integration.doc.ApiDocumentationExporter;
 import se.krka.kahlua.integration.doc.DokuWikiPrinter;
 import se.krka.kahlua.integration.expose.LuaJavaClassExposer;
-import se.krka.kahlua.integration.processor.ClassParameterInformation;
-import se.krka.kahlua.integration.processor.MethodParameterInformation;
 import se.krka.kahlua.j2se.J2SEPlatform;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
 import se.krka.kahlua.vm.KahluaTable;
@@ -19,22 +17,20 @@ import se.krka.kahlua.vm.Platform;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.Map;
 
 import static junit.framework.Assert.*;
 
 public class AnnotationTest {
 
 	private LuaConverterManager manager;
-	private KahluaThread state;
+	private KahluaThread thread;
 	private LuaJavaClassExposer factory;
 
-	@Before
+    @Before
 	public void setup() {
         Platform platform = new J2SEPlatform();
         KahluaTable env = platform.newEnvironment();
-        state = new KahluaThread(platform, env);
+        thread = new KahluaThread(platform, env);
 
 		manager = new LuaConverterManager();
 		LuaNumberConverter.install(manager);
@@ -50,20 +46,20 @@ public class AnnotationTest {
 
 		{
 			InheritedAnnotationClass testObject = new InheritedAnnotationClass();
-			state.getEnvironment().rawset("testObject", testObject);
+			thread.getEnvironment().rawset("testObject", testObject);
 			String testString = "testObject:inheritedMethodWithArgs('hello', 123)";
-			LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
-			state.call(closure, null);
+			LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
+			thread.call(closure, null);
 			assertEquals(testObject.imba, 123);
 			assertEquals(testObject.zomg, "hello");
 		}
 
 		{
 			InheritedAnnotationClass testObject = new InheritedAnnotationClass();
-			state.getEnvironment().rawset("testObject", testObject);
+			thread.getEnvironment().rawset("testObject", testObject);
 			String testString = "assert(testObject.baseMethodWithArgs); testObject:baseMethodWithArgs(112233, 'world')";
-			LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
-			state.call(closure, null);
+			LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
+			thread.call(closure, null);
 			assertEquals(testObject.foo, 112233);
 			assertEquals(testObject.bar, "world");
 		}
@@ -75,18 +71,18 @@ public class AnnotationTest {
 
 		{
 			InheritedAnnotationClass testObject = new InheritedAnnotationClass();
-			state.getEnvironment().rawset("testObject", testObject);
+			thread.getEnvironment().rawset("testObject", testObject);
 			String testString = "assert(testObject:baseMethod2() == 'Inherited')";
-			LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
-			state.call(closure, null);
+			LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
+			thread.call(closure, null);
 		}
 
 		{
 			BaseAnnotationClass testObject = new BaseAnnotationClass();
-			state.getEnvironment().rawset("testObject", testObject);
+			thread.getEnvironment().rawset("testObject", testObject);
 			String testString = "assert(testObject:baseMethod2() == 'Base')";
-			LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
-			state.call(closure, null);
+			LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
+			thread.call(closure, null);
 		}
 
 
@@ -97,11 +93,11 @@ public class AnnotationTest {
 		factory.exposeClass(InheritedAnnotationClass.class);
 
 		InheritedAnnotationClass testObject = new InheritedAnnotationClass();
-		state.getEnvironment().rawset("testObject", testObject);
+		thread.getEnvironment().rawset("testObject", testObject);
 		String testString = "testObject:inheritedMethodWithArgs('hello', 'world')";
-		LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
+		LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
 		try {
-			state.call(closure, null);
+			thread.call(closure, null);
 			fail();
 		} catch (Exception e) {
 			assertNotNull(e.getMessage());
@@ -114,11 +110,11 @@ public class AnnotationTest {
 		factory.exposeClass(InheritedAnnotationClass.class);
 
 		InheritedAnnotationClass testObject = new InheritedAnnotationClass();
-		state.getEnvironment().rawset("testObject", testObject);
+		thread.getEnvironment().rawset("testObject", testObject);
 		String testString = "testObject:inheritedMethodWithArgs('hello')";
-		LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
+		LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
 		try {
-			state.call(closure, null);
+			thread.call(closure, null);
 			fail();
 		} catch (Exception e) {
             assertEquals("Expected 2 arguments but got 1. Correct syntax: void obj:inheritedMethodWithArgs(java.lang.String arg1, int arg2)", e.getMessage());
@@ -132,9 +128,9 @@ public class AnnotationTest {
 		factory.exposeGlobalFunctions(testObject);
 
 		String testString = "myGlobalFunction('hello')";
-		LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
+		LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
 		try {
-			state.call(closure, null);
+			thread.call(closure, null);
 			fail();
 		} catch (Exception e) {
 			assertEquals(e.getMessage(), "Expected 4 arguments but got 1. Correct syntax: void myGlobalFunction(java.lang.String arg1, double arg2, boolean arg3, int arg4)");
@@ -148,8 +144,8 @@ public class AnnotationTest {
 		factory.exposeGlobalFunctions(testObject);
 
 		String testString = "myGlobalFunction('hello', 1, true, 3)";
-		LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
-		state.call(closure, null);
+		LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
+		thread.call(closure, null);
 		assertEquals(testObject.s, "hello");
 		assertEquals(testObject.d, 1.0);
 		assertEquals(testObject.b, true);
@@ -163,8 +159,8 @@ public class AnnotationTest {
 		factory.exposeGlobalFunctions(testObject);
 
 		String testString = "local a, b = myGlobalFunction2(5, 7); assert(a == 5*7, '1st'); assert(b == 5+7, '2nd');";
-		LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
-		state.call(closure, null);
+		LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
+		thread.call(closure, null);
 		assertEquals(testObject.x, 5);
 		assertEquals(testObject.y, 7);
 	}
@@ -174,15 +170,15 @@ public class AnnotationTest {
 
 		InheritedAnnotationClass testObject = new InheritedAnnotationClass();
 		factory.exposeClass(InheritedAnnotationClass.class);
-		state.getEnvironment().rawset("testObject", testObject);
+		thread.getEnvironment().rawset("testObject", testObject);
 
 		String testString = "local a, b = testObject:inheritedMethodWithMultipleReturns(); assert(a == 'Hello', '1st'); assert(b == 'World', '2nd');";
-		LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
-		state.call(closure, null);
+		LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
+		thread.call(closure, null);
 
 		testString = "local a, b = testObject:inheritedMethodWithMultipleReturns2('prefix'); assert(a == 'prefixHello', '1st'); assert(b == 'prefixWorld', '2nd');";
-		closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
-		state.call(closure, null);
+		closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
+		thread.call(closure, null);
 
 	}
 
@@ -192,8 +188,8 @@ public class AnnotationTest {
 		factory.exposeClass(InheritedAnnotationClass.class);
 
 		String testString = "s = staticMethod(); assert(s == 'Hello world');";
-		LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
-		state.call(closure, null);
+		LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
+		thread.call(closure, null);
 	}
 
     /*
@@ -217,8 +213,8 @@ public class AnnotationTest {
 		factory.exposeClass(InheritedAnnotationClass.class);
 
 		String testString = "s = NewBase(); assert(s:baseMethod2() == 'Base');";
-		LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
-		state.call(closure, null);
+		LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
+		thread.call(closure, null);
 	}
 
 	@Test
@@ -236,25 +232,25 @@ public class AnnotationTest {
 	public void testVarargs() throws IOException {
 		factory.exposeClass(InheritedAnnotationClass.class);
 		String testString = "foo = NewBase(); local s = foo:withVarargs('.', 'java', 'lang', 'String'); assert(s == 'java.lang.String')";
-		LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
-		state.call(closure, null);
+		LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
+		thread.call(closure, null);
 	}
 
 	@Test
 	public void testVarargs2() throws IOException {
 		factory.exposeClass(InheritedAnnotationClass.class);
 		String testString = "foo = NewBase(); local s = foo:withVarargs('.'); assert(s == '')";
-		LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
-		state.call(closure, null);
+		LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
+		thread.call(closure, null);
 	}
 
 	@Test
 	public void testVarargsFail() throws IOException {
 		factory.exposeClass(InheritedAnnotationClass.class);
 		String testString = "foo = NewBase(); local s = foo:withVarargs('.', {}); assert(s == '')";
-		LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
+		LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
 		try {
-			state.call(closure, null);
+			thread.call(closure, null);
 			fail();
 		} catch (Exception e) {
 			assertEquals("No conversion found from class se.krka.kahlua.j2se.KahluaTableImpl to java.lang.String at argument #2, arg2", e.getMessage());
@@ -265,9 +261,9 @@ public class AnnotationTest {
 	public void testVarargsFail2() throws IOException {
 		factory.exposeClass(InheritedAnnotationClass.class);
 		String testString = "foo = NewBase(); local s = foo:withVarargs(); assert(s == '')";
-		LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
+		LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
 		try {
-			state.call(closure, null);
+			thread.call(closure, null);
 			fail();
 		} catch (Exception e) {
 			assertEquals("Expected 1 arguments but got 0. Correct syntax: java.lang.String obj:withVarargs(java.lang.String arg1, java.lang.String[] arg2)", e.getMessage());
@@ -278,8 +274,8 @@ public class AnnotationTest {
     public void testSameName() throws IOException {
         factory.exposeClass(InheritedAnnotationClass.class);
         String testString = "foo = NewBase();\nlocal s = foo:sameName('hello', 'world');\nassert(s == 'helloworld');";
-        LuaClosure closure = LuaCompiler.loadstring(testString, "src", state.getEnvironment());
-        Object[] objects = state.pcall(closure, null);
+        LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
+        Object[] objects = thread.pcall(closure, null);
         //System.out.println(Arrays.toString(objects));
         assertEquals(Boolean.TRUE, objects[0]);
 

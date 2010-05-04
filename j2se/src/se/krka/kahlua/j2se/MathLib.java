@@ -73,7 +73,7 @@ public class MathLib implements JavaFunction {
 		this.index = index;
 	}
 
-    public static void register(KahluaTable env, Platform platform) {
+    public static void register(Platform platform, KahluaTable env) {
 		KahluaTable math = platform.newTable();
 		env.rawset("math", math);
 

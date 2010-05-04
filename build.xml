@@ -26,7 +26,7 @@
 
     <path id="j2se.dependencies">
         <pathelement path="${classes.dir}/core"/>
-        <pathelement location="${basedir}/lib/jsyntaxpane-0.9.5.jar" />
+        <pathelement location="${basedir}/j2se/lib/jsyntaxpane-0.9.5.jar" />
     </path>
 
 	<path id="main.classpath">

@@ -50,7 +50,7 @@ public class OsLib implements JavaFunction {
 		}
 	}
 
-	public static void register(KahluaTable environment, Platform platform) {
+	public static void register(Platform platform, KahluaTable environment) {
 		KahluaTable os = platform.newTable();
 		for (int i = 0; i < NUM_FUNCS; i++) {
 			os.rawset(funcnames[i], funcs[i]);

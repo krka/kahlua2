@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class KahluaUtil {
-	public static boolean luaEquals(Object a, Object b) {
+    public static final Object WORKER_THREAD_KEY = new Object();
+
+    public static boolean luaEquals(Object a, Object b) {
 		if (a == null || b == null) {
 			return a == b;
 		}
@@ -105,16 +107,35 @@ public class KahluaUtil {
         return ((Double) BaseLib.getArg(callFrame, argc, BaseLib.TYPE_NUMBER, funcname)).doubleValue();
     }
             
-    public static KahluaTable getClassMetatables(KahluaTable env, Platform platform) {
-        return getOrCreateTable(env, platform, "__classmetatables");
+    public static KahluaTable getClassMetatables(Platform platform, KahluaTable env) {
+        return getOrCreateTable(platform, env, "__classmetatables");
     }
 
-    public static KahluaTable getOrCreateTable(KahluaTable env, Platform platform, String name) {
+    public static KahluaThread getWorkerThread(Platform platform, KahluaTable env) {
+        Object workerThread = env.rawget(WORKER_THREAD_KEY);
+        if (workerThread == null) {
+            workerThread = new KahluaThread(platform, env);
+            env.rawset(WORKER_THREAD_KEY, workerThread);
+        }
+        return (KahluaThread) workerThread;
+    }
+
+
+
+    public static KahluaTable getOrCreateTable(Platform platform, KahluaTable env, String name) {
         Object t = env.rawget(name);
         if (t == null || !(t instanceof KahluaTable)) {
             t = platform.newTable();
             env.rawset(name, t);
         }
         return (KahluaTable) t;
+    }
+
+    public static void setupLibrary(KahluaTable env, KahluaThread workerThread, String library) {
+        LuaClosure closure = loadByteCodeFromResource(library, env);
+        if (closure == null) {
+            fail("Could not load " + library + ".lbc");
+        }
+        workerThread.call(closure, null, null, null);
     }
 }

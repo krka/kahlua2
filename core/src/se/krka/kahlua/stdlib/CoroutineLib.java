@@ -66,14 +66,14 @@ public class CoroutineLib implements JavaFunction {
 		this.index = index;
 	}
 
-	public static void register(KahluaTable env, Platform platform) {
+	public static void register(Platform platform, KahluaTable env) {
 		KahluaTable coroutine = platform.newTable();
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
 			coroutine.rawset(names[i], functions[i]);
 		}
 		
 		coroutine.rawset("__index", coroutine);
-        KahluaTable metatables = KahluaUtil.getClassMetatables(env, platform);
+        KahluaTable metatables = KahluaUtil.getClassMetatables(platform, env);
         metatables.rawset(COROUTINE_CLASS, coroutine);
 		env.rawset("coroutine", coroutine);
 	}
@@ -162,7 +162,7 @@ public class CoroutineLib implements JavaFunction {
 			nextCallFrame.init();
 		}
 
-		callFrame.coroutine.state.currentCoroutine = t;
+		callFrame.coroutine.thread.currentCoroutine = t;
 		
 		return 0;
 	}
@@ -194,13 +194,13 @@ public class CoroutineLib implements JavaFunction {
 			nextCallFrame.push(value);
 		}
 		
-		t.state.currentCoroutine = parent;
+		t.thread.currentCoroutine = parent;
 	}
 	
 	private int create(LuaCallFrame callFrame, int nArguments) {
 		LuaClosure c = getFunction(callFrame, nArguments);
 
-		Coroutine coroutine = new Coroutine(callFrame.coroutine.state, callFrame.coroutine.environment);
+		Coroutine coroutine = new Coroutine(callFrame.coroutine.thread, callFrame.coroutine.environment);
 		coroutine.pushNewCallFrame(c, null, 0, 0, -1, true, true);
 		callFrame.push(coroutine);
 		return 1;

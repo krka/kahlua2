@@ -42,12 +42,12 @@ import java.util.Map;
 
 /**
  * A tool to automatically expose java classes and
- * methods to a lua state
+ * methods to a lua thread
  * NOTE: This tool requires annotations (java 1.5 or higher) to work
  * and is therefore not supported in J2ME.
  */
 public class LuaJavaClassExposer {
-    private final Object key = new Object();
+    private final static Object DEBUGINFO_KEY = new Object();
     private final LuaConverterManager manager;
     private final Platform platform;
     private final KahluaTable environment;
@@ -59,10 +59,10 @@ public class LuaJavaClassExposer {
     }
 
     public Map<Class<?>, ClassDebugInformation> getClassDebugInformation() {
-        Object classMap = environment.rawget(key);
+        Object classMap = environment.rawget(DEBUGINFO_KEY);
         if (classMap == null || !(classMap instanceof Map)) {
             classMap = new HashMap<Class<?>, ClassDebugInformation>();
-            environment.rawset(key, classMap);
+            environment.rawset(DEBUGINFO_KEY, classMap);
         }
         return (Map<Class<?>, ClassDebugInformation>) classMap;
     }
@@ -80,7 +80,7 @@ public class LuaJavaClassExposer {
     }
 
     private KahluaTable getMetaTable(Class<?> clazz) {
-        KahluaTable metatables = KahluaUtil.getClassMetatables(environment, platform);
+        KahluaTable metatables = KahluaUtil.getClassMetatables(platform, environment);
         return (KahluaTable) metatables.rawget(clazz);
     }
 
@@ -100,12 +100,12 @@ public class LuaJavaClassExposer {
     }
 
     /**
-     * Creates a global variable in the LuaState that points to a function
+     * Creates a global variable in the environment that points to a function
      * which calls the specified method on the owner object.
      * <p/>
      * The name of the global variable is the same as the name of the method.
      *
-     * @param environment typically LuaState.getEnvironment()
+     * @param environment
      * @param owner
      * @param method
      */
@@ -114,12 +114,12 @@ public class LuaJavaClassExposer {
     }
 
     /**
-     * Creates a global variable in the LuaState that points to a function
+     * Creates a global variable in the environment that points to a function
      * which calls the specified method on the owner object.
      * <p/>
      * The name of the global variable is the same as methodName
      *
-     * @param environment typically LuaState.getEnvironment()
+     * @param environment
      * @param owner
      * @param method
      * @param methodName  the name of the method in Lua
@@ -228,7 +228,7 @@ public class LuaJavaClassExposer {
 			metatable.rawset("__newindex", superMetaTable.rawget("__newindex"));
 		}
         indexTable.setMetatable(superMetaTable);
-        KahluaUtil.getClassMetatables(environment, platform).rawset(clazz, metatable);
+        KahluaUtil.getClassMetatables(platform, environment).rawset(clazz, metatable);
     }
 
     public void exposeGlobalFunctions(Object object) {
@@ -294,7 +294,7 @@ public class LuaJavaClassExposer {
 
     private KahluaTable createTableStructure(KahluaTable base, String[] structure) {
         for (String s : structure) {
-            base = KahluaUtil.getOrCreateTable(base, platform, s);
+            base = KahluaUtil.getOrCreateTable(platform, base, s);
         }
         return base;
     }
@@ -380,7 +380,7 @@ public class LuaJavaClassExposer {
             }
             return builder.toString();
         } else {
-            return BaseLib.tostring(obj, null);
+            return BaseLib.tostring(obj, KahluaUtil.getWorkerThread(platform, environment));
         }
     }
 

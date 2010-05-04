@@ -1,7 +1,6 @@
 package se.krka.kahlua.require;
 
 import se.krka.kahlua.vm.*;
-import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
 
 import java.io.Reader;
@@ -45,7 +44,7 @@ public class Require implements JavaFunction {
 
     public int call(LuaCallFrame callFrame, int nArguments) {
         KahluaTable env = callFrame.getEnvironment();
-        Map<String, Result> states = (Map<String, Result>) callFrame.coroutine.state.tableGet(env, this);
+        Map<String, Result> states = (Map<String, Result>) callFrame.coroutine.thread.tableGet(env, this);
 
         KahluaUtil.luaAssert(nArguments >= 1, "not enough args");
         String path = (String) callFrame.get(0);
@@ -62,7 +61,7 @@ public class Require implements JavaFunction {
             try {
                 LuaClosure luaClosure = LuaCompiler.loadis(source, path, env);
                 setState(states, path, Result.LOADING);
-                callFrame.coroutine.state.call(luaClosure, null, null, null);
+                callFrame.coroutine.thread.call(luaClosure, null, null, null);
                 setState(states, path, Result.LOADED);
 
                 return 0;

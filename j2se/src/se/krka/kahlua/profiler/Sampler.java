@@ -11,14 +11,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Sampler {
     private static final AtomicInteger NEXT_ID = new AtomicInteger();
 
-	private final KahluaThread state;
+	private final KahluaThread thread;
 	private final Timer timer;
 	private final long period;
 	private final Profiler profiler;
 
 
-	public Sampler(KahluaThread state, long period, Profiler profiler) {
-		this.state = state;
+    public Sampler(KahluaThread thread, long period, Profiler profiler) {
+		this.thread = thread;
 		this.period = period;
 		this.profiler = profiler;
 		timer = new Timer("Kahlua Sampler-" + NEXT_ID.incrementAndGet(), true);
@@ -29,7 +29,7 @@ public class Sampler {
 			@Override
 			public void run() {
 				List<StacktraceElement> list = new ArrayList<StacktraceElement>();
-				appendList(list, state.currentCoroutine);
+				appendList(list, thread.currentCoroutine);
 				profiler.getSample(new Sample(list, period));
 			}
 		};

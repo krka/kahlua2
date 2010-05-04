@@ -40,7 +40,7 @@ public class RandomLib implements JavaFunction {
         }
 
         t.rawset("__index", t);
-        KahluaTable metatables = KahluaUtil.getClassMetatables(environment, platform);
+        KahluaTable metatables = KahluaUtil.getClassMetatables(platform, environment);
         metatables.rawset(RANDOM_CLASS, t);
         environment.rawset("newrandom", NEWRANDOM_FUN);
     }

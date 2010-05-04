@@ -24,7 +24,7 @@ package se.krka.kahlua.vm;
 import java.util.Vector;
 
 public class Coroutine {
-    public final KahluaThread state;
+    public final KahluaThread thread;
     private final Platform platform;
 
 	public KahluaTable environment;
@@ -51,13 +51,13 @@ public class Coroutine {
 	public int expectedResults;
 
     public Coroutine() {
-        state = null;
+        thread = null;
         platform = null;
     }
 
-    public Coroutine(KahluaThread state, KahluaTable environment) {
-		this.state = state;
-        platform = state.getPlatform();
+    public Coroutine(KahluaThread thread, KahluaTable environment) {
+		this.thread = thread;
+        platform = thread.getPlatform();
 		this.environment = environment;
 		
 		objectStack = new Object[INITIAL_STACK_SIZE];

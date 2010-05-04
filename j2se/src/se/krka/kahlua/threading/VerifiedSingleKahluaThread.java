@@ -31,22 +31,22 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * A specialized LuaState that verifies that a LuaState is not used by multiple threads.
+ * A specialized KahluaThread that verifies that a KahluaThread is not used by multiple threads.
  */
-public class VerifiedSingleThreadLuaState extends KahluaThread {
+public class VerifiedSingleKahluaThread extends KahluaThread {
     private final Lock lock = new ReentrantLock();
 
-    public VerifiedSingleThreadLuaState(Platform platform, KahluaTable environment) {
+    public VerifiedSingleKahluaThread(Platform platform, KahluaTable environment) {
         super(platform, environment);
     }
 
-    public VerifiedSingleThreadLuaState(PrintStream stream, Platform platform, KahluaTable environment) {
+    public VerifiedSingleKahluaThread(PrintStream stream, Platform platform, KahluaTable environment) {
         super(stream, platform, environment);
     }
 
     private void lock() {
         if (!lock.tryLock()) {
-            throw new IllegalStateException("Multiple threads may not access the same lua state");
+            throw new IllegalStateException("Multiple threads may not access the same lua thread");
         }
     }
 

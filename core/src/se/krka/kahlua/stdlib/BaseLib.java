@@ -301,24 +301,24 @@ public final class BaseLib implements JavaFunction {
 	}
 
 	public static int pcall(LuaCallFrame callFrame, int nArguments) {
-		return callFrame.coroutine.state.pcall(nArguments - 1);
+		return callFrame.coroutine.thread.pcall(nArguments - 1);
 	}
 
 	private static int print(LuaCallFrame callFrame, int nArguments) {
-		KahluaThread state = callFrame.coroutine.state;
-		KahluaTable env = state.getEnvironment();
-		Object toStringFun = state.tableGet(env, "tostring");
+		KahluaThread thread = callFrame.coroutine.thread;
+		KahluaTable env = thread.getEnvironment();
+		Object toStringFun = thread.tableGet(env, "tostring");
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < nArguments; i++) {
             if (i > 0) {
                 sb.append("\t");
             }
 
-			Object res = state.call(toStringFun, callFrame.get(i), null, null);
+			Object res = thread.call(toStringFun, callFrame.get(i), null, null);
 
 			sb.append(res);
 		}
-		state.getOut().println(sb.toString());
+		thread.getOut().println(sb.toString());
 		return 0;
 	}
 
@@ -425,7 +425,7 @@ public final class BaseLib implements JavaFunction {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
 		Object o = callFrame.get(0);
 
-		Object metatable = callFrame.coroutine.state.getmetatable(o, false);
+		Object metatable = callFrame.coroutine.thread.getmetatable(o, false);
 		callFrame.push(metatable);
 		return 1;
 	}
@@ -436,21 +436,21 @@ public final class BaseLib implements JavaFunction {
 		Object o = callFrame.get(0);
 
 		KahluaTable newMeta = (KahluaTable) (callFrame.get(1));
-		setmetatable(callFrame.coroutine.state, o, newMeta, false);
+		setmetatable(callFrame.coroutine.thread, o, newMeta, false);
 
 		callFrame.setTop(1);
 		return 1;
 	}
 
-	public static void setmetatable(KahluaThread state, Object o, KahluaTable newMeta, boolean raw) {
+	public static void setmetatable(KahluaThread thread, Object o, KahluaTable newMeta, boolean raw) {
 		KahluaUtil.luaAssert(o != null, "Expected table, got nil");
-		final Object oldMeta = state.getmetatable(o, raw);
+		final Object oldMeta = thread.getmetatable(o, raw);
 
-		if (!raw && oldMeta != null && state.tableGet(oldMeta, "__metatable") != null) {
+		if (!raw && oldMeta != null && thread.tableGet(oldMeta, "__metatable") != null) {
 			throw new RuntimeException("Can not set metatable of protected object");
 		}
 
-        state.setmetatable(o, newMeta);
+        thread.setmetatable(o, newMeta);
 	}
 
 	private static int type(LuaCallFrame callFrame, int nArguments) {
@@ -488,12 +488,12 @@ public final class BaseLib implements JavaFunction {
 	private static int tostring(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
 		Object o = callFrame.get(0);
-		Object res = tostring(o, callFrame.coroutine.state);
+		Object res = tostring(o, callFrame.coroutine.thread);
 		callFrame.push(res);
 		return 1;
 	}
 
-	public static String tostring(Object o, KahluaThread state) {
+	public static String tostring(Object o, KahluaThread thread) {
 		if (o == null) {
 			return TYPE_NIL;
 		}
@@ -513,10 +513,10 @@ public final class BaseLib implements JavaFunction {
 			return "function 0x" + System.identityHashCode(o);
 		}
 
-        if (state != null) {
-            Object tostringFun = state.getMetaOp(o, "__tostring");
+        if (thread != null) {
+            Object tostringFun = thread.getMetaOp(o, "__tostring");
             if (tostringFun != null) {
-                String res = (String) state.call(tostringFun, o, null, null);
+                String res = (String) thread.call(tostringFun, o, null, null);
 
                 return res;
             }

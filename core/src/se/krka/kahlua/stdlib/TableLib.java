@@ -55,7 +55,7 @@ public final class TableLib implements JavaFunction {
 		this.index = index;
 	}
 
-	public static void register(KahluaTable environment, Platform platform) {
+	public static void register(Platform platform, KahluaTable environment) {
 		KahluaTable table = platform.newTable();
 
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
@@ -198,7 +198,7 @@ public final class TableLib implements JavaFunction {
 		} else {
 			elem = callFrame.get(1);
 		}
-		insert(callFrame.coroutine.state, t, pos, elem);
+		insert(callFrame.coroutine.thread, t, pos, elem);
 		return 0;
 	}
 	
@@ -206,13 +206,13 @@ public final class TableLib implements JavaFunction {
 		return remove(state, table, table.len());
 	}
 	
-	public static Object remove (KahluaThread state, KahluaTable table, int position) {
-		Object ret = state.tableGet(table, KahluaUtil.toDouble(position));
+	public static Object remove (KahluaThread thread, KahluaTable table, int position) {
+		Object ret = thread.tableGet(table, KahluaUtil.toDouble(position));
 		int len = table.len();
 		for (int i = position; i < len; i++) {
-			state.tableSet(table, KahluaUtil.toDouble(i), state.tableGet(table, KahluaUtil.toDouble(i+1)));
+			thread.tableSet(table, KahluaUtil.toDouble(i), thread.tableGet(table, KahluaUtil.toDouble(i+1)));
 		}
-		state.tableSet(table, KahluaUtil.toDouble(len), null);
+		thread.tableSet(table, KahluaUtil.toDouble(len), null);
 		return ret;
 	}
 	
@@ -223,7 +223,7 @@ public final class TableLib implements JavaFunction {
 		if (nArguments > 1) {
 			pos = BaseLib.rawTonumber(callFrame.get(1)).intValue();
 		}
-		callFrame.push(remove(callFrame.coroutine.state, t, pos));
+		callFrame.push(remove(callFrame.coroutine.thread, t, pos));
 		return 1;
 	}
 	

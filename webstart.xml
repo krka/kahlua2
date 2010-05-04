@@ -33,7 +33,7 @@
 		<jar destfile="${webstart.build.dir}/${webstart.jar.name}" manifest="${deploy.dir}/MANIFEST.MF">
 			<fileset dir="${baseDir}/bin/classes/core" />
 			<fileset dir="${baseDir}/bin/classes/j2se" />
-			<zipfileset src="${baseDir}/lib/jsyntaxpane-0.9.5.jar" prefix="" />
+			<zipfileset src="${baseDir}/j2se/lib/jsyntaxpane-0.9.5.jar" prefix="" />
 			<manifest>
 				<attribute name="Class-Path" value="${dist.manifest.classpath}"/>
 			</manifest>

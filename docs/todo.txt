@@ -1,4 +1,4 @@
-* Add pp to kahlua interpreter
+* Use simple name instead of full name for luaDescription
 
 * Add a webstart for interpreter demo
 * Integrate with Kahlua-test

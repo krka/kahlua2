@@ -34,23 +34,23 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 
- * A decorator for a LuaState, which makes it easier to use the same LuaState in multiple
+ * A decorator for a KahluaThread, which makes it easier to use the same KahluaThread in multiple
  * threads.
- * Note that this does not mean that the you can run several functions concurrently in the LuaState,
+ * Note that this does not mean that the you can run several functions concurrently in the thread,
  * it will in fact just ensure that they do NOT run at the same time, in order to avoid a broken
- * Lua state.
+ * KahluaThread.
  *
- * You MUST lock the state before doing any operation on it, and unlock it when you're done.
+ * You MUST lock the thread before doing any operation on it, and unlock it when you're done.
  * Calling pcall will grab the lock implicitly.
  */
-public class ThreadSafeLuaState extends KahluaThread {
+public class BlockingKahluaThread extends KahluaThread {
 	private final Lock lock = new ReentrantLock();
 
-    public ThreadSafeLuaState(Platform platform, KahluaTable environment) {
+    public BlockingKahluaThread(Platform platform, KahluaTable environment) {
         super(platform, environment);
     }
 
-    public ThreadSafeLuaState(PrintStream stream, Platform platform, KahluaTable environment) {
+    public BlockingKahluaThread(PrintStream stream, Platform platform, KahluaTable environment) {
         super(stream, platform, environment);
     }
 
@@ -185,7 +185,7 @@ public class ThreadSafeLuaState extends KahluaThread {
 	public static void main(String[] args) throws IOException, InterruptedException {
         Platform platform = new J2SEPlatform();
         KahluaTable env = platform.newEnvironment();
-        final ThreadSafeLuaState state = new ThreadSafeLuaState(platform, env);
+        final BlockingKahluaThread state = new BlockingKahluaThread(platform, env);
 
 		final LuaClosure c = LuaCompiler.loadstring("x = (x or 0) + 1", "", state.getEnvironment());
 		final AtomicInteger counter = new AtomicInteger(0);
