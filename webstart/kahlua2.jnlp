@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0+"
+      codebase="http://github.com/downloads/krka/kahlua2/"
+      href="kahlua2.jnlp">
+
+  <information>
+    <title>Kahlua</title>
+    <vendor>Kahlua</vendor>
+    <homepage href="http://code.google.com/p/kahlua"/>
+    <description kind="short">Kahlua is a Lua implementation in Java</description>
+    <description kind="tooltip">Kahlua</description>
+    <icon href="icon.png"/>
+  </information>
+  <security>
+      <all-permissions/>
+  </security>
+  <resources>
+    <jar href="kahlua2demo.jar"/>
+  </resources>
+
+  <application-desc main-class="se.krka.kahlua.j2se.interpreter.InteractiveShell"/>
+</jnlp>

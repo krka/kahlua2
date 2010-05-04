@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+
+<project name="webstart" default="build-webstart" basedir=".">
+
+	<dirname property="baseDir" file="${ant.file}"/>
+
+	<property name="deploy.dir" location="${baseDir}/webstart"/>
+
+	<property name="webstart.build.dir" value="${baseDir}/bin/webstart/build"/>
+	<property name="webstart.jar.name" value="kahlua2demo.jar"/>
+
+
+	<property name="libs.dir" value="${webstart.build.dir}"/>
+
+	<path id="dist.classpath">
+		<fileset dir="${libs.dir}" includes="**/*.jar, **/*.zip" />
+	</path>
+	
+	<property name="password" value="9agd97atwd97tawd89raw" />
+	<target name="generate-key">
+		<genkey keystore="kahlua.keystore" alias="kahlua2" storepass="${password}"
+				  dname="CN=Kahlua,L=Stockholm,O=Kahlua,C=SE">
+		</genkey>
+	</target>
+
+	<property name="webstart.signed.dir" value="${baseDir}/bin/webstart/signed"/>
+	<target name="build-webstart">
+		<mkdir dir="${webstart.build.dir}"/>
+
+		<manifestclasspath taskname="setup-manifest" property="dist.manifest.classpath" jarfile="${webstart.build.dir}/${webstart.jar.name}">
+				<classpath refid="dist.classpath" />
+		</manifestclasspath>
+		<jar destfile="${webstart.build.dir}/${webstart.jar.name}" manifest="${deploy.dir}/MANIFEST.MF">
+			<fileset dir="${baseDir}/bin/classes/core" />
+			<fileset dir="${baseDir}/bin/classes/j2se" />
+			<zipfileset src="${baseDir}/lib/jsyntaxpane-0.9.5.jar" prefix="" />
+			<manifest>
+				<attribute name="Class-Path" value="${dist.manifest.classpath}"/>
+			</manifest>
+		</jar>
+
+		<mkdir dir="${webstart.signed.dir}"/>
+		<signjar destDir="${webstart.signed.dir}" alias="kahlua2" keystore="kahlua.keystore" storepass="${password}">
+			<path>
+				<fileset dir="${webstart.build.dir}" includes="**/*.jar"/>
+			</path>
+			<flattenmapper/>
+		</signjar>
+		<copy todir="${webstart.signed.dir}" file="${deploy.dir}/kahlua2.jnlp" />
+	</target>
+</project>	

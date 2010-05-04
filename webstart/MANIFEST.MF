@@ -1,0 +1,1 @@
+Main-Class: se.krka.kahlua.j2se.interpreter.InteractiveShell
