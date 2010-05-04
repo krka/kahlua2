@@ -24,6 +24,8 @@ package se.krka.kahlua.j2se.interpreter.autocomplete;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -46,6 +48,17 @@ public class Menu extends HelperWindow {
                 return Math.min(listModel.getSize(), 10);
             }
         };
+        visualList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                SwingUtilities.invokeLater(new Runnable(){
+                    @Override
+                    public void run() {
+                        autoComplete.showDefinition();
+                    }
+                });
+            }
+        });
         visualList.setFocusable(false);
         visualList.setCellRenderer(new CompletionRenderer());
         visualList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -144,12 +157,6 @@ public class Menu extends HelperWindow {
         }
         visualList.setSelectionInterval(index, index);
         visualList.scrollRectToVisible(visualList.getCellBounds(index, index));
-        SwingUtilities.invokeLater(new Runnable(){
-            @Override
-            public void run() {
-                autoComplete.showDefinition();
-            }
-        });
     }
 
     public int getNumElements() {
