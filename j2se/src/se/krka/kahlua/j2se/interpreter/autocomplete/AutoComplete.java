@@ -284,10 +284,15 @@ public class AutoComplete {
     }
 
     private void showDefinition(String def) {
+        if (def == null || def.length() == 0) {
+            tooltip.setVisible(false);
+            return;
+        }
+
         try {
             Word word = wordFinder.findBothWays(component.getCaretPosition());
-            int index = word.getStart();
-            Rectangle rect = component.getUI().modelToView(component, index);
+            Word lastPart = wordFinder.findLastPart(word);
+            Rectangle rect = component.getUI().modelToView(component, lastPart.getStart());
             if (menu.isVisible()) {
                 rect.grow(0, menu.getHeight());
             }
@@ -315,8 +320,7 @@ public class AutoComplete {
         try {
             Word word = wordFinder.findBackwards(component.getCaretPosition());
             Word lastPart = wordFinder.findForward(wordFinder.findLastPart(word));
-            int index = word.getStart();
-            Rectangle rect = component.getUI().modelToView(component, index);
+            Rectangle rect = component.getUI().modelToView(component, lastPart.getStart());
             menu.display(new Point(rect.x, rect.y + rect.height), component);
             menu.setStartPos(lastPart.getStart());
 
