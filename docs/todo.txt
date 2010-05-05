@@ -1,3 +1,7 @@
+* Let recursive expose use types instead of class, to catch generic types
+* Create a converter that automatically exposes unknown java types
+* Add inherited method annotations
+
 * Use simple name instead of full name for luaDescription
 
 * Add a webstart for interpreter demo
