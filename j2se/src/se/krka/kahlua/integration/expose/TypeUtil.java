@@ -26,7 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TypeUtil {
-    private static final Pattern pattern = Pattern.compile("([\\.a-z]*)\\.([A-Za-z][A-Za-z0-9_]*)");
+    private static final Pattern pattern = Pattern.compile("([\\.a-z0-9]*)\\.([A-Za-z][A-Za-z0-9_]*)");
     public static String removePackages(String s) {
         Matcher matcher = pattern.matcher(s);
         return matcher.replaceAll("$2");

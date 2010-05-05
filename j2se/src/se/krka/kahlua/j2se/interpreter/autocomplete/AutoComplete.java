@@ -25,7 +25,6 @@ package se.krka.kahlua.j2se.interpreter.autocomplete;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
 import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.*;
-import sun.awt.NullComponentPeer;
 
 import java.io.IOException;
 import java.util.*;
