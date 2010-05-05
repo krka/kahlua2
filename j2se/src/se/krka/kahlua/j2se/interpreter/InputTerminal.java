@@ -37,7 +37,7 @@ public class InputTerminal extends JEditorPane {
     }
 
     private static class TopBorder implements Border {
-        private final Insets insets = new Insets(1, 0, 0, 0);
+        private final Insets insets = new Insets(1, 5, 1, 5);
 
         @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
