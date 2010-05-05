@@ -22,46 +22,37 @@
 
 package se.krka.kahlua.j2se.interpreter;
 
-import java.util.Stack;
+import javax.swing.BorderFactory;
+import javax.swing.JEditorPane;
+import javax.swing.border.Border;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
 
-public class History {
-    private final Stack<String> historyBack = new Stack<String>();
-    private final Stack<String> historyForward = new Stack<String>();
-    private String current = "";
-
-    public History() {
+public class InputTerminal extends JEditorPane {
+    public InputTerminal(Color background) {
+        setBorder(new TopBorder());
+        setBackground(background);
     }
 
+    private static class TopBorder implements Border {
+        private final Insets insets = new Insets(1, 0, 0, 0);
 
-    public void add(String text) {
-        if (validLine(text)) {
-            if (!current.equals(text) && validLine(current)) {
-                historyBack.push(current);
-                current = "";
-            }
-            historyBack.push(text);
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            g.setColor(Color.GRAY);
+            g.drawLine(x, y, width, 0);
         }
-    }
 
-    private boolean validLine(String text) {
-        return text.trim().length() != 0;
-    }
-
-    public void moveBack(InputTerminal input) {
-        move(input, historyForward, historyBack);
-    }
-
-    public void moveForward(InputTerminal input) {
-        move(input, historyBack, historyForward);
-    }
-
-    private void move(InputTerminal input, Stack<String> sink, Stack<String> source) {
-        String newText = source.isEmpty() ? "" : source.pop();
-        String curText = input.getText();
-        if (validLine(curText)) {
-            sink.push(curText);
+        @Override
+        public Insets getBorderInsets(Component c) {
+            return insets;
         }
-        input.setText(newText);
-        current = newText;
+
+        @Override
+        public boolean isBorderOpaque() {
+            return true;
+        }
     }
 }

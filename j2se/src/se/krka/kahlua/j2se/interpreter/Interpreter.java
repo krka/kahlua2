@@ -46,8 +46,8 @@ import java.util.concurrent.Future;
 public class Interpreter extends JPanel {
 
     private final KahluaThread thread;
-    private final OutputTerminal output;
-    private final JLabel outputTitle = new JLabel("Output:");
+    private final OutputTerminal terminal;
+    private final JLabel status = new JLabel("");
 
     private final History history = new History();
     private final ExecutorService executors = Executors.newSingleThreadExecutor(new DaemonizedThreadFactory(Executors.defaultThreadFactory()));
@@ -65,19 +65,19 @@ public class Interpreter extends JPanel {
         exposer = new LuaJavaClassExposer(manager, platform, env);
         exposer.exposeGlobalFunctions(this);
 
-        final Terminal input = new Terminal(true, Color.BLACK, Color.WHITE);
+        final InputTerminal input = new InputTerminal(Color.BLACK);
 
-        JSyntaxUtil.installSyntax(input.getTextPane(), true);
-        new AutoComplete(owner, input.getTextPane(), platform, env);
+        JSyntaxUtil.installSyntax(input, true);
+        new AutoComplete(owner, input, platform, env);
 
 
-        output = new OutputTerminal(Color.BLACK, input.getTextPane().getFont());
-        output.setPreferredSize(new Dimension(800, 400));
-        output.addKeyListener(new KeyListener() {
+        terminal = new OutputTerminal(Color.BLACK, input.getFont(), input);
+        terminal.setPreferredSize(new Dimension(800, 400));
+        terminal.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
                 if (e.getKeyChar() != 0) {
-                    input.getTextPane().requestFocus();
+                    input.requestFocus();
                     Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(e);
                 }
             }
@@ -91,19 +91,9 @@ public class Interpreter extends JPanel {
             }
         });
 
-        JPanel outputPanel = new JPanel(new BorderLayout());
-        outputPanel.add(outputTitle, BorderLayout.NORTH);
-        outputPanel.add(output, BorderLayout.CENTER);
-        this.add(outputPanel, BorderLayout.CENTER);
+        add(status, BorderLayout.SOUTH);
+        add(terminal, BorderLayout.CENTER);
 
-
-
-        input.setPreferredSize(new Dimension(800, 100));
-        JPanel inputPanel = new JPanel(new BorderLayout());
-        inputPanel.add(input, BorderLayout.CENTER);
-        this.add(inputPanel, BorderLayout.SOUTH);
-
-        input.setPreferredSize(new Dimension(800, 100));
         input.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent keyEvent) {
@@ -120,7 +110,7 @@ public class Interpreter extends JPanel {
                         if (isDone()) {
                             String text = input.getText();
                             history.add(text);
-                            output.appendLua(text);
+                            terminal.appendLua(text);
                             input.setText("");
                             execute(text);
                         }
@@ -157,7 +147,7 @@ public class Interpreter extends JPanel {
             }
         });
 
-        thread = new KahluaThread(output.getPrintStream(), platform, env);
+        thread = new KahluaThread(terminal.getPrintStream(), platform, env);
     }
 
     private boolean isControl(KeyEvent keyEvent) {
@@ -168,25 +158,25 @@ public class Interpreter extends JPanel {
         future = executors.submit(new Runnable() {
             @Override
             public void run() {
-                outputTitle.setText("Output: [running...]");
+                status.setText("[running...]");
                 try {
                     LuaClosure luaClosure = smartCompile(text);
                     LuaReturn result = caller.protectedCall(thread, luaClosure);
                     if (result.isSuccess()) {
                         for (Object o : result) {
-                            output.appendOutput(BaseLib.tostring(o, thread)+"\n");
+                            terminal.appendOutput(BaseLib.tostring(o, thread)+"\n");
                         }
                     } else {
-                        output.appendError(result.getErrorString()+"\n");
-                        output.appendError(result.getLuaStackTrace()+"\n");
+                        terminal.appendError(result.getErrorString()+"\n");
+                        terminal.appendError(result.getLuaStackTrace()+"\n");
                         result.getJavaException().printStackTrace(System.err);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace(output.getPrintStream());
+                    e.printStackTrace(terminal.getPrintStream());
                 } catch (RuntimeException e) {
-                    output.appendError(e.getMessage()+"\n");
+                    terminal.appendError(e.getMessage()+"\n");
                 }
-                outputTitle.setText("Output:");
+                status.setText("");
             }
         });
     }
@@ -210,7 +200,7 @@ public class Interpreter extends JPanel {
         return thread;
     }
 
-    public OutputTerminal getOutput() {
-        return output;
+    public OutputTerminal getTerminal() {
+        return terminal;
     }
 }

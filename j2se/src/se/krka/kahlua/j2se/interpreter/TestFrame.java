@@ -22,46 +22,34 @@
 
 package se.krka.kahlua.j2se.interpreter;
 
-import java.util.Stack;
+import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
 
-public class History {
-    private final Stack<String> historyBack = new Stack<String>();
-    private final Stack<String> historyForward = new Stack<String>();
-    private String current = "";
+public class TestFrame {
+    public static void main(String[] args) {
+        JFrame frame = new JFrame();
+        JComponent view = new JPanel();
+        view.setLayout(new BoxLayout(view, BoxLayout.Y_AXIS));
+        view.add(new JTextArea("asd"));
+        view.add(new JTextArea("asd"));
+        view.add(new JTextArea("asd"));
+        view.add(new JTextArea("asd"));
+        view.add(Box.createGlue());
 
-    public History() {
+        JScrollPane scrollpane = new JScrollPane(filler(view));
+        frame.getContentPane().add(scrollpane);
+        frame.setVisible(true);
+        frame.setPreferredSize(new Dimension(800, 600));
+        frame.pack();
+        frame.pack();
     }
 
-
-    public void add(String text) {
-        if (validLine(text)) {
-            if (!current.equals(text) && validLine(current)) {
-                historyBack.push(current);
-                current = "";
-            }
-            historyBack.push(text);
-        }
-    }
-
-    private boolean validLine(String text) {
-        return text.trim().length() != 0;
-    }
-
-    public void moveBack(InputTerminal input) {
-        move(input, historyForward, historyBack);
-    }
-
-    public void moveForward(InputTerminal input) {
-        move(input, historyBack, historyForward);
-    }
-
-    private void move(InputTerminal input, Stack<String> sink, Stack<String> source) {
-        String newText = source.isEmpty() ? "" : source.pop();
-        String curText = input.getText();
-        if (validLine(curText)) {
-            sink.push(curText);
-        }
-        input.setText(newText);
-        current = newText;
+    private static JPanel filler(JComponent other) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(Box.createHorizontalGlue(), BorderLayout.CENTER);
+        panel.add(other, BorderLayout.SOUTH);
+        return panel;
     }
 }

@@ -29,9 +29,7 @@ import javax.swing.border.Border;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -62,23 +60,17 @@ public class OutputTerminal extends JPanel implements FocusListener {
         }
     });
 
-    public OutputTerminal(Color background, Font font) {
+    public OutputTerminal(Color background, Font font, JComponent input) {
         super(new BorderLayout());
         this.background = background;
         this.font = font;
         view = new JPanel();
         view.setBorder(BorderFactory.createEmptyBorder());
         view.setLayout(new BoxLayout(view, BoxLayout.Y_AXIS));
-
-        JComponent filler = new JPanel(new BorderLayout());
-        filler.add(view, BorderLayout.NORTH);
-        JPanel panel = new JPanel();
-        panel.setOpaque(true);
-        panel.setBackground(background);
-        filler.add(panel, BorderLayout.CENTER);
+        view.setBackground(background);
 
         scrollpane = new JScrollPane(
-                filler,
+                filler(view, input),
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollpane.getVerticalScrollBar().setUnitIncrement(20);
@@ -193,5 +185,19 @@ public class OutputTerminal extends JPanel implements FocusListener {
     @Override
     public void focusLost(FocusEvent e) {
     }
-    
+
+    private static JPanel filler(JComponent other, JComponent input) {
+        JPanel panel = new JPanel(new BorderLayout());
+        JPanel glue = new JPanel();
+        glue.setOpaque(true);
+        glue.setBackground(other.getBackground());
+        panel.add(glue, BorderLayout.CENTER);
+        panel.add(other, BorderLayout.SOUTH);
+
+        JPanel panel2 = new JPanel(new BorderLayout());
+        panel2.add(panel, BorderLayout.CENTER);
+        panel2.add(input, BorderLayout.SOUTH);
+        return panel2;
+    }
+
 }

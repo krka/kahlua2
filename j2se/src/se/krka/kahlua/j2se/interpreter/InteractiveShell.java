@@ -50,7 +50,7 @@ public class InteractiveShell {
     }
 
     public void appendKeybindings() {
-        getWindow(0).getInterpreter().getOutput().appendInfo("Useful shortcuts:\n" +
+        getWindow(0).getInterpreter().getTerminal().appendInfo("Useful shortcuts:\n" +
                 "Ctrl-enter -- execute script\n" +
                 "Ctrl-space -- autocomplete global variables\n" +
                 "Ctrl-p -- show definition (if available)\n" +
@@ -60,7 +60,7 @@ public class InteractiveShell {
     }
 
     public void appendWelcome() {
-        getWindow(0).getInterpreter().getOutput().appendInfo("Welcome to the Kahlua interpreter\n");
+        getWindow(0).getInterpreter().getTerminal().appendInfo("Welcome to the Kahlua interpreter\n");
     }
 
     public InteractiveShell(String name, final Platform platform, final KahluaTable env) {
