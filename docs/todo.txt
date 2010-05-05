@@ -2,9 +2,6 @@
 * Create a converter that automatically exposes unknown java types
 * Add inherited method annotations
 
-* Use simple name instead of full name for luaDescription
-
-* Add a webstart for interpreter demo
 * Integrate with Kahlua-test
  
 * Add easier object introspection, i.e. methods(obj)
