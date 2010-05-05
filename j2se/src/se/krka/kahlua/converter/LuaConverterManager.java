@@ -118,10 +118,30 @@ public class LuaConverterManager {
             }
             scanClass = scanClass.getSuperclass();
         }
-        return null;
+        return tryInterfaces(map, javaClass, luaObject);
 	}
 
-	@SuppressWarnings("unchecked")
+    private <T> T tryInterfaces(Map<Class, LuaToJavaConverter> map, Class<T> javaClass, Object luaObject) {
+        if (javaClass == null) {
+            return null;
+        }
+        LuaToJavaConverter converter = map.get(javaClass);
+        if (converter != null) {
+            Object o = converter.fromLuaToJava(luaObject, javaClass);
+            if (o != null) {
+                return (T) o;
+            }
+        }
+        for (Class<?> aClass : javaClass.getInterfaces()) {
+            Object o = tryInterfaces(map, aClass, luaObject);
+            if (o != null) {
+                return (T) o;
+            }
+        }
+        return (T) tryInterfaces(map, javaClass.getSuperclass(), luaObject);
+    }
+
+    @SuppressWarnings("unchecked")
 	private Map<Class, LuaToJavaConverter> createLuaCache(Class<?> luaClass) {
 		HashMap<Class, LuaToJavaConverter> map = new HashMap<Class, LuaToJavaConverter>();
 		luatoJavaCache.put(luaClass, map);

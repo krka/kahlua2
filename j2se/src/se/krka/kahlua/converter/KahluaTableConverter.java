@@ -22,10 +22,7 @@
 
 package se.krka.kahlua.converter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import se.krka.kahlua.vm.KahluaTable;
@@ -42,21 +39,8 @@ public class KahluaTableConverter {
 
     @SuppressWarnings("unchecked")
 	public void install(final LuaConverterManager manager) {
-		manager.addJavaConverter(new JavaToLuaConverter<List>() {
-			public Object fromJavaToLua(List javaObject) {
-                KahluaTable t = platform.newTable();
-				int i = 0;
-				for (Object o: javaObject) {
-					i++;
-					t.rawset(i, manager.fromJavaToLua(o));
-				}
-				return t;
-			}
-
-			public Class<List> getJavaType() {
-				return List.class;
-			}
-		});
+		manager.addJavaConverter(new CollectionToLuaConverter(manager, Collection.class));
+        manager.addLuaConverter(new CollectionToJavaConverter(Collection.class));
 		manager.addJavaConverter(new JavaToLuaConverter<Map>() {
 			public Object fromJavaToLua(Map javaObject) {
 				Map<Object, Object> map = javaObject;
@@ -71,25 +55,6 @@ public class KahluaTableConverter {
 
 			public Class<Map> getJavaType() {
 				return Map.class;
-			}
-		});
-		manager.addLuaConverter(new LuaToJavaConverter<KahluaTable, List>() {
-			public List<Object> fromLuaToJava(KahluaTable luaObject, Class<List> javaClass) throws IllegalArgumentException {
-				int n = luaObject.len();
-				List<Object> list = new ArrayList<Object>(n);
-				for (int i = 1; i <= n; i++) {
-					Object value = luaObject.rawget(i);
-					list.add(value);
-				}
-				return list;
-			}
-
-			public Class<List> getJavaType() {
-				return List.class;
-			}
-
-			public Class<KahluaTable> getLuaType() {
-				return KahluaTable.class;
 			}
 		});
 		manager.addLuaConverter(new LuaToJavaConverter<KahluaTable, Map>() {
@@ -113,4 +78,55 @@ public class KahluaTableConverter {
 			}
 		});
 	}
+
+    private class CollectionToLuaConverter<T extends Iterable> implements JavaToLuaConverter<T> {
+        private final Class<T> clazz;
+        private final LuaConverterManager manager;
+
+        public CollectionToLuaConverter(LuaConverterManager manager, Class<T> clazz) {
+            this.manager = manager;
+            this.clazz = clazz;
+        }
+
+        public Object fromJavaToLua(T javaObject) {
+KahluaTable t = platform.newTable();
+            int i = 0;
+            for (Object o: javaObject) {
+                i++;
+                t.rawset(i, manager.fromJavaToLua(o));
+            }
+            return t;
+        }
+
+        public Class<T> getJavaType() {
+            return clazz;
+        }
+    }
+
+    
+    private static class CollectionToJavaConverter<T> implements LuaToJavaConverter<KahluaTable, T> {
+        private final Class<T> javaClass;
+
+        private CollectionToJavaConverter(Class<T> javaClass) {
+            this.javaClass = javaClass;
+        }
+
+        public T fromLuaToJava(KahluaTable luaObject, Class<T> javaClass) throws IllegalArgumentException {
+            int n = luaObject.len();
+            List list = new ArrayList(n);
+            for (int i = 1; i <= n; i++) {
+                Object value = luaObject.rawget(i);
+                list.add(value);
+            }
+            return (T) list;
+        }
+
+        public Class<T> getJavaType() {
+            return javaClass;
+        }
+
+        public Class<KahluaTable> getLuaType() {
+            return KahluaTable.class;
+        }
+    }
 }
