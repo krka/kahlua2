@@ -32,12 +32,11 @@ import se.krka.kahlua.integration.processor.ClassParameterInformation;
 import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.*;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A tool to automatically expose java classes and
@@ -50,11 +49,14 @@ public class LuaJavaClassExposer {
     private final LuaConverterManager manager;
     private final Platform platform;
     private final KahluaTable environment;
+    private final KahluaTable classMetatables;
+    private final HashSet<Type> visitedTypes = new HashSet<Type>();
 
     public LuaJavaClassExposer(LuaConverterManager manager, Platform platform, KahluaTable environment) {
         this.manager = manager;
         this.platform = platform;
         this.environment = environment;
+        classMetatables = KahluaUtil.getClassMetatables(platform, environment);
     }
 
     public Map<Class<?>, ClassDebugInformation> getClassDebugInformation() {
@@ -76,8 +78,7 @@ public class LuaJavaClassExposer {
     }
 
     private KahluaTable getMetaTable(Class<?> clazz) {
-        KahluaTable metatables = KahluaUtil.getClassMetatables(platform, environment);
-        return (KahluaTable) metatables.rawget(clazz);
+        return (KahluaTable) classMetatables.rawget(clazz);
     }
 
     private KahluaTable getIndexTable(KahluaTable metaTable) {
@@ -224,7 +225,7 @@ public class LuaJavaClassExposer {
 			metatable.rawset("__newindex", superMetaTable.rawget("__newindex"));
 		}
         indexTable.setMetatable(superMetaTable);
-        KahluaUtil.getClassMetatables(platform, environment).rawset(clazz, metatable);
+        classMetatables.rawset(clazz, metatable);
     }
 
     public void exposeGlobalFunctions(Object object) {
@@ -367,17 +368,68 @@ public class LuaJavaClassExposer {
         }
     }
 
-    public void exposeLikeJavaRecursively(Class<?> clazz, KahluaTable staticBase) {
+    public void exposeLikeJavaRecursively(Type type, KahluaTable staticBase) {
+        exposeLikeJava(staticBase, visitedTypes, type);
+    }
+
+    private void exposeLikeJava(KahluaTable staticBase, Set<Type> visited, Type type) {
+        if (type == null) {
+            return;
+        }
+        if (visited.contains(type)) {
+            return;
+        }
+        visited.add(type);
+
+        if (type instanceof Class) {
+            exposeLikeJavaByClass(staticBase, visited, (Class) type);
+        } else if (type instanceof WildcardType) {
+            WildcardType wildcardType = (WildcardType) type;
+            exposeList(staticBase, visited, wildcardType.getLowerBounds());
+            exposeList(staticBase, visited, wildcardType.getUpperBounds());
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            exposeLikeJava(staticBase, visited, parameterizedType.getRawType());
+            exposeLikeJava(staticBase, visited, parameterizedType.getOwnerType());
+            exposeList(staticBase, visited, parameterizedType.getActualTypeArguments());
+        } else if (type instanceof TypeVariable) {
+            TypeVariable typeVariable = (TypeVariable) type;
+            exposeList(staticBase, visited, typeVariable.getBounds());
+        } else if (type instanceof GenericArrayType) {
+            GenericArrayType genericArrayType = (GenericArrayType) type;
+            exposeLikeJava(staticBase, visited, genericArrayType.getGenericComponentType());
+        }
+    }
+
+    private void exposeList(KahluaTable staticBase, Set<Type> visited, Type[] types) {
+        for (Type t : types) {
+            exposeLikeJava(staticBase, visited, t);
+        }
+    }
+
+    private void exposeLikeJavaByClass(KahluaTable staticBase, Set<Type> visited, Class<?> clazz) {
+        exposeList(staticBase, visited, clazz.getInterfaces());
+        exposeLikeJava(staticBase, visited, clazz.getGenericSuperclass());
         if (clazz.isArray()) {
-            exposeLikeJavaRecursively(clazz.getComponentType(), staticBase);
-        } else if (!isExposed(clazz)) {
-            exposeLikeJava(clazz, staticBase);
-            for (Method method : clazz.getMethods()) {
-                exposeLikeJavaRecursively(method.getReturnType(), staticBase);
-                for (Class<?> aClass : method.getParameterTypes()) {
-                    exposeLikeJavaRecursively(aClass, staticBase);
-                }
+            exposeLikeJavaByClass(staticBase, visited, clazz.getComponentType());
+        } else {
+            if (!clazz.isSynthetic() && !clazz.isAnonymousClass() &&
+                    !clazz.isPrimitive() && !Proxy.isProxyClass(clazz) &&
+                    !clazz.getSimpleName().startsWith("$")) {
+                exposeLikeJava(clazz, staticBase);
             }
+        }
+        for (Method method : clazz.getDeclaredMethods()) {
+            exposeList(staticBase, visited, method.getGenericParameterTypes());
+            exposeList(staticBase, visited, method.getGenericExceptionTypes());
+            exposeLikeJava(staticBase, visited, method.getGenericReturnType());
+        }
+        for (Field field : clazz.getDeclaredFields()) {
+            exposeLikeJava(staticBase, visited, field.getGenericType());
+        }
+        for (Constructor<?> constructor : clazz.getConstructors()) {
+            exposeList(staticBase, visited, constructor.getParameterTypes());
+            exposeList(staticBase, visited, constructor.getExceptionTypes());
         }
     }
 }
