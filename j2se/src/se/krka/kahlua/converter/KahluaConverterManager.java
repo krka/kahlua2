@@ -25,7 +25,7 @@ package se.krka.kahlua.converter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LuaConverterManager {
+public class KahluaConverterManager {
 
 	@SuppressWarnings("unchecked")
 	private static final Map<Class, Class> PRIMITIVE_CLASS = new HashMap<Class, Class>();
@@ -64,10 +64,10 @@ public class LuaConverterManager {
 	@SuppressWarnings("unchecked")
 	private final Map<Class, JavaToLuaConverter> javaToLuaCache = new HashMap<Class, JavaToLuaConverter>();
 	
-	public LuaConverterManager() {
+	public KahluaConverterManager() {
 	}
-	
-	@SuppressWarnings("unchecked")
+
+    @SuppressWarnings("unchecked")
 	public void addLuaConverter(LuaToJavaConverter converter) {
 		Map<Class, LuaToJavaConverter> map = getOrCreate(luaToJava, converter.getLuaType());
 		map.put(converter.getJavaType(), converter);

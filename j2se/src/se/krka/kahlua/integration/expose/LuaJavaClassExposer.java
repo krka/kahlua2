@@ -22,7 +22,7 @@
 
 package se.krka.kahlua.integration.expose;
 
-import se.krka.kahlua.converter.LuaConverterManager;
+import se.krka.kahlua.converter.KahluaConverterManager;
 import se.krka.kahlua.integration.annotations.Desc;
 import se.krka.kahlua.integration.annotations.LuaConstructor;
 import se.krka.kahlua.integration.annotations.LuaMethod;
@@ -48,13 +48,13 @@ import java.util.Set;
  */
 public class LuaJavaClassExposer {
     private final static Object DEBUGINFO_KEY = new Object();
-    private final LuaConverterManager manager;
+    private final KahluaConverterManager manager;
     private final Platform platform;
     private final KahluaTable environment;
     private final KahluaTable classMetatables;
     private final Set<Type> visitedTypes = new HashSet<Type>();
 
-    public LuaJavaClassExposer(LuaConverterManager manager, Platform platform, KahluaTable environment) {
+    public LuaJavaClassExposer(KahluaConverterManager manager, Platform platform, KahluaTable environment) {
         this.manager = manager;
         this.platform = platform;
         this.environment = environment;

@@ -34,7 +34,7 @@ public class ExposeConverter {
         this.staticBase = staticBase;
     }
 
-    public void install(LuaConverterManager manager) {
+    public void install(KahluaConverterManager manager) {
         manager.addJavaConverter(new JavaToLuaConverter<Object>() {
             @Override
             public Class getJavaType() {

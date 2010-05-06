@@ -1,9 +1,6 @@
 package se.krka.kahlua.j2se.interpreter;
 
-import se.krka.kahlua.converter.KahluaEnumConverter;
-import se.krka.kahlua.converter.KahluaTableConverter;
-import se.krka.kahlua.converter.LuaConverterManager;
-import se.krka.kahlua.converter.LuaNumberConverter;
+import se.krka.kahlua.converter.*;
 import se.krka.kahlua.integration.expose.LuaJavaClassExposer;
 import se.krka.kahlua.j2se.J2SEPlatform;
 import se.krka.kahlua.vm.KahluaTable;
@@ -31,15 +28,17 @@ public class InteractiveShell {
         final Platform platform = new J2SEPlatform();
         final KahluaTable env = platform.newEnvironment();
 
-        LuaConverterManager manager = new LuaConverterManager();
-        LuaNumberConverter.install(manager);
+        KahluaConverterManager manager = new KahluaConverterManager();
+        KahluaNumberConverter.install(manager);
         KahluaEnumConverter.install(manager);
         new KahluaTableConverter(platform).install(manager);
         LuaJavaClassExposer exposer = new LuaJavaClassExposer(manager, platform, env);
 
-        exposer.exposeGlobalFunctions(exposer);
         KahluaTable staticBase = platform.newTable();
         env.rawset("Java", staticBase);
+        new ExposeConverter(exposer, staticBase).install(manager);
+
+        exposer.exposeGlobalFunctions(exposer);
         exposer.exposeLikeJavaRecursively(Object.class, staticBase);
 
         exposer.exposeGlobalFunctions(new Sleeper());

@@ -22,7 +22,7 @@
 
 package se.krka.kahlua.j2se.interpreter;
 
-import se.krka.kahlua.converter.LuaConverterManager;
+import se.krka.kahlua.converter.KahluaConverterManager;
 import se.krka.kahlua.integration.LuaCaller;
 import se.krka.kahlua.integration.LuaReturn;
 import se.krka.kahlua.integration.expose.LuaJavaClassExposer;
@@ -53,7 +53,7 @@ public class Interpreter extends JPanel {
     private final ExecutorService executors = Executors.newSingleThreadExecutor(new DaemonizedThreadFactory(Executors.defaultThreadFactory()));
     private Future<?> future;
 
-    final LuaConverterManager manager = new LuaConverterManager();
+    final KahluaConverterManager manager = new KahluaConverterManager();
     final LuaCaller caller = new LuaCaller(manager);
     final LuaJavaClassExposer exposer;
 

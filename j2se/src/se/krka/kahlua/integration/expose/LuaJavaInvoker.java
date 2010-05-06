@@ -25,10 +25,8 @@ package se.krka.kahlua.integration.expose;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Array;
 
-import se.krka.kahlua.converter.LuaConverterManager;
+import se.krka.kahlua.converter.KahluaConverterManager;
 import se.krka.kahlua.integration.expose.caller.Caller;
-import se.krka.kahlua.integration.processor.ClassParameterInformation;
-import se.krka.kahlua.integration.processor.MethodParameterInformation;
 import se.krka.kahlua.vm.JavaFunction;
 import se.krka.kahlua.vm.LuaCallFrame;
 
@@ -52,7 +50,7 @@ import se.krka.kahlua.vm.LuaCallFrame;
  */
 public class LuaJavaInvoker implements JavaFunction {
 	private final LuaJavaClassExposer exposer;
-	private final LuaConverterManager manager;
+	private final KahluaConverterManager manager;
 	private final Class<?> clazz;
 	private final String name;
 	private final Caller caller;
@@ -66,7 +64,7 @@ public class LuaJavaInvoker implements JavaFunction {
     private final boolean hasVarargs;
 
 
-    public LuaJavaInvoker(LuaJavaClassExposer exposer, LuaConverterManager manager, Class<?> clazz, String name, Caller caller) {
+    public LuaJavaInvoker(LuaJavaClassExposer exposer, KahluaConverterManager manager, Class<?> clazz, String name, Caller caller) {
 		this.exposer = exposer;
 		this.manager = manager;
 		this.clazz = clazz;

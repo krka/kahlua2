@@ -22,15 +22,15 @@
 
 package se.krka.kahlua.integration.expose;
 
-import se.krka.kahlua.converter.LuaConverterManager;
+import se.krka.kahlua.converter.KahluaConverterManager;
 import se.krka.kahlua.vm.LuaCallFrame;
 
 public class ReturnValues {
-	private final LuaConverterManager manager;
+	private final KahluaConverterManager manager;
 	private final LuaCallFrame callFrame;
 	private int args;
 	
-	ReturnValues(LuaConverterManager manager, LuaCallFrame callFrame) {
+	ReturnValues(KahluaConverterManager manager, LuaCallFrame callFrame) {
 		this.manager = manager;
 		this.callFrame = callFrame;
 	}

@@ -1,6 +1,9 @@
-* Let recursive expose use types instead of class, to catch generic types
-* Create a converter that automatically exposes unknown java types
-* Add inherited method annotations
+Bugs
+-----
+
+
+Todo
+-----
 
 * Integrate with Kahlua-test
  

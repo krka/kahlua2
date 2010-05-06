@@ -28,7 +28,7 @@ public class KahluaEnumConverter {
 	}
 
     @SuppressWarnings("unchecked")
-	public static void install(final LuaConverterManager manager) {
+	public static void install(final KahluaConverterManager manager) {
 		manager.addJavaConverter(new JavaToLuaConverter<Enum>() {
 			public Object fromJavaToLua(Enum javaObject) {
                 return javaObject.name();

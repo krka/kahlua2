@@ -22,14 +22,14 @@
 
 package se.krka.kahlua.integration;
 
-import se.krka.kahlua.converter.LuaConverterManager;
+import se.krka.kahlua.converter.KahluaConverterManager;
 import se.krka.kahlua.vm.KahluaThread;
 
 public class LuaCaller {
 	
-	private final LuaConverterManager converterManager;
+	private final KahluaConverterManager converterManager;
 
-	public LuaCaller(LuaConverterManager converterManager) {
+	public LuaCaller(KahluaConverterManager converterManager) {
 		this.converterManager = converterManager;
 	}
 

@@ -2,9 +2,9 @@ package se.krka.kahlua.annotation;
 
 import org.junit.Before;
 import org.junit.Test;
+import se.krka.kahlua.converter.KahluaNumberConverter;
 import se.krka.kahlua.converter.KahluaTableConverter;
-import se.krka.kahlua.converter.LuaConverterManager;
-import se.krka.kahlua.converter.LuaNumberConverter;
+import se.krka.kahlua.converter.KahluaConverterManager;
 import se.krka.kahlua.integration.doc.ApiDocumentationExporter;
 import se.krka.kahlua.integration.doc.DokuWikiPrinter;
 import se.krka.kahlua.integration.expose.LuaJavaClassExposer;
@@ -17,13 +17,12 @@ import se.krka.kahlua.vm.Platform;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Arrays;
 
 import static junit.framework.Assert.*;
 
 public class AnnotationTest {
 
-	private LuaConverterManager manager;
+	private KahluaConverterManager manager;
 	private KahluaThread thread;
 	private LuaJavaClassExposer factory;
 
@@ -33,8 +32,8 @@ public class AnnotationTest {
         KahluaTable env = platform.newEnvironment();
         thread = new KahluaThread(platform, env);
 
-		manager = new LuaConverterManager();
-		LuaNumberConverter.install(manager);
+		manager = new KahluaConverterManager();
+		KahluaNumberConverter.install(manager);
 		new KahluaTableConverter(platform).install(manager);
 
 		factory = new LuaJavaClassExposer(manager, platform, env);

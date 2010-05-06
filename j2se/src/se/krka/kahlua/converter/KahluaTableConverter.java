@@ -38,7 +38,7 @@ public class KahluaTableConverter {
 	}
 
     @SuppressWarnings("unchecked")
-	public void install(final LuaConverterManager manager) {
+	public void install(final KahluaConverterManager manager) {
 		manager.addJavaConverter(new CollectionToLuaConverter(manager, Collection.class));
         manager.addLuaConverter(new CollectionToJavaConverter(Collection.class));
 		manager.addJavaConverter(new JavaToLuaConverter<Map>() {
@@ -81,9 +81,9 @@ public class KahluaTableConverter {
 
     private class CollectionToLuaConverter<T extends Iterable> implements JavaToLuaConverter<T> {
         private final Class<T> clazz;
-        private final LuaConverterManager manager;
+        private final KahluaConverterManager manager;
 
-        public CollectionToLuaConverter(LuaConverterManager manager, Class<T> clazz) {
+        public CollectionToLuaConverter(KahluaConverterManager manager, Class<T> clazz) {
             this.manager = manager;
             this.clazz = clazz;
         }

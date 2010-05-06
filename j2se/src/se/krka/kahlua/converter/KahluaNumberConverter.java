@@ -22,11 +22,11 @@
 
 package se.krka.kahlua.converter;
 
-public class LuaNumberConverter {	
-	private LuaNumberConverter() {
+public class KahluaNumberConverter {	
+	private KahluaNumberConverter() {
 	}
-	
-	public static void install(LuaConverterManager manager) {
+
+    public static void install(KahluaConverterManager manager) {
 		manager.addLuaConverter(new LuaToJavaConverter<Double, Long>() {
 			public Long fromLuaToJava(Double luaObject, Class<Long> javaClass) {
 				return new Long(luaObject.longValue());
@@ -93,15 +93,21 @@ public class LuaNumberConverter {
 				return Double.class;
 			}
 		});
-		manager.addJavaConverter(new JavaToLuaConverter<Number>() {
-			public Object fromJavaToLua(Number javaObject) {
-				return new Double(javaObject.doubleValue());
-			}
+		manager.addJavaConverter(new NumberToLuaConverter(Double.class));
+        manager.addJavaConverter(new NumberToLuaConverter(Float.class));
+        manager.addJavaConverter(new NumberToLuaConverter(Integer.class));
+        manager.addJavaConverter(new NumberToLuaConverter(Long.class));
+        manager.addJavaConverter(new NumberToLuaConverter(Short.class));
+        manager.addJavaConverter(new NumberToLuaConverter(Byte.class));
+        manager.addJavaConverter(new NumberToLuaConverter(Character.class));
+        manager.addJavaConverter(new NumberToLuaConverter(double.class));
+        manager.addJavaConverter(new NumberToLuaConverter(float.class));
+        manager.addJavaConverter(new NumberToLuaConverter(int.class));
+        manager.addJavaConverter(new NumberToLuaConverter(long.class));
+        manager.addJavaConverter(new NumberToLuaConverter(short.class));
+        manager.addJavaConverter(new NumberToLuaConverter(byte.class));
+        manager.addJavaConverter(new NumberToLuaConverter(char.class));
 
-			public Class<Number> getJavaType() {
-				return Number.class;
-			}
-		});
 		manager.addJavaConverter(new JavaToLuaConverter<Boolean>() {
 			public Object fromJavaToLua(Boolean javaObject) {
 				return Boolean.valueOf(javaObject.booleanValue());
@@ -112,4 +118,20 @@ public class LuaNumberConverter {
 			}
 		});
 	}
+
+    private static class NumberToLuaConverter<T extends Number> implements JavaToLuaConverter<T> {
+        private final Class<T> clazz;
+
+        public NumberToLuaConverter(Class<T> clazz) {
+            this.clazz = clazz;
+        }
+
+        public Object fromJavaToLua(T javaObject) {
+            return new Double(javaObject.doubleValue());
+        }
+
+        public Class<T> getJavaType() {
+            return clazz;
+        }
+    }
 }

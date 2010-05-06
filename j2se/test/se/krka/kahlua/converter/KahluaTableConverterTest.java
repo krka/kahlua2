@@ -34,7 +34,7 @@ import static org.junit.Assert.assertNotNull;
 public class KahluaTableConverterTest {
     @Test
     public void testCollection() {
-        LuaConverterManager manager = new LuaConverterManager();
+        KahluaConverterManager manager = new KahluaConverterManager();
         Platform platform = new J2SEPlatform();
         new KahluaTableConverter(platform).install(manager);
 
@@ -44,7 +44,7 @@ public class KahluaTableConverterTest {
 
     @Test
     public void testList() {
-        LuaConverterManager manager = new LuaConverterManager();
+        KahluaConverterManager manager = new KahluaConverterManager();
         Platform platform = new J2SEPlatform();
         new KahluaTableConverter(platform).install(manager);
 
