@@ -17,6 +17,7 @@ import se.krka.kahlua.vm.Platform;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Arrays;
 
 import static junit.framework.Assert.*;
 
@@ -279,6 +280,19 @@ public class AnnotationTest {
         //System.out.println(Arrays.toString(objects));
         assertEquals(Boolean.TRUE, objects[0]);
 
+    }
+
+    @Test
+    public void testInheritAnnotation() throws IOException {
+        factory.exposeClass(InheritedAnnotationClass.class);
+        String testString = "" +
+                "foo = NewInherited();\n" +
+                "local s = foo:overloaded();\n" +
+                "assert(s == 'inherited');";
+        LuaClosure closure = LuaCompiler.loadstring(testString, "src", thread.getEnvironment());
+        Object[] objects = thread.pcall(closure, null);
+        //System.out.println(Arrays.toString(objects));
+        assertEquals(Boolean.TRUE, objects[0]);
     }
 
 }

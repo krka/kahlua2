@@ -51,7 +51,7 @@ public class ClassDebugInformation {
         }
 
         for (Method method : clazz.getDeclaredMethods()) {
-            LuaMethod methodAnnotation = method.getAnnotation(LuaMethod.class);
+            LuaMethod methodAnnotation = AnnotationUtil.getAnnotation(method, LuaMethod.class);
             String defaultName = method.getName();
             int modifiers = method.getModifiers();
             Type[] parameterTypes = method.getGenericParameterTypes();
@@ -59,7 +59,7 @@ public class ClassDebugInformation {
             Type returnTypeClass = method.getGenericReturnType();
 
             Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-            Desc descriptionAnnotation = method.getAnnotation(Desc.class);
+            Desc descriptionAnnotation = AnnotationUtil.getAnnotation(method, Desc.class);
             addMethod(parameterInfo, parameterTypes, descriptor, returnTypeClass, parameterAnnotations, getName(methodAnnotation, defaultName), !isGlobal(methodAnnotation, isStatic(modifiers)), descriptionAnnotation);
         }
     }

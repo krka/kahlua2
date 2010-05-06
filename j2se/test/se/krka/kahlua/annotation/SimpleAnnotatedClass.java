@@ -1,9 +1,7 @@
 package se.krka.kahlua.annotation;
 
-import se.krka.kahlua.integration.annotations.LuaClass;
 import se.krka.kahlua.integration.annotations.LuaMethod;
 
-@LuaClass
 public class SimpleAnnotatedClass {
 
 	@LuaMethod

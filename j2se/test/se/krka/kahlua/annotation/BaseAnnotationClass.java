@@ -4,10 +4,8 @@ import se.krka.kahlua.integration.annotations.LuaConstructor;
 
 import se.krka.kahlua.integration.annotations.Desc;
 
-import se.krka.kahlua.integration.annotations.LuaClass;
 import se.krka.kahlua.integration.annotations.LuaMethod;
 
-@LuaClass
 @Desc("This is a base class description")
 public class BaseAnnotationClass {
 
@@ -74,5 +72,10 @@ public class BaseAnnotationClass {
     @LuaMethod
     public String sameName(String s1, String s2) {
         return s1 + s2;
+    }
+
+    @LuaMethod(name="overloaded")
+    public String overloaded() {
+        return "base";
     }
 }

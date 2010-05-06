@@ -1,16 +1,12 @@
 package se.krka.kahlua.annotation;
 
+import se.krka.kahlua.integration.annotations.LuaConstructor;
 import se.krka.kahlua.integration.expose.ReturnValues;
 
 import se.krka.kahlua.integration.annotations.Desc;
-import se.krka.kahlua.integration.annotations.LuaClass;
 import se.krka.kahlua.integration.annotations.LuaMethod;
 
 
-
-
-
-@LuaClass
 public class InheritedAnnotationClass extends BaseAnnotationClass {
 
 	public String zomg;
@@ -21,6 +17,10 @@ public class InheritedAnnotationClass extends BaseAnnotationClass {
 	public int i;
 	public int x;
 	public int y;
+
+    @LuaConstructor(name="NewInherited")
+    public InheritedAnnotationClass() {
+    }
 
 	@LuaMethod
 	public void inheritedMethodWithArgs(String zomg, int imba) {
@@ -66,4 +66,8 @@ public class InheritedAnnotationClass extends BaseAnnotationClass {
 		return "Hello world";
 	}
 
+    @Override
+    public String overloaded() {
+        return "inherited";
+    }
 }

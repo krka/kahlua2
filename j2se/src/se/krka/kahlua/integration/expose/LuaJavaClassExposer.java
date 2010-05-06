@@ -24,7 +24,6 @@ package se.krka.kahlua.integration.expose;
 
 import se.krka.kahlua.converter.LuaConverterManager;
 import se.krka.kahlua.integration.annotations.Desc;
-import se.krka.kahlua.integration.annotations.LuaClass;
 import se.krka.kahlua.integration.annotations.LuaConstructor;
 import se.krka.kahlua.integration.annotations.LuaMethod;
 import se.krka.kahlua.integration.expose.caller.ConstructorCaller;
@@ -68,10 +67,7 @@ public class LuaJavaClassExposer {
     }
 
     public void exposeClass(Class<?> clazz) {
-        if (!isLuaClass(clazz)) {
-            return;
-        }
-        if (!isExposed(clazz)) {
+        if (clazz != null && !isExposed(clazz)) {
             readDebugData(clazz);
             setupMetaTables(clazz);
 
@@ -216,7 +212,7 @@ public class LuaJavaClassExposer {
     }
 
     private void setupMetaTables(Class<?> clazz) {
-        Class<?> superClazz = getSuperClass(clazz);
+        Class<?> superClazz = clazz.getSuperclass();
         exposeClass(superClazz);
 
         KahluaTable superMetaTable = getMetaTable(superClazz);
@@ -235,9 +231,8 @@ public class LuaJavaClassExposer {
         Class<?> clazz = object.getClass();
         readDebugData(clazz);
         for (Method method : clazz.getMethods()) {
-            if (method.isAnnotationPresent(LuaMethod.class)) {
-                LuaMethod luaMethod = method.getAnnotation(LuaMethod.class);
-
+            LuaMethod luaMethod = AnnotationUtil.getAnnotation(method, LuaMethod.class);
+            if (luaMethod != null) {
                 String methodName;
                 if (luaMethod.name().equals("")) {
                     methodName = method.getName();
@@ -308,7 +303,7 @@ public class LuaJavaClassExposer {
             }
         }
         for (Method method : clazz.getMethods()) {
-            LuaMethod luaMethod = method.getAnnotation(LuaMethod.class);
+            LuaMethod luaMethod = AnnotationUtil.getAnnotation(method, LuaMethod.class);
             if (luaMethod != null) {
 
                 String methodName;
@@ -326,18 +321,6 @@ public class LuaJavaClassExposer {
                 }
             }
         }
-    }
-
-    private Class<?> getSuperClass(Class<?> clazz) {
-        Class<?> superClazz = clazz.getSuperclass();
-        while (superClazz != null && superClazz != Object.class && !isLuaClass(superClazz)) {
-            superClazz = superClazz.getSuperclass();
-        }
-        return superClazz;
-    }
-
-    private boolean isLuaClass(Class<?> clazz) {
-        return clazz != null && clazz.isAnnotationPresent(LuaClass.class);
     }
 
     public boolean isExposed(Class<?> clazz) {
