@@ -30,7 +30,9 @@ import se.krka.kahlua.integration.expose.caller.ConstructorCaller;
 import se.krka.kahlua.integration.expose.caller.MethodCaller;
 import se.krka.kahlua.integration.processor.ClassParameterInformation;
 import se.krka.kahlua.stdlib.BaseLib;
-import se.krka.kahlua.vm.*;
+import se.krka.kahlua.vm.KahluaTable;
+import se.krka.kahlua.vm.KahluaUtil;
+import se.krka.kahlua.vm.Platform;
 
 import java.lang.reflect.*;
 import java.util.HashMap;
@@ -50,7 +52,7 @@ public class LuaJavaClassExposer {
     private final Platform platform;
     private final KahluaTable environment;
     private final KahluaTable classMetatables;
-    private final HashSet<Type> visitedTypes = new HashSet<Type>();
+    private final Set<Type> visitedTypes = new HashSet<Type>();
 
     public LuaJavaClassExposer(LuaConverterManager manager, Platform platform, KahluaTable environment) {
         this.manager = manager;
