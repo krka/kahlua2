@@ -5,6 +5,12 @@ Bugs
 Todo
 -----
 
+* Implement a debugger
+* Compile and obfuscate midlet to investigate minimum footprint.
+* Add an object browser to the interpreter
+* Add the profiler to the interpreter
+* Add a KahluaVM as a typical example setup 
+
 * Integrate with Kahlua-test
  
 * Add easier object introspection, i.e. methods(obj)
