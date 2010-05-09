@@ -22,18 +22,22 @@
 
 package se.krka.kahlua.j2se.interpreter;
 
+import jsyntaxpane.*;
+import jsyntaxpane.lexers.LuaLexer;
 import se.krka.kahlua.j2se.interpreter.jsyntax.JSyntaxUtil;
+import se.krka.kahlua.j2se.interpreter.jsyntax.KahluaKit;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
+import javax.swing.text.Segment;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.*;
 
 public class OutputTerminal extends JPanel implements FocusListener {
     private final JScrollPane scrollpane;
@@ -41,13 +45,9 @@ public class OutputTerminal extends JPanel implements FocusListener {
     private static final Border EMPTY_BORDER = BorderFactory.createEmptyBorder(1, 5, 1, 5);
     private final Font font;
 
-    private static enum Type {
-        NONE, LUA, OUTPUT, ERROR, INFO
-    }
-    private Type currentType = Type.NONE;
-    private JTextComponent current;
+    private final JEditorPane editorPane;
+    private final VoidLexer voidLexer;
 
-    private final JComponent view;
     private final Color background;
     private final Color errorColor = Color.RED.brighter().brighter();
     private final Color infoColor = Color.GREEN.brighter().brighter().brighter();
@@ -60,17 +60,31 @@ public class OutputTerminal extends JPanel implements FocusListener {
         }
     });
 
+    private Lexer luaLexer = new LuaLexer();
+    private Lexer errorLexer = new TypeLexer(TokenType.ERROR);
+    private Lexer outputLexer = new TypeLexer(null);
+    private Lexer infoLexer = new TypeLexer(TokenType.WARNING);
+
     public OutputTerminal(Color background, Font font, JComponent input) {
         super(new BorderLayout());
+
         this.background = background;
         this.font = font;
-        view = new JPanel();
-        view.setBorder(BorderFactory.createEmptyBorder());
-        view.setLayout(new BoxLayout(view, BoxLayout.Y_AXIS));
-        view.setBackground(background);
+
+        editorPane = new JEditorPane();
+        voidLexer = new VoidLexer();
+
+        JSyntaxUtil.installSyntax(editorPane, false, new KahluaKit(voidLexer));
+        voidLexer.doc = (SyntaxDocument) editorPane.getDocument();
+        
+        editorPane.setBackground(background);
+        editorPane.setBorder(EMPTY_BORDER);
+        editorPane.setEditable(false);
+        editorPane.setFocusable(true);
+        editorPane.addFocusListener(this);
 
         scrollpane = new JScrollPane(
-                filler(view, input),
+                filler(editorPane, input),
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollpane.getVerticalScrollBar().setUnitIncrement(20);
@@ -90,86 +104,40 @@ public class OutputTerminal extends JPanel implements FocusListener {
     }
 
     public synchronized void appendLua(String text) {
-        createLuaPane();
-        append(text, current);
+        append(text, luaLexer);
     }
 
     public synchronized void appendOutput(String text) {
-        if (currentType != Type.OUTPUT) {
-            createOutputPane();
-        }
-        append(text, current);
+        append(text, outputLexer);
     }
 
     public synchronized void appendError(String text) {
-        if (currentType != Type.ERROR) {
-            createErrorPane();
-        }
-        append(text, current);
+        append(text, errorLexer);
     }
 
     public synchronized void appendInfo(String text) {
-        if (currentType != Type.INFO) {
-            createInfoPane();
-        }
-        append(text, current);
+        append(text, infoLexer);
     }
 
-    private void createOutputPane() {
-        createPane(outputColor);
-        currentType = Type.OUTPUT;
-    }
-
-    private void createInfoPane() {
-        createPane(infoColor);
-        currentType = Type.INFO;
-    }
-
-    private void createErrorPane() {
-        createPane(errorColor);
-        currentType = Type.ERROR;
-    }
-
-    private void createPane(Color color) {
-        JTextArea pane = new JTextArea();
-        pane.setFont(font);
-        setup(pane);
-        pane.setBackground(background);
-        pane.setForeground(color);
-        view.add(pane);
-        current = pane;
-    }
-
-    private void setup(JTextComponent pane) {
-        pane.setBorder(EMPTY_BORDER);
-        pane.setEditable(false);
-        pane.setFocusable(true);
-        pane.addFocusListener(this);
-    }
-
-    private synchronized void append(final String text, final JTextComponent current) {
+    private synchronized void append(String text, Lexer lexer) {
         JScrollBar vert = scrollpane.getVerticalScrollBar();
         boolean isAtBottom = vert.getValue() + vert.getVisibleAmount() >= vert.getMaximum() - 32;
         scrollDown = !vert.getValueIsAdjusting() && isAtBottom;
 
         try {
-            Document document = current.getDocument();
-            document.insertString(document.getLength(), text, null);
+            Document document = editorPane.getDocument();
+            int startPos = document.getLength();
+
+            Segment insertSegment = new Segment(text.toCharArray(), 0, text.length());
+            ArrayList<Token> newTokens = new ArrayList<Token>();
+            lexer.parse(insertSegment, 0, newTokens);
+            voidLexer.setNewTokens(newTokens, document.getLength());
+
+            document.insertString(startPos, text, null);
+
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
-    }
-
-    private void createLuaPane() {
-        JEditorPane pane = new JEditorPane();
-        pane.setBackground(background);
-
-        JSyntaxUtil.installSyntax(pane, false);
-        view.add(pane);
-
-        current = pane;
-        currentType = Type.LUA;
-        setup(current);
     }
 
     public PrintStream getPrintStream() {

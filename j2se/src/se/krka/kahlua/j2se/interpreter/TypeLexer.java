@@ -20,16 +20,26 @@
  THE SOFTWARE.
  */
 
-package se.krka.kahlua.j2se.interpreter.jsyntax;
+package se.krka.kahlua.j2se.interpreter;
 
-import jsyntaxpane.DefaultSyntaxKit;
 import jsyntaxpane.Lexer;
-import jsyntaxpane.lexers.LuaLexer;
+import jsyntaxpane.Token;
+import jsyntaxpane.TokenType;
 
-public class KahluaKit extends DefaultSyntaxKit {
+import javax.swing.text.Segment;
+import java.util.List;
 
-    public KahluaKit(Lexer lexer) {
-        super(lexer);
+public class TypeLexer implements Lexer {
+    private final TokenType type;
+
+    public TypeLexer(TokenType type) {
+        this.type = type;
     }
 
+    @Override
+    public void parse(Segment segment, int i, List<Token> tokens) {
+        if (type != null) {
+            tokens.add(new Token(type, i, segment.length()));
+        }
+    }
 }

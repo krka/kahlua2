@@ -22,12 +22,14 @@
 
 package se.krka.kahlua.j2se.interpreter;
 
+import jsyntaxpane.lexers.LuaLexer;
 import se.krka.kahlua.converter.KahluaConverterManager;
 import se.krka.kahlua.integration.LuaCaller;
 import se.krka.kahlua.integration.LuaReturn;
 import se.krka.kahlua.integration.expose.LuaJavaClassExposer;
 import se.krka.kahlua.j2se.interpreter.autocomplete.AutoComplete;
 import se.krka.kahlua.j2se.interpreter.jsyntax.JSyntaxUtil;
+import se.krka.kahlua.j2se.interpreter.jsyntax.KahluaKit;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
 import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.*;
@@ -67,7 +69,8 @@ public class Interpreter extends JPanel {
 
         final InputTerminal input = new InputTerminal(Color.BLACK);
 
-        JSyntaxUtil.installSyntax(input, true);
+        final KahluaKit kit = new KahluaKit(new LuaLexer());
+        JSyntaxUtil.installSyntax(input, true, kit);
         new AutoComplete(owner, input, platform, env);
 
 
@@ -110,7 +113,7 @@ public class Interpreter extends JPanel {
                         if (isDone()) {
                             String text = input.getText();
                             history.add(text);
-                            terminal.appendLua(text);
+                            terminal.appendLua(withNewline(text));
                             input.setText("");
                             execute(text);
                         }
@@ -148,6 +151,13 @@ public class Interpreter extends JPanel {
         });
 
         thread = new KahluaThread(terminal.getPrintStream(), platform, env);
+    }
+
+    private String withNewline(String text) {
+        if (text.endsWith("\n")) {
+            return text;
+        }
+        return text + "\n";
     }
 
     private boolean isControl(KeyEvent keyEvent) {

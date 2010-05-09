@@ -23,17 +23,14 @@
 package se.krka.kahlua.j2se.interpreter.jsyntax;
 
 import jsyntaxpane.DefaultSyntaxKit;
-import jsyntaxpane.SyntaxStyle;
 import jsyntaxpane.SyntaxStyles;
+import jsyntaxpane.components.LineNumbersRuler;
 import jsyntaxpane.components.PairsMarker;
 import jsyntaxpane.components.TokenMarker;
-import jsyntaxpane.util.Configuration;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.lang.reflect.Field;
 import java.util.Properties;
 
 public class JSyntaxUtil {
@@ -53,30 +50,30 @@ public class JSyntaxUtil {
         DefaultSyntaxKit.initKit();
     }
 
-    public static KahluaKit installSyntax(final JEditorPane textPane, boolean highlight) {
-        final KahluaKit kahluaKit = new KahluaKit();
+    public static DefaultSyntaxKit installSyntax(final JEditorPane textPane, boolean highlight, final DefaultSyntaxKit kit) {
         Properties config = new Properties();
         config.put("CaretColor", "0xffffff");
-        kahluaKit.setConfig(config);
-        textPane.setEditorKit(kahluaKit);
+        kit.setConfig(config);
+        textPane.setEditorKit(kit);
 
-        kahluaKit.deinstallComponent(textPane, TokenMarker.class.getName());
+        kit.deinstallComponent(textPane, LineNumbersRuler.class.getName());
+        kit.deinstallComponent(textPane, TokenMarker.class.getName());
 
         if (highlight) {
             textPane.addFocusListener(new FocusListener() {
                 @Override
                 public void focusGained(FocusEvent e) {
-                    kahluaKit.installComponent(textPane, PairsMarker.class.getName());
-                    kahluaKit.installComponent(textPane, TokenMarker.class.getName());
+                    kit.installComponent(textPane, PairsMarker.class.getName());
+                    kit.installComponent(textPane, TokenMarker.class.getName());
                 }
 
                 @Override
                 public void focusLost(FocusEvent e) {
-                    kahluaKit.deinstallComponent(textPane, PairsMarker.class.getName());
-                    kahluaKit.deinstallComponent(textPane, TokenMarker.class.getName());
+                    kit.deinstallComponent(textPane, PairsMarker.class.getName());
+                    kit.deinstallComponent(textPane, TokenMarker.class.getName());
                 }
             });
         }
-        return kahluaKit;
+        return kit;
     }
 }
