@@ -373,3 +373,12 @@ function concattest4(...)
 end
 concattest4("hello")
 
+
+local ok, err = pcall(function() return "Hello" .. {} end)
+testAssertEqual(ok, false)
+
+local ok, err = pcall(function() return {} .. "Hello" end)
+testAssertEqual(ok, false)
+
+local ok, err = pcall(function() return {} .. {} end)
+testAssertEqual(ok, false)

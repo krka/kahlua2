@@ -386,7 +386,7 @@ public class KahluaThread {
 						// Optimize for multi string concats
 						{
 							String resStr = BaseLib.rawTostring(res);
-							if (res != null) {
+							if (resStr != null) {
 
 								int nStrings = 0;
 								int pos = last;
