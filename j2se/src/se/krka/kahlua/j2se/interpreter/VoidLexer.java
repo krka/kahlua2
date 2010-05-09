@@ -37,10 +37,8 @@ class VoidLexer implements Lexer {
     SyntaxDocument doc;
     private List<Token> newTokens = new ArrayList<Token>();
 
-    private int startAt;
-
     @Override
-    public void parse(Segment segment, int i, List<Token> tokens) {
+    public synchronized void parse(Segment segment, int i, List<Token> tokens) {
         Iterator<Token> iter = doc.getTokens(i, segment.getEndIndex());
         Token prev = null;
         while (iter.hasNext()) {
@@ -48,12 +46,7 @@ class VoidLexer implements Lexer {
             prev = handlePrev(tokens, prev, token);
         }
         for (Token token : newTokens) {
-            TokenType type = token.type;
-            int start = token.start + startAt;
-            int length = token.length;
-            byte pairValue = token.pairValue;
-            Token convertedToken = new Token(type, start, length, pairValue);
-            prev = handlePrev(tokens, prev, convertedToken);
+            prev = handlePrev(tokens, prev, token);
         }
         prev = handlePrev(tokens, prev, null);
         newTokens.clear();
@@ -62,7 +55,7 @@ class VoidLexer implements Lexer {
     private Token handlePrev(List<Token> tokens, Token prev, Token current) {
         if (prev == null) {
             return current;
-        } else if (current != null && current.type == prev.type) {
+        } else if (current != null && current.type == prev.type && prev.end() == current.start) {
             return merge(prev, current);
         } else {
             tokens.add(prev);
@@ -76,7 +69,13 @@ class VoidLexer implements Lexer {
     }
 
     public void setNewTokens(List<Token> newTokens, int startAt) {
-        this.newTokens = newTokens;
-        this.startAt = startAt;
+        for (Token newToken : newTokens) {
+            this.newTokens.add(new Token(
+                    newToken.type,
+                    newToken.start + startAt,
+                    newToken.length,
+                    newToken.pairValue
+                    ));
+        }
     }
 }
