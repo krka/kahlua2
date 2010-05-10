@@ -21,7 +21,6 @@
  */
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.microedition.lcdui.ChoiceGroup;
 import javax.microedition.lcdui.Command;
@@ -33,30 +32,26 @@ import javax.microedition.lcdui.StringItem;
 import javax.microedition.midlet.MIDlet;
 import javax.microedition.midlet.MIDletStateChangeException;
 
+import se.krka.kahlua.cldc11.CLDC11Platform;
 import se.krka.kahlua.stdlib.BaseLib;
-import se.krka.kahlua.stdlib.CoroutineLib;
-import se.krka.kahlua.stdlib.MathLib;
-import se.krka.kahlua.stdlib.StringLib;
-import se.krka.kahlua.vm.JavaFunction;
-import se.krka.kahlua.vm.LuaCallFrame;
-import se.krka.kahlua.vm.LuaClosure;
-import se.krka.kahlua.vm.LuaPrototype;
-import se.krka.kahlua.vm.LuaState;
+import se.krka.kahlua.vm.*;
 
 
 public class KahluaDemo extends MIDlet implements Runnable, ItemStateListener {
 	private String[] options = {"/guess", "/primes", "/quizgame", "Quit"};
 	                        
-	private LuaState state;
+	private KahluaThread state;
 	private StringItem stringItem;
 	private ChoiceGroup choices;
 
 	public KahluaDemo() {
-		state = new LuaState(System.out);
+        Platform platform = new CLDC11Platform();
+        KahluaTable env = platform.newEnvironment();
+        state = new KahluaThread(System.out, platform, env);
 		
 		state.getEnvironment().rawset("query", new JavaFunction() {
 			public int call(LuaCallFrame callFrame, int nArguments) {
-				BaseLib.luaAssert(nArguments >= 3, "not enough args");
+				KahluaUtil.luaAssert(nArguments >= 3, "not enough args");
 				String[] options = new String[nArguments - 2];
 				for (int i = 2; i < nArguments; i++) {
 					options[i - 2] = BaseLib.rawTostring(callFrame.get(i)); 
@@ -97,7 +92,7 @@ public class KahluaDemo extends MIDlet implements Runnable, ItemStateListener {
 			} else {
 				// The system needs to decide which game to load.
 				stringItem.setText("Loading bytecode...");
-				LuaClosure callback = state.loadByteCodeFromResource(response, state.getEnvironment());
+				LuaClosure callback = KahluaUtil.loadByteCodeFromResource(response, state.getEnvironment());
 				state.call(callback, null, null, null);
 			}
 		}

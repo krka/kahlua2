@@ -170,10 +170,6 @@
 				<include name="contrib/j2se-util/**" />
 				<exclude name="contrib/j2se-util/bin/**" />
 
-				<include name="contrib/JavaLuac/include/**" />
-				<include name="contrib/JavaLuac/jni_src/**" />
-				<include name="contrib/JavaLuac/src/**" />
-				
 				<include name="contrib/midlet/resources/**" />
 				<include name="contrib/midlet/src/**" />
 				<include name="contrib/midlet/build.xml" />

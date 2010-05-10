@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="midlet">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/contrib/midlet/lib" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <jarDirectory url="file://$PROJECT_DIR$/contrib/midlet/lib" recursive="false" />
+  </library>
+</component>

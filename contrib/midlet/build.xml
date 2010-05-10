@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <project default="build" basedir="." name="kahluademo">
-	<property file="local.properties" />
+	<property file="${basedir}/../../local.properties" />
 	
 	<!-- Default properties - please change this to what you want to use, or predefine them in a file called local.properties -->
 
@@ -21,9 +21,13 @@
 	<fail unless="required.cldc" message="You must place cldcapi11.jar in ${wtk.home}/lib" />	
 	<fail unless="required.midp" message="You must place midpapi20.jar in ${wtk.home}/lib" />	
 
-	<property name="kahlua.jar" value="${basedir}/../../bin/kahlua.jar" />
-	<available property="required.kahlua" file="${kahlua.jar}" />
-	<fail unless="required.kahlua" message="You must package kahlua first" />	
+	<property name="kahlua-core.jar" value="${basedir}/../../bin/kahlua-core.jar" />
+	<available property="required.kahlua-core" file="${kahlua-core.jar}" />
+	<fail unless="required.kahlua-core" message="You must package kahlua first" />	
+
+	<property name="kahlua-cldc11.jar" value="${basedir}/../../bin/kahlua-cldc11.jar" />
+	<available property="required.kahlua-cldc11" file="${kahlua-cldc11.jar}" />
+	<fail unless="required.kahlua-cldc11" message="You must package kahlua first" />	
 
 
 	<property name="midlet.mainclass" value="KahluaDemo" />
@@ -44,7 +48,8 @@
 	</path>	
 		
 	<path id="include.classpath">
-		<fileset file="${kahlua.jar}" />
+		<fileset file="${kahlua-core.jar}" />
+		<fileset file="${kahlua-cldc11.jar}" />
 	</path>	
 
 	<path id="compile.classpath">
