@@ -6,3 +6,4 @@ testsuite/testreport.html
 
 local.properties
 contrib/midlet/build
+contrib/midlet/obfuscation-map.txt

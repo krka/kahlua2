@@ -10,6 +10,7 @@
 
 	<property name="wtk.home" value="${baseDir}/WTK" />
 	<property name="antenna.jar" value="${baseDir}/tools/antenna-bin-0.9.13.jar" />
+	<property name="proguard.jar" value="${baseDir}/lib/proguard.jar" />
 	
 	<!-- Don't modify below here unless you know what you're doing -->
 	<available property="required.wtk" file="${wtk.home}" />
