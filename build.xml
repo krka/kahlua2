@@ -2,16 +2,18 @@
 <project name="Kahlua" basedir="." default="all">
 	<property file="local.properties" />
 
+	<dirname property="baseDir" file="${ant.file}"/>
+	
 	<property name="emma.dir" value="/usr/share/java" />
 
-	<property name="cldc11.src.dir"       value="${basedir}/cldc11/src"/>
-	<property name="core.src.dir"       value="${basedir}/core/src"/>
-	<property name="j2se.src.dir"       value="${basedir}/j2se/src"/>
+	<property name="cldc11.src.dir"       value="${baseDir}/cldc11/src"/>
+	<property name="core.src.dir"       value="${baseDir}/core/src"/>
+	<property name="j2se.src.dir"       value="${baseDir}/j2se/src"/>
 
-	<property name="build.dir"     value="${basedir}/bin"/>
+	<property name="build.dir"     value="${baseDir}/bin"/>
 	<property name="classes.dir"     value="${build.dir}/classes"/>
 
-	<property name="test.dir"       value="${basedir}/testsuite"/>
+	<property name="test.dir"       value="${baseDir}/testsuite"/>
 	<property name="test.src.dir"       value="${test.dir}/src"/>
 	<property name="test.build.dir"     value="${test.dir}/bin"/>
 	<property name="test.classes.dir"     value="${test.build.dir}/classes"/>
@@ -21,12 +23,12 @@
 
 	<path id="cldc11.dependencies">
         <pathelement path="${classes.dir}/core"/>
-		<pathelement location="${basedir}/lib/cldcapi11.jar" />
+		<pathelement location="${baseDir}/lib/cldcapi11.jar" />
 	</path>
 
     <path id="j2se.dependencies">
         <pathelement path="${classes.dir}/core"/>
-        <pathelement location="${basedir}/j2se/lib/jsyntaxpane-0.9.5.jar" />
+        <pathelement location="${baseDir}/j2se/lib/jsyntaxpane-0.9.5.jar" />
     </path>
 
 	<path id="main.classpath">
@@ -113,7 +115,7 @@
 			<src path="${j2se.src.dir}"/>
 		</javac>
         <copy todir="${classes.dir}/j2se">
-            <fileset dir="${basedir}/j2se/resources">
+            <fileset dir="${baseDir}/j2se/resources">
             </fileset>
         </copy>
 	</target>
@@ -155,7 +157,7 @@
 	<target name="release" depends="setup" description="Create a release zip">
 		<tstamp />
 		<zip zipfile="${build.dir}/kahlua-release-${DSTAMP}.zip">
-			<fileset dir="${basedir}">
+			<fileset dir="${baseDir}">
 				<include name="build.xml" />
 				
 				<include name="resources/**" />
@@ -187,11 +189,11 @@
 	</target>
 
 	<target name="build-stdlib" depends="compile-test">
-		<java classname="LuaC" fork="true" dir="${basedir}">
+		<java classname="LuaC" fork="true" dir="${baseDir}">
 			<classpath location="${instrumented.dir}" />
 			<classpath refid="test.classpath" />
 			
-			<arg value="${basedir}/core/resources/stdlib.lua" />
+			<arg value="${baseDir}/core/resources/stdlib.lua" />
 			<arg value="${classes.dir}/core/stdlib.lbc" />
 		</java>
 	</target>
@@ -201,7 +203,7 @@
 		<fail unless="output" message="Syntax: ant luac -Dinput=&lt;file> -Doutput=&lt;file2>" />
 		<available property="exists" file="${input}" />		
 		<fail unless="exists" message="${input} not found." />
-		<java classname="LuaC" fork="true" dir="${basedir}">
+		<java classname="LuaC" fork="true" dir="${baseDir}">
 			<classpath location="${instrumented.dir}" />
 			<classpath refid="test.classpath" />
 			
@@ -235,14 +237,14 @@
 	</target>
 	
     <target name="run-interpreter" depends="build" description="Run the gui interpreter">
-		<java classname="se.krka.kahlua.j2se.interpreter.InteractiveShell" fork="true" dir="${basedir}">
+		<java classname="se.krka.kahlua.j2se.interpreter.InteractiveShell" fork="true" dir="${baseDir}">
 			<classpath refid="main.classpath" />
 		</java>
     </target>
 
     <target name="run-test" depends="test-depend, default-debugargs" description="Run the test-suite">
 		<property name="test.file" value="" />
-		<java classname="Test" fork="true" dir="${basedir}">
+		<java classname="Test" fork="true" dir="${baseDir}">
 			<jvmarg line="${debugargs}" />
 			<classpath location="${instrumented.dir}" />
 			<classpath refid="test.classpath" />
@@ -269,7 +271,7 @@
 
 			<filter includes="se.krka.kahlua.*" />
 			<sourcepath>
-				<dirset dir="${basedir}/src" />
+				<dirset dir="${baseDir}/src" />
 			</sourcepath>
 			<txt outfile="${test.emma.coverage.dir}/coverage.txt" />
 			<xml outfile="${test.emma.coverage.dir}/coverage.xml" />

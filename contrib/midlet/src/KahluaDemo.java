@@ -34,6 +34,7 @@ import javax.microedition.midlet.MIDletStateChangeException;
 
 import se.krka.kahlua.cldc11.CLDC11Platform;
 import se.krka.kahlua.stdlib.BaseLib;
+import se.krka.kahlua.stdlib.RandomLib;
 import se.krka.kahlua.vm.*;
 
 
@@ -47,6 +48,7 @@ public class KahluaDemo extends MIDlet implements Runnable, ItemStateListener {
 	public KahluaDemo() {
         Platform platform = new CLDC11Platform();
         KahluaTable env = platform.newEnvironment();
+        RandomLib.register(platform, env);
         state = new KahluaThread(System.out, platform, env);
 		
 		state.getEnvironment().rawset("query", new JavaFunction() {
@@ -80,6 +82,7 @@ public class KahluaDemo extends MIDlet implements Runnable, ItemStateListener {
 		try {
 			doRun();
 		} catch (Exception e) {
+            e.printStackTrace();
 		} finally {
 			notifyDestroyed();
 		}
@@ -93,8 +96,13 @@ public class KahluaDemo extends MIDlet implements Runnable, ItemStateListener {
 				// The system needs to decide which game to load.
 				stringItem.setText("Loading bytecode...");
 				LuaClosure callback = KahluaUtil.loadByteCodeFromResource(response, state.getEnvironment());
-				state.call(callback, null, null, null);
-			}
+                Object[] results = state.pcall(callback);
+                if (results[0] == Boolean.FALSE) {
+                    System.out.println(results[1]);
+                    System.out.println(results[2]);
+                    System.out.println(results[3]);
+                }
+            }
 		}
 	}
 

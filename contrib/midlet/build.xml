@@ -1,13 +1,15 @@
 <?xml version="1.0"?>
 
 <project default="build" basedir="." name="kahluademo">
-	<property file="${basedir}/../../local.properties" />
+
+	<dirname property="baseDir" file="${ant.file}"/>
+
+	<property file="${baseDir}/../../local.properties" />
 	
 	<!-- Default properties - please change this to what you want to use, or predefine them in a file called local.properties -->
 
-	<property name="wtk.home" value="${basedir}/WTK" />
-	<property name="antenna.jar" value="${basedir}/tools/antenna-bin-0.9.13.jar" />
-	<property name="luac.path" value="luac" />
+	<property name="wtk.home" value="${baseDir}/WTK" />
+	<property name="antenna.jar" value="${baseDir}/tools/antenna-bin-0.9.13.jar" />
 	
 	<!-- Don't modify below here unless you know what you're doing -->
 	<available property="required.wtk" file="${wtk.home}" />
@@ -21,19 +23,19 @@
 	<fail unless="required.cldc" message="You must place cldcapi11.jar in ${wtk.home}/lib" />	
 	<fail unless="required.midp" message="You must place midpapi20.jar in ${wtk.home}/lib" />	
 
-	<property name="kahlua-core.jar" value="${basedir}/../../bin/kahlua-core.jar" />
+	<property name="kahlua-core.jar" value="${baseDir}/../../bin/kahlua-core.jar" />
 	<available property="required.kahlua-core" file="${kahlua-core.jar}" />
 	<fail unless="required.kahlua-core" message="You must package kahlua first" />	
 
-	<property name="kahlua-cldc11.jar" value="${basedir}/../../bin/kahlua-cldc11.jar" />
+	<property name="kahlua-cldc11.jar" value="${baseDir}/../../bin/kahlua-cldc11.jar" />
 	<available property="required.kahlua-cldc11" file="${kahlua-cldc11.jar}" />
 	<fail unless="required.kahlua-cldc11" message="You must package kahlua first" />	
 
 
 	<property name="midlet.mainclass" value="KahluaDemo" />
 	<property name="midlet.jar.name" value="kahluademo" />
-	<property name="midlet.jar.name.jar" value="${basedir}/build/${midlet.jar.name}.jar" />
-	<property name="midlet.jar.name.jad" value="${basedir}/build/${midlet.jar.name}.jad" />
+	<property name="midlet.jar.name.jar" value="${baseDir}/build/${midlet.jar.name}.jar" />
+	<property name="midlet.jar.name.jad" value="${baseDir}/build/${midlet.jar.name}.jad" />
 
 
 
@@ -58,37 +60,25 @@
 	</path>
 
 	<target name="clean" description="Removes old build files">
-		<delete dir="${basedir}/build/" failonerror="false"/>
-		<mkdir dir="${basedir}/build"/>
-		<mkdir dir="${basedir}/build/classes"/>
+		<delete dir="${baseDir}/build/" failonerror="false"/>
+		<mkdir dir="${baseDir}/build"/>
+		<mkdir dir="${baseDir}/build/classes"/>
 	</target>
 
 	<target name="compile-lua">
-		<mkdir dir="${basedir}/build" />
-		<exec executable="${luac.path}">
-			<arg line="-s" />
-			<arg line="-o" />
-			<arg line="${basedir}/build/classes/stdlib.lbc" />
-			<arg line="${basedir}/../../resources/stdlib.lua" />
-		</exec>
-		<exec executable="${luac.path}">
-			<arg line="-s" />
-			<arg line="-o" />
-			<arg line="${basedir}/build/classes/guess.lbc" />
-			<arg line="${basedir}/resources/lua/guess.lua" />
-		</exec>
-		<exec executable="${luac.path}">
-			<arg line="-s" />
-			<arg line="-o" />
-			<arg line="${basedir}/build/classes/primes.lbc" />
-			<arg line="${basedir}/resources/lua/primes.lua" />
-		</exec>
-		<exec executable="${luac.path}">
-			<arg line="-s" />
-			<arg line="-o" />
-			<arg line="${basedir}/build/classes/quizgame.lbc" />
-			<arg line="${basedir}/resources/lua/quizgame.lua" />
-		</exec>
+		<mkdir dir="${baseDir}/build" />
+		<ant antfile="${baseDir}/../../build.xml" target="luac" inheritAll="false">
+			<property name="input" value="${baseDir}/resources/lua/guess.lua" />
+			<property name="output" value="${baseDir}/build/classes/guess.lbc" />
+		</ant>
+		<ant antfile="${baseDir}/../../build.xml" target="luac" inheritAll="false">
+			<property name="input" value="${baseDir}/resources/lua/primes.lua" />
+			<property name="output" value="${baseDir}/build/classes/primes.lbc" />
+		</ant>
+		<ant antfile="${baseDir}/../../build.xml" target="luac" inheritAll="false">
+			<property name="input" value="${baseDir}/resources/lua/quizgame.lua" />
+			<property name="output" value="${baseDir}/build/classes/quizgame.lbc" />
+		</ant>
 	</target>
 
 	<!--
@@ -98,21 +88,21 @@
 	-->
 	<target name="compile">
 		<javac
-			destdir="${basedir}/build/classes"
+			destdir="${baseDir}/build/classes"
 			source="1.4"
 			target="1.4"
 			optimize="true"
 			debug="true"
 			verbose="false"
 			bootclasspathref="build.buildclasspath">
-			<src path="${basedir}/src"/>
+			<src path="${baseDir}/src"/>
 			<classpath refid="compile.classpath" />
 		</javac>
 	</target>
 
 	<target name="package" depends="compile">
 		<jar
-			basedir="${basedir}/build/classes"
+			baseDir="${baseDir}/build/classes"
 			jarfile="${midlet.jar.name.jar}"
 			compress="true"
 			>
@@ -134,7 +124,8 @@
 				</section>
 			</manifest>
 			
-			<zipfileset src="${kahlua.jar}" excludes="META-INF/*" />
+			<zipfileset src="${kahlua-core.jar}" excludes="META-INF/*" />
+			<zipfileset src="${kahlua-cldc11.jar}" excludes="META-INF/*" />
 		</jar>
 	</target>
 
@@ -147,15 +138,15 @@
 			<arg line="${wtk.home}/lib/cldcapi11.jar:${wtk.home}/lib/midpapi20.jar" />
 			<arg line="-target" />
 			<arg line="CLDC1.1" />
-			<arg line="${basedir}/build/kahluademo.jar" />
+			<arg line="${baseDir}/build/kahluademo.jar" />
 		</exec>
-		<move file="${basedir}/output/kahluademo.jar" tofile="${basedir}/build/kahluademo.jar" />
-		<delete dir="${basedir}/output" failonerror="false"/>
+		<move file="${baseDir}/output/kahluademo.jar" tofile="${baseDir}/build/kahluademo.jar" />
+		<delete dir="${baseDir}/output" failonerror="false"/>
 		
 		
 		<wtkjad
-		        jadfile="${basedir}/build/kahluademo.jad"
-		        jarfile="${basedir}/build/kahluademo.jar"
+		        jadfile="${baseDir}/build/kahluademo.jad"
+		        jarfile="${baseDir}/build/kahluademo.jar"
 		        name="KahluaDemo"
 		        vendor="krka"
 				version="1.0.0">
@@ -191,13 +182,13 @@
 	  
 		</proguard>
 
-		<mkdir dir="${basedir}/build/unobfuscated/" />
-		<move toFile="${basedir}/build/unobfuscated/${midlet.jar.name}.jar" file="${midlet.jar.name.jar}" />
+		<mkdir dir="${baseDir}/build/unobfuscated/" />
+		<move toFile="${baseDir}/build/unobfuscated/${midlet.jar.name}.jar" file="${midlet.jar.name.jar}" />
 		<move toFile="${midlet.jar.name.jar}" file="${midlet.jar.name.jar}.obfuscated.jar" />
 	</target>
 
 	<target name="run" description="Run in emulator">
-        <wtkrun jadfile="${basedir}/build/kahluademo.jad" 
+        <wtkrun jadfile="${baseDir}/build/kahluademo.jad" 
         	heapsize="10000000"
         />
     </target>

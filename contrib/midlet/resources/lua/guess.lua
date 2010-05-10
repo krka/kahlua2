@@ -8,6 +8,8 @@ if response == "Quit" then
 	return
 end
 
+local random = newrandom()
+
 local low, high = 1, 100
 local attempt = 1
 for tmp = 1, 1e6 do
@@ -17,7 +19,7 @@ for tmp = 1, 1e6 do
 	end
 	local guess = math.floor((low + high) / 2)
 	if high - low > 10 then
-		guess = math.random(guess - 3, guess + 3)
+		guess = random:random(guess - 3, guess + 3)
 	end
 	local response = query("", "My guess #" .. attempt .. " is " .. guess, STR_CORRECT, STR_LOWER, STR_HIGHER)
 	if response == STR_CORRECT then
