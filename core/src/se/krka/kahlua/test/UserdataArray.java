@@ -100,7 +100,12 @@ public class UserdataArray implements JavaFunction {
 
 	private int index(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 2, "not enough parameters");
-		Vector v = (Vector) callFrame.get(0);
+        Object obj = callFrame.get(0);
+        if (obj == null || !(obj instanceof Vector)) {
+            return 0;
+        }
+        
+        Vector v = (Vector) obj;
 
 		Object key = callFrame.get(1);
 		Object res;

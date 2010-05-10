@@ -43,7 +43,6 @@ public class AutoComplete {
     private final Menu menu;
     private final Tooltip tooltip;
 	private final JTextComponent component;
-	private final Window window;
     private final KahluaTable env;
 
     private final WordFinder wordFinder;
@@ -58,15 +57,14 @@ public class AutoComplete {
         }
     };
 
-    public AutoComplete(JFrame window, final JTextComponent component, Platform platform, KahluaTable env) {
-		this.window = window;
+    public AutoComplete(final JTextComponent component, Platform platform, KahluaTable env) {
 		this.component = component;
         this.env = env;
         thread = KahluaUtil.getWorkerThread(platform, env);
         characterSet = new LuaAutoCompleteSet();
         wordFinder = new WordFinder(component.getDocument(), characterSet);
-        tooltip = new Tooltip(this.window);
-        menu = new Menu(this, this.window);
+        tooltip = new Tooltip(null);
+        menu = new Menu(this, null);
         component.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -154,7 +152,7 @@ public class AutoComplete {
                 }
             }
         });
-        window.addComponentListener(new ComponentAdapter() {
+        component.addComponentListener(new ComponentAdapter() {
             public void componentHidden(ComponentEvent e) {
                 hideAll();
             }

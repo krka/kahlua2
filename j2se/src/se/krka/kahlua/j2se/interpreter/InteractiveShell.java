@@ -132,7 +132,7 @@ public class InteractiveShell {
             public void actionPerformed(ActionEvent e) {
                 int index = counter.incrementAndGet();
                 String name = "Window " + index;
-                final Interpreter interpreter = new Interpreter(platform, env, frame);
+                final Interpreter interpreter = new Interpreter(platform, env);
                 final InternalInterpreterFrame frame = new InternalInterpreterFrame(interpreter, name);
 
                 frame.setDefaultCloseOperation(JInternalFrame.HIDE_ON_CLOSE);

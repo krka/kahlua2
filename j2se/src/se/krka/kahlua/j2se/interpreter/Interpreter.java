@@ -59,7 +59,7 @@ public class Interpreter extends JPanel {
     final LuaCaller caller = new LuaCaller(manager);
     final LuaJavaClassExposer exposer;
 
-    public Interpreter(Platform platform, KahluaTable env, JFrame owner) {
+    public Interpreter(Platform platform, KahluaTable env) {
         super(new BorderLayout());
 
         JSyntaxUtil.setup();
@@ -71,7 +71,7 @@ public class Interpreter extends JPanel {
 
         final KahluaKit kit = new KahluaKit(new LuaLexer());
         JSyntaxUtil.installSyntax(input, true, kit);
-        new AutoComplete(owner, input, platform, env);
+        new AutoComplete(input, platform, env);
 
 
         terminal = new OutputTerminal(Color.BLACK, input.getFont(), input);
