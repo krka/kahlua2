@@ -18,11 +18,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class InteractiveShell {
-    private final JFrame frame;
     private final JMenuItem newInterpreter;
     private final JMenu windowMenu;
     private final AtomicInteger counter = new AtomicInteger();
     private final ArrayList<InternalInterpreterFrame> interpreters;
+    private final JMenuItem exit = new JMenuItem("Exit");
 
     public static void main(final String[] args) {
         final Platform platform = new J2SEPlatform();
@@ -43,7 +43,16 @@ public class InteractiveShell {
 
         exposer.exposeGlobalFunctions(new Sleeper());
 
-        InteractiveShell shell = new InteractiveShell("Kahlua interactive shell", platform, env);
+        final JFrame frame = new JFrame("Interactive shell");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        InteractiveShell shell = new InteractiveShell(platform, env, frame);
+        shell.addExitListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+            }
+        });
         shell.appendWelcome();
         shell.appendKeybindings();
     }
@@ -62,10 +71,7 @@ public class InteractiveShell {
         getWindow(0).getInterpreter().getTerminal().appendInfo("Welcome to the Kahlua interpreter\n");
     }
 
-    public InteractiveShell(String name, final Platform platform, final KahluaTable env) {
-        frame = new JFrame(name);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+    public InteractiveShell(final Platform platform, final KahluaTable env, final JFrame frame) {
         final JDesktopPane mdi = new JDesktopPane();
         frame.getContentPane().add(mdi);
 
@@ -126,7 +132,7 @@ public class InteractiveShell {
             public void actionPerformed(ActionEvent e) {
                 int index = counter.incrementAndGet();
                 String name = "Window " + index;
-                final Interpreter interpreter = new Interpreter(platform, env, InteractiveShell.this.frame);
+                final Interpreter interpreter = new Interpreter(platform, env, frame);
                 final InternalInterpreterFrame frame = new InternalInterpreterFrame(interpreter, name);
 
                 frame.setDefaultCloseOperation(JInternalFrame.HIDE_ON_CLOSE);
@@ -168,7 +174,6 @@ public class InteractiveShell {
         });
         mainMenu.add(newInterpreter);
 
-        JMenuItem exit = new JMenuItem("Exit");
         exit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -189,6 +194,10 @@ public class InteractiveShell {
         } catch (PropertyVetoException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
+    }
+
+    public void addExitListener(ActionListener listener) {
+        exit.addActionListener(listener);
     }
 
     private static void tile(JDesktopPane mdi,

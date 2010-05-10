@@ -70,13 +70,40 @@ public class KahluaConverterManager {
     @SuppressWarnings("unchecked")
 	public void addLuaConverter(LuaToJavaConverter converter) {
 		Map<Class, LuaToJavaConverter> map = getOrCreate(luaToJava, converter.getLuaType());
-		map.put(converter.getJavaType(), converter);
+        Class javaType = converter.getJavaType();
+        LuaToJavaConverter current = map.get(javaType);
+        if (current != null) {
+            if (current instanceof MultiLuaToJavaConverter) {
+                ((MultiLuaToJavaConverter) current).add(converter);
+            } else {
+                MultiLuaToJavaConverter multiLuaToJavaConverter = new MultiLuaToJavaConverter(converter.getLuaType(), javaType);
+                multiLuaToJavaConverter.add(current);
+                multiLuaToJavaConverter.add(converter);
+                map.put(javaType, multiLuaToJavaConverter);
+            }
+        } else {
+            map.put(javaType, converter);
+        }
 		luatoJavaCache.clear();
 	}
 
 	@SuppressWarnings("unchecked")
 	public void addJavaConverter(JavaToLuaConverter converter) {
-		javaToLua.put(converter.getJavaType(), converter);
+        Class javaType = converter.getJavaType();
+        JavaToLuaConverter current = javaToLua.get(javaType);
+        if (current != null) {
+            if (current instanceof MultiJavaToLuaConverter) {
+                ((MultiJavaToLuaConverter) current).add(converter);
+            } else {
+                MultiJavaToLuaConverter multiConverter = new MultiJavaToLuaConverter(javaType);
+                multiConverter.add(current);
+                multiConverter.add(converter);
+                javaToLua.put(javaType, multiConverter);
+            }
+
+        } else {
+            javaToLua.put(javaType, converter);
+        }
 		javaToLuaCache.clear();
 	}
 

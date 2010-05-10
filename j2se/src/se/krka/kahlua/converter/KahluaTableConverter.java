@@ -22,6 +22,7 @@
 
 package se.krka.kahlua.converter;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -41,6 +42,7 @@ public class KahluaTableConverter {
 	public void install(final KahluaConverterManager manager) {
 		manager.addJavaConverter(new CollectionToLuaConverter(manager, Collection.class));
         manager.addLuaConverter(new CollectionToJavaConverter(Collection.class));
+
 		manager.addJavaConverter(new JavaToLuaConverter<Map>() {
 			public Object fromJavaToLua(Map javaObject) {
 				Map<Object, Object> map = javaObject;
@@ -77,6 +79,42 @@ public class KahluaTableConverter {
 				return KahluaTable.class;
 			}
 		});
+
+        manager.addJavaConverter(new JavaToLuaConverter<Object>() {
+                    public Object fromJavaToLua(Object javaObject) {
+                        if (javaObject.getClass().isArray()) {
+                            KahluaTable t = platform.newTable();
+                            int n = Array.getLength(javaObject);
+                            for (int i = 0; i < n; i++) {
+                                Object value = Array.get(javaObject, i);
+                                t.rawset(i + 1, manager.fromJavaToLua(value));
+                            }
+                            return t;
+                        }
+                        return null;
+                    }
+
+                    public Class<Object> getJavaType() {
+                        return Object.class;
+                    }
+                });
+                manager.addLuaConverter(new LuaToJavaConverter<KahluaTable, Object>() {
+                    public Object fromLuaToJava(KahluaTable luaObject, Class<Object> javaClass) throws IllegalArgumentException {
+                        if (javaClass.isArray()) {
+                            List list = manager.fromLuaToJava(luaObject, List.class);
+                            return list.toArray();
+                        }
+                        return null;
+                    }
+
+                    public Class<Object> getJavaType() {
+                        return Object.class;
+                    }
+
+                    public Class<KahluaTable> getLuaType() {
+                        return KahluaTable.class;
+                    }
+                });
 	}
 
     private class CollectionToLuaConverter<T extends Iterable> implements JavaToLuaConverter<T> {
