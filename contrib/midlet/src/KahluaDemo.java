@@ -38,7 +38,7 @@ import se.krka.kahlua.stdlib.RandomLib;
 import se.krka.kahlua.vm.*;
 
 
-public class KahluaDemo extends MIDlet implements Runnable, ItemStateListener {
+public class KahluaDemo extends MIDlet implements Runnable, ItemStateListener, JavaFunction {
 	private String[] options = {"/guess", "/primes", "/quizgame", "Quit"};
 	                        
 	private KahluaThread state;
@@ -51,19 +51,8 @@ public class KahluaDemo extends MIDlet implements Runnable, ItemStateListener {
         RandomLib.register(platform, env);
         state = new KahluaThread(System.out, platform, env);
 		
-		state.getEnvironment().rawset("query", new JavaFunction() {
-			public int call(LuaCallFrame callFrame, int nArguments) {
-				KahluaUtil.luaAssert(nArguments >= 3, "not enough args");
-				String[] options = new String[nArguments - 2];
-				for (int i = 2; i < nArguments; i++) {
-					options[i - 2] = BaseLib.rawTostring(callFrame.get(i)); 
-				}
-				String response = query(BaseLib.rawTostring(callFrame.get(0)), BaseLib.rawTostring(callFrame.get(1)), options);
-				callFrame.push(response.intern());
-				return 1;
-			}
-		});
-		
+		state.getEnvironment().rawset("query", this);
+
 		Form form = new Form("Kahlua Demo");
 		
 		stringItem = new StringItem("", "");
@@ -77,6 +66,17 @@ public class KahluaDemo extends MIDlet implements Runnable, ItemStateListener {
 		
 		new Thread(this).start();
 	}
+
+    public int call(LuaCallFrame callFrame, int nArguments) {
+        KahluaUtil.luaAssert(nArguments >= 3, "not enough args");
+        String[] options = new String[nArguments - 2];
+        for (int i = 2; i < nArguments; i++) {
+            options[i - 2] = BaseLib.rawTostring(callFrame.get(i));
+        }
+        String response = query(BaseLib.rawTostring(callFrame.get(0)), BaseLib.rawTostring(callFrame.get(1)), options);
+        callFrame.push(response.intern());
+        return 1;
+    }
 
 	public void run() {
 		try {
