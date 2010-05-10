@@ -255,6 +255,18 @@ public class LuaJavaClassExposer {
         }
         setupMetaTables(clazz);
 
+        exposeMethods(clazz);
+        if (!clazz.isSynthetic() && !clazz.isAnonymousClass() &&
+                !clazz.isPrimitive() && !Proxy.isProxyClass(clazz) &&
+                !clazz.getSimpleName().startsWith("$")) {
+
+            exposeStatics(clazz, staticBase);
+
+        }
+
+    }
+
+    private void exposeStatics(Class clazz, KahluaTable staticBase) {
         String[] packageStructure = clazz.getName().split("\\.");
         KahluaTable container = createTableStructure(staticBase, packageStructure);
         container.rawset("class", clazz);
@@ -266,8 +278,6 @@ public class LuaJavaClassExposer {
             if (Modifier.isPublic(method.getModifiers())) {
                 if (Modifier.isStatic(method.getModifiers())) {
                     exposeGlobalClassFunction(container, clazz, method, name);
-                } else {
-                    exposeMethod(clazz, method, name);
                 }
             }
         }
@@ -286,6 +296,17 @@ public class LuaJavaClassExposer {
             int modifiers = constructor.getModifiers();
             if (!Modifier.isInterface(modifiers) && !Modifier.isAbstract(modifiers) && Modifier.isPublic(modifiers)) {
                 addInvoker(container, "new", getConstructorInvoker(clazz, constructor, "new"));
+            }
+        }
+    }
+
+    private void exposeMethods(Class clazz) {
+        for (Method method : clazz.getMethods()) {
+            String name = method.getName();
+            if (Modifier.isPublic(method.getModifiers())) {
+                if (!Modifier.isStatic(method.getModifiers())) {
+                    exposeMethod(clazz, method, name);
+                }
             }
         }
     }
@@ -415,11 +436,7 @@ public class LuaJavaClassExposer {
         if (clazz.isArray()) {
             exposeLikeJavaByClass(staticBase, visited, clazz.getComponentType());
         } else {
-            if (!clazz.isSynthetic() && !clazz.isAnonymousClass() &&
-                    !clazz.isPrimitive() && !Proxy.isProxyClass(clazz) &&
-                    !clazz.getSimpleName().startsWith("$")) {
-                exposeLikeJava(clazz, staticBase);
-            }
+            exposeLikeJava(clazz, staticBase);
         }
         for (Method method : clazz.getDeclaredMethods()) {
             exposeList(staticBase, visited, method.getGenericParameterTypes());
