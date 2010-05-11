@@ -7,3 +7,5 @@ testsuite/testreport.html
 local.properties
 contrib/midlet/build
 contrib/midlet/obfuscation-map.txt
+contrib/midlet-minimal/build/
+contrib/midlet-minimal/obfuscation-map.txt
