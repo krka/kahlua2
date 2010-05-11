@@ -238,5 +238,27 @@ public class LuaJavaInvoker implements JavaFunction {
     public int getNumMethodParams() {
         return numMethodParams;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        LuaJavaInvoker that = (LuaJavaInvoker) o;
+
+        if (!caller.equals(that.caller)) return false;
+        if (!clazz.equals(that.clazz)) return false;
+        if (!name.equals(that.name)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = clazz.hashCode();
+        result = 31 * result + name.hashCode();
+        result = 31 * result + caller.hashCode();
+        return result;
+    }
 }
 

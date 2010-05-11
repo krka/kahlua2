@@ -55,11 +55,30 @@ public class MultiLuaJavaInvoker implements JavaFunction {
     }
 
     public void addInvoker(LuaJavaInvoker invoker) {
-        invokers.add(invoker);
-        Collections.sort(invokers, COMPARATOR);
+        if (!invokers.contains(invoker)) {
+            invokers.add(invoker);
+            Collections.sort(invokers, COMPARATOR);
+        }
     }
 
     public List<LuaJavaInvoker> getInvokers() {
         return invokers;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MultiLuaJavaInvoker that = (MultiLuaJavaInvoker) o;
+
+        if (!invokers.equals(that.invokers)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return invokers.hashCode();
     }
 }

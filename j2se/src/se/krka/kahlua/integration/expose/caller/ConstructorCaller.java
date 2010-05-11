@@ -55,4 +55,20 @@ public class ConstructorCaller extends AbstractCaller {
         return DescriptorUtil.getDescriptor(constructor);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ConstructorCaller that = (ConstructorCaller) o;
+
+        if (!constructor.equals(that.constructor)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return constructor.hashCode();
+    }
 }

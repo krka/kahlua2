@@ -67,4 +67,24 @@ public class MethodCaller extends AbstractCaller {
     public String getDescriptor() {
         return DescriptorUtil.getDescriptor(method);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MethodCaller that = (MethodCaller) o;
+
+        if (!method.equals(that.method)) return false;
+        if (owner != null ? !owner.equals(that.owner) : that.owner != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = method.hashCode();
+        result = 31 * result + (owner != null ? owner.hashCode() : 0);
+        return result;
+    }
 }

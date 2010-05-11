@@ -202,6 +202,9 @@ public class LuaJavaClassExposer {
         Object current = indexTable.rawget(methodName);
         if (current != null) {
             if (current instanceof LuaJavaInvoker) {
+                if (current.equals(invoker)) {
+                    return;
+                }
                 MultiLuaJavaInvoker multiInvoker = new MultiLuaJavaInvoker();
                 multiInvoker.addInvoker((LuaJavaInvoker) current);
                 multiInvoker.addInvoker(invoker);

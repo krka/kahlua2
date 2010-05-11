@@ -51,7 +51,7 @@ public class KahluaConverterManager {
 	@SuppressWarnings("unchecked")
 	private static final JavaToLuaConverter NULL_CONVERTER = new JavaToLuaConverter<Object>() {
 		public Object fromJavaToLua(Object javaObject) {
-			return javaObject;
+			return null;
 		}
 
 		public Class<Object> getJavaType() {
@@ -205,7 +205,11 @@ public class KahluaConverterManager {
 		Class clazz = javaObject.getClass();
 		JavaToLuaConverter converter = getJavaCache(clazz);
 		try {
-			return converter.fromJavaToLua(javaObject);
+			Object o = converter.fromJavaToLua(javaObject);
+			if (o == null) {
+				return javaObject;
+			}
+			return o;
 		} catch (StackOverflowError e) {
 			throw new RuntimeException("Could not convert " + javaObject + ": it contained recursive elements.");
 		}
