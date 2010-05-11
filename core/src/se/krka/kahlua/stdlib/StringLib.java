@@ -121,7 +121,7 @@ public final class StringLib implements JavaFunction {
 	}
 	
 	private int format(LuaCallFrame callFrame, int nArguments) {
-		String f = (String) BaseLib.getArg(callFrame, 1, BaseLib.TYPE_STRING, names[FORMAT]);
+		String f = (String) KahluaUtil.getArg(callFrame, 1, KahluaUtil.TYPE_STRING, names[FORMAT]);
 
 		int len = f.length();
 		int argc = 2;
@@ -345,7 +345,7 @@ public final class StringLib implements JavaFunction {
 							result.append(' ');
 						}
 						if (isNaN) {
-							result.append(BaseLib.numberToString(v));
+							result.append(KahluaUtil.numberToString(v));
 						} else {
 							if (c == 'f') {
 								appendPrecisionNumber(result, vDouble, precision, repr);
@@ -379,7 +379,7 @@ public final class StringLib implements JavaFunction {
 							result.append(' ');
 						}
 						if (isNaN) {
-							result.append(BaseLib.numberToString(v));
+							result.append(KahluaUtil.numberToString(v));
 						} else {
 							double x = roundToSignificantNumbers(vDouble, precision);
 
@@ -657,7 +657,7 @@ public final class StringLib implements JavaFunction {
 	}
 	
 	private String getStringArg(LuaCallFrame callFrame, int argc, String funcname) {
-		return (String) BaseLib.getArg(callFrame, argc, BaseLib.TYPE_STRING, funcname);
+		return (String) KahluaUtil.getArg(callFrame, argc, KahluaUtil.TYPE_STRING, funcname);
 	}
 	
 	private Double getDoubleArg(LuaCallFrame callFrame, int argc) {
@@ -665,7 +665,7 @@ public final class StringLib implements JavaFunction {
 	}
 
 	private Double getDoubleArg(LuaCallFrame callFrame, int argc, String funcname) {
-		return (Double)BaseLib.getArg(callFrame, argc, BaseLib.TYPE_NUMBER, funcname);
+		return (Double) KahluaUtil.getArg(callFrame, argc, KahluaUtil.TYPE_NUMBER, funcname);
 	}
 
 	private int lower(LuaCallFrame callFrame, int nArguments) {
@@ -989,10 +989,10 @@ public final class StringLib implements JavaFunction {
 
 	private static int findAux (LuaCallFrame callFrame, boolean find ) {
 		String f = find ? names[FIND] : names[MATCH];
-		String source = (String) BaseLib.getArg(callFrame, 1, BaseLib.TYPE_STRING, f);
-		String pattern = (String) BaseLib.getArg(callFrame, 2, BaseLib.TYPE_STRING, f);
-		Double i = ((Double)(BaseLib.getOptArg(callFrame, 3, BaseLib.TYPE_NUMBER)));
-		boolean plain = KahluaUtil.boolEval(BaseLib.getOptArg(callFrame, 4, BaseLib.TYPE_BOOLEAN));
+		String source = (String) KahluaUtil.getArg(callFrame, 1, KahluaUtil.TYPE_STRING, f);
+		String pattern = (String) KahluaUtil.getArg(callFrame, 2, KahluaUtil.TYPE_STRING, f);
+		Double i = ((Double)(KahluaUtil.getOptArg(callFrame, 3, KahluaUtil.TYPE_NUMBER)));
+		boolean plain = KahluaUtil.boolEval(KahluaUtil.getOptArg(callFrame, 4, KahluaUtil.TYPE_BOOLEAN));
 		int init = (i == null ? 0 : i.intValue() - 1);
 
 		if ( init < 0 ) {
@@ -1403,16 +1403,16 @@ public final class StringLib implements JavaFunction {
 	}
 
 	private static int gsub(LuaCallFrame cf, int nargs) {
-		String srcTemp = (String)BaseLib.getArg(cf, 1, BaseLib.TYPE_STRING, names[GSUB]);
-		String pTemp = (String)BaseLib.getArg(cf, 2, BaseLib.TYPE_STRING, names[GSUB]);
-		Object repl = BaseLib.getArg(cf, 3, null, names[GSUB]);
+		String srcTemp = (String) KahluaUtil.getArg(cf, 1, KahluaUtil.TYPE_STRING, names[GSUB]);
+		String pTemp = (String) KahluaUtil.getArg(cf, 2, KahluaUtil.TYPE_STRING, names[GSUB]);
+		Object repl = KahluaUtil.getArg(cf, 3, null, names[GSUB]);
 		{
-			String tmp = BaseLib.rawTostring(repl);
+			String tmp = KahluaUtil.rawTostring(repl);
 			if (tmp != null) {
 				repl = tmp;
 			}
 		}			
-		Double num = (Double)BaseLib.getOptArg(cf, 4, BaseLib.TYPE_NUMBER);
+		Double num = (Double) KahluaUtil.getOptArg(cf, 4, KahluaUtil.TYPE_NUMBER);
 		// if i isn't supplied, we want to substitute all occurrences of the pattern
 		int maxSubstitutions = (num == null) ? Integer.MAX_VALUE : num.intValue(); 
 
@@ -1425,10 +1425,10 @@ public final class StringLib implements JavaFunction {
 			pattern.postIncrString ( 1 );
 		}
 
-		String replType = BaseLib.type(repl);
-		if (!(replType == BaseLib.TYPE_FUNCTION ||
-						replType == BaseLib.TYPE_STRING || 
-						replType == BaseLib.TYPE_TABLE)) {
+		String replType = KahluaUtil.type(repl);
+		if (!(replType == KahluaUtil.TYPE_FUNCTION ||
+						replType == KahluaUtil.TYPE_STRING ||
+						replType == KahluaUtil.TYPE_TABLE)) {
 			KahluaUtil.fail(("string/function/table expected, got "+replType));
 		}
 
@@ -1464,30 +1464,30 @@ public final class StringLib implements JavaFunction {
 	}
 
 	private static void addValue(MatchState ms, Object repl, StringBuffer b, StringPointer src, StringPointer e) {
-		String type = BaseLib.type(repl);
-		if (type == BaseLib.TYPE_NUMBER || type == BaseLib.TYPE_STRING) {
+		String type = KahluaUtil.type(repl);
+		if (type == KahluaUtil.TYPE_NUMBER || type == KahluaUtil.TYPE_STRING) {
 			b.append(addString (ms, repl, src, e));
 		} else {
 			String match = src.getString().substring(0, e.getIndex() - src.getIndex());
 			Object[] captures = ms.getCaptures();
 			if (captures != null) {
-				match = BaseLib.rawTostring(captures[0]);
+				match = KahluaUtil.rawTostring(captures[0]);
 			}
 			Object res = null;
-			if (type == BaseLib.TYPE_FUNCTION) {
+			if (type == KahluaUtil.TYPE_FUNCTION) {
 				res = ms.callFrame.coroutine.thread.call(repl, match, null, null);
-			} else if (type == BaseLib.TYPE_TABLE) {
+			} else if (type == KahluaUtil.TYPE_TABLE) {
 				res = ((KahluaTable)repl).rawget(match);
 			}
 			if (res == null) {
 				res = match;
 			}
-			b.append(BaseLib.rawTostring(res));
+			b.append(KahluaUtil.rawTostring(res));
 		}
 	}
 
 	private static String addString(MatchState ms, Object repl, StringPointer s, StringPointer e) {
-		String replTemp = BaseLib.tostring(repl, ms.callFrame.coroutine.thread);
+		String replTemp = KahluaUtil.tostring(repl, ms.callFrame.coroutine.thread);
 		StringPointer replStr = new StringPointer (replTemp);
 		StringBuffer buf = new StringBuffer();
 		for (int i = 0; i < replTemp.length(); i++) {

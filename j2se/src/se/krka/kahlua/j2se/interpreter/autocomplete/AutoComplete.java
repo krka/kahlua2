@@ -23,7 +23,6 @@
 package se.krka.kahlua.j2se.interpreter.autocomplete;
 
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
-import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.*;
 
 import java.io.IOException;
@@ -244,13 +243,13 @@ public class AutoComplete {
     }
 
     private String getExtraInfo(Object value) {
-        String type = BaseLib.type(value);
+        String type = KahluaUtil.type(value);
         if (type.equals("nil") ||
             type.equals("table") ||
             type.equals("function")) {
             return "[" + type + "]";
         }
-        return BaseLib.tostring(value, thread);
+        return KahluaUtil.tostring(value, thread);
     }
 
     private Object getTableEntry(Object obj, String key) {

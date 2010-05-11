@@ -99,7 +99,7 @@ public class OsLib implements JavaFunction {
 			double t = (double) System.currentTimeMillis() * TIME_DIVIDEND_INVERTED;
 			cf.push(KahluaUtil.toDouble(t));
 		} else {
-			KahluaTable table = (KahluaTable) BaseLib.getArg(cf, 1, BaseLib.TYPE_TABLE, "time");
+			KahluaTable table = (KahluaTable) KahluaUtil.getArg(cf, 1, KahluaUtil.TYPE_TABLE, "time");
 			double t = (double) getDateFromTable(table).getTime() * TIME_DIVIDEND_INVERTED;
 			cf.push(KahluaUtil.toDouble(t));
 		}
@@ -107,8 +107,8 @@ public class OsLib implements JavaFunction {
 	}
 
 	private int difftime(LuaCallFrame cf, int nargs) {
-		double t2 = BaseLib.rawTonumber(cf.get(0)).doubleValue();
-		double t1 = BaseLib.rawTonumber(cf.get(1)).doubleValue();
+		double t2 = KahluaUtil.rawTonumber(cf.get(0)).doubleValue();
+		double t1 = KahluaUtil.rawTonumber(cf.get(1)).doubleValue();
 		cf.push(KahluaUtil.toDouble(t2-t1));
 		return 1;
 	}
@@ -118,11 +118,11 @@ public class OsLib implements JavaFunction {
 		if (nargs == 0) {
 			return cf.push(getdate(DEFAULT_FORMAT, platform));
 		} else {
-			String format = BaseLib.rawTostring(cf.get(0));
+			String format = KahluaUtil.rawTostring(cf.get(0));
 			if (nargs == 1) {
 				return cf.push(getdate(format, platform));
 			} else {
-				Double rawTonumber = BaseLib.rawTonumber(cf.get(1));
+				Double rawTonumber = KahluaUtil.rawTonumber(cf.get(1));
 				long time = (long) (rawTonumber.doubleValue() * TIME_DIVIDEND);
 				return cf.push(getdate(format, time, platform));
 			}

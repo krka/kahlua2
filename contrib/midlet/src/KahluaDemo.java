@@ -33,7 +33,6 @@ import javax.microedition.midlet.MIDlet;
 import javax.microedition.midlet.MIDletStateChangeException;
 
 import se.krka.kahlua.cldc11.CLDC11Platform;
-import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.stdlib.RandomLib;
 import se.krka.kahlua.vm.*;
 
@@ -71,9 +70,9 @@ public class KahluaDemo extends MIDlet implements Runnable, ItemStateListener, J
         KahluaUtil.luaAssert(nArguments >= 3, "not enough args");
         String[] options = new String[nArguments - 2];
         for (int i = 2; i < nArguments; i++) {
-            options[i - 2] = BaseLib.rawTostring(callFrame.get(i));
+            options[i - 2] = KahluaUtil.rawTostring(callFrame.get(i));
         }
-        String response = query(BaseLib.rawTostring(callFrame.get(0)), BaseLib.rawTostring(callFrame.get(1)), options);
+        String response = query(KahluaUtil.rawTostring(callFrame.get(0)), KahluaUtil.rawTostring(callFrame.get(1)), options);
         callFrame.push(response.intern());
         return 1;
     }

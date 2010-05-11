@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project default="build" basedir="." name="kahluademo">
+<project default="build" basedir="." name="minimal">
 
 	<dirname property="baseDir" file="${ant.file}"/>
 
@@ -33,8 +33,8 @@
 	<fail unless="required.kahlua-cldc11" message="You must package kahlua first" />	
 
 
-	<property name="midlet.mainclass" value="KahluaDemo" />
-	<property name="midlet.jar.name" value="kahluademo" />
+	<property name="midlet.mainclass" value="HelloWorld" />
+	<property name="midlet.jar.name" value="minimal" />
 	<property name="midlet.jar.name.jar" value="${baseDir}/build/${midlet.jar.name}.jar" />
 	<property name="midlet.jar.name.jad" value="${baseDir}/build/${midlet.jar.name}.jad" />
 
@@ -69,16 +69,8 @@
 	<target name="compile-lua">
 		<mkdir dir="${baseDir}/build" />
 		<ant antfile="${baseDir}/../../build.xml" target="luac" inheritAll="false">
-			<property name="input" value="${baseDir}/resources/lua/guess.lua" />
-			<property name="output" value="${baseDir}/build/classes/guess.lbc" />
-		</ant>
-		<ant antfile="${baseDir}/../../build.xml" target="luac" inheritAll="false">
-			<property name="input" value="${baseDir}/resources/lua/primes.lua" />
-			<property name="output" value="${baseDir}/build/classes/primes.lbc" />
-		</ant>
-		<ant antfile="${baseDir}/../../build.xml" target="luac" inheritAll="false">
-			<property name="input" value="${baseDir}/resources/lua/quizgame.lua" />
-			<property name="output" value="${baseDir}/build/classes/quizgame.lbc" />
+			<property name="input" value="${baseDir}/resources/lua/hello.lua" />
+			<property name="output" value="${baseDir}/build/classes/hello.lbc" />
 		</ant>
 	</target>
 
@@ -109,16 +101,16 @@
 			>
 
 			<manifest>
-				<attribute name="MIDlet-Name" value="KahluaDemo"/>
+				<attribute name="MIDlet-Name" value="HelloWorld"/>
 				<attribute name="MicroEdition-Configuration" value="CLDC-1.1"/>
 				<attribute name="MicroEdition-Configuration_version" value="1.1"/>
 				<attribute name="MIDlet-Vendor" value="krka"/>
-				<attribute name="MIDlet-1" value="KahluaDemo, , ${midlet.mainclass}"/>
+				<attribute name="MIDlet-1" value="HelloWorld, , ${midlet.mainclass}"/>
 				<attribute name="MIDlet-Version" value="1.0.0"/>
 				<attribute name="MicroEdition-Profile" value="MIDP-2.0"/>
 				<attribute name="MicroEdition-Profile_version" value="2.0"/>
 
-				<section name="kahluademo">
+				<section name="helloworld">
 					<attribute name="Implementation-Version" value="1.0"/>
 					<attribute name="Implementation-Vendor" value="krka"/>
 					<attribute name="Implementation-Revision" value="1.0"/>
@@ -139,19 +131,19 @@
 			<arg line="${wtk.home}/lib/cldcapi11.jar:${wtk.home}/lib/midpapi20.jar" />
 			<arg line="-target" />
 			<arg line="CLDC1.1" />
-			<arg line="${baseDir}/build/kahluademo.jar" />
+			<arg line="${baseDir}/build/minimal.jar" />
 		</exec>
-		<move file="${baseDir}/output/kahluademo.jar" tofile="${baseDir}/build/kahluademo.jar" />
+		<move file="${baseDir}/output/minimal.jar" tofile="${baseDir}/build/minimal.jar" />
 		<delete dir="${baseDir}/output" failonerror="false"/>
 		
 		
 		<wtkjad
-		        jadfile="${baseDir}/build/kahluademo.jad"
-		        jarfile="${baseDir}/build/kahluademo.jar"
-		        name="KahluaDemo"
+		        jadfile="${baseDir}/build/minimal.jad"
+		        jarfile="${baseDir}/build/minimal.jar"
+		        name="HelloWorld"
 		        vendor="krka"
 				version="1.0.0">
-		        <midlet name="kahluademo" class="${midlet.mainclass}" />
+		        <midlet name="minimal" class="${midlet.mainclass}" />
 		</wtkjad>
 	</target>
 
@@ -189,7 +181,7 @@
 	</target>
 
 	<target name="run" description="Run in emulator">
-        <wtkrun jadfile="${baseDir}/build/kahluademo.jad" 
+        <wtkrun jadfile="${baseDir}/build/minimal.jad" 
         	heapsize="10000000"
         />
     </target>

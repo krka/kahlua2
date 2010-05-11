@@ -23,7 +23,7 @@
 
 package se.krka.kahlua.integration;
 
-import se.krka.kahlua.stdlib.BaseLib;
+import se.krka.kahlua.vm.KahluaUtil;
 
 public class LuaFail extends LuaReturn {
 	LuaFail(Object[] returnValues) {
@@ -46,7 +46,7 @@ public class LuaFail extends LuaReturn {
 	@Override
 	public String getErrorString() {
 		if (returnValues.length >= 2 && returnValues[1] != null) {
-			return BaseLib.rawTostring(returnValues[1]);
+			return KahluaUtil.rawTostring(returnValues[1]);
 		}
 		return "";
 	}

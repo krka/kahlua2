@@ -97,7 +97,7 @@ public final class TableLib implements JavaFunction {
     }
 
     private int newarray(LuaCallFrame callFrame, int arguments) {
-		Object param = BaseLib.getOptArg(callFrame, 1, null);
+		Object param = KahluaUtil.getOptArg(callFrame, 1, null);
 		KahluaArray ret = new KahluaArray();
 		if (param instanceof KahluaTable && arguments == 1) {
 			KahluaTable t = (KahluaTable) param;
@@ -119,18 +119,18 @@ public final class TableLib implements JavaFunction {
 
 		String separator = "";
 		if (nArguments >= 2) {
-			separator = BaseLib.rawTostring(callFrame.get(1));
+			separator = KahluaUtil.rawTostring(callFrame.get(1));
 		}
 
 		int first = 1;
 		if (nArguments >= 3) {
-			Double firstDouble = BaseLib.rawTonumber(callFrame.get(2));
+			Double firstDouble = KahluaUtil.rawTonumber(callFrame.get(2));
 			first = firstDouble.intValue();
 		}
 
 		int last;
 		if (nArguments >= 4) {
-			Double lastDouble = BaseLib.rawTonumber(callFrame.get(3));
+			Double lastDouble = KahluaUtil.rawTonumber(callFrame.get(3));
 			last = lastDouble.intValue();
 		} else {
 			last = table.len();
@@ -144,7 +144,7 @@ public final class TableLib implements JavaFunction {
 
 			Double key = KahluaUtil.toDouble(i);
 			Object value = table.rawget(key);
-			buffer.append(BaseLib.rawTostring(value));
+			buffer.append(KahluaUtil.rawTostring(value));
 		}
 
 		return callFrame.push(buffer.toString());
@@ -193,7 +193,7 @@ public final class TableLib implements JavaFunction {
 		int pos = t.len() + 1;
 		Object elem = null;
 		if (nArguments > 2) {
-			pos = BaseLib.rawTonumber(callFrame.get(1)).intValue();
+			pos = KahluaUtil.rawTonumber(callFrame.get(1)).intValue();
 			elem = callFrame.get(2);
 		} else {
 			elem = callFrame.get(1);
@@ -221,22 +221,10 @@ public final class TableLib implements JavaFunction {
 		KahluaTable t = (KahluaTable)callFrame.get(0);
 		int pos = t.len();
 		if (nArguments > 1) {
-			pos = BaseLib.rawTonumber(callFrame.get(1)).intValue();
+			pos = KahluaUtil.rawTonumber(callFrame.get(1)).intValue();
 		}
 		callFrame.push(remove(callFrame.coroutine.thread, t, pos));
 		return 1;
 	}
-	
-    public static int len(KahluaTable kahluaTable, int low, int high) {
-        while (low < high) {
-            int middle = (high + low + 1) >> 1;
-            Object value = kahluaTable.rawget(middle);
-            if (value == null) {
-                high = middle - 1;
-            } else {
-                low = middle;
-            }
-        }
-        return low;
-    }
+
 }

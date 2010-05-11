@@ -31,7 +31,6 @@ import se.krka.kahlua.j2se.interpreter.autocomplete.AutoComplete;
 import se.krka.kahlua.j2se.interpreter.jsyntax.JSyntaxUtil;
 import se.krka.kahlua.j2se.interpreter.jsyntax.KahluaKit;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
-import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.*;
 
 import javax.swing.*;
@@ -174,7 +173,7 @@ public class Interpreter extends JPanel {
                     LuaReturn result = caller.protectedCall(thread, luaClosure);
                     if (result.isSuccess()) {
                         for (Object o : result) {
-                            terminal.appendOutput(BaseLib.tostring(o, thread)+"\n");
+                            terminal.appendOutput(KahluaUtil.tostring(o, thread)+"\n");
                         }
                     } else {
                         terminal.appendError(result.getErrorString()+"\n");

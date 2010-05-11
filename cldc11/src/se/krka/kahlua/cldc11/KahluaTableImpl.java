@@ -22,7 +22,6 @@ THE SOFTWARE.
  */
 package se.krka.kahlua.cldc11;
 
-import se.krka.kahlua.stdlib.TableLib;
 import se.krka.kahlua.vm.*;
 
 import java.util.Enumeration;
@@ -62,7 +61,7 @@ public final class KahluaTableImpl implements KahluaTable {
     }
 
     public int len() {
-        return TableLib.len(this, 0, delegate.size());
+        return KahluaUtil.len(this, 0, delegate.size());
     }
 
     public KahluaTableIterator iterator() {

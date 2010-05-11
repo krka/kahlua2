@@ -21,8 +21,6 @@
  */
 package se.krka.kahlua.vm;
 
-import se.krka.kahlua.stdlib.*;
-
 import java.io.PrintStream;
 
 public class KahluaThread {
@@ -313,8 +311,8 @@ public class KahluaThread {
 
 					Double bd = null, cd = null;
 					Object res = null;
-					if ((bd = BaseLib.rawTonumber(bo)) == null
-							|| (cd = BaseLib.rawTonumber(co)) == null) {
+					if ((bd = KahluaUtil.rawTonumber(bo)) == null
+							|| (cd = KahluaUtil.rawTonumber(co)) == null) {
 						String meta_op = meta_ops[opcode];
 
 						Object metafun = getBinMetaOp(bo, co, meta_op);
@@ -333,7 +331,7 @@ public class KahluaThread {
 					b = getB9(op);
 					Object aObj = callFrame.get(b);
 
-					Double aDouble = BaseLib.rawTonumber(aObj);
+					Double aDouble = KahluaUtil.rawTonumber(aObj);
 					Object res;
 					if (aDouble != null) {
 						res = KahluaUtil.toDouble(-KahluaUtil.fromDouble(aDouble));
@@ -385,7 +383,7 @@ public class KahluaThread {
 					while (first <= last) {
 						// Optimize for multi string concats
 						{
-							String resStr = BaseLib.rawTostring(res);
+							String resStr = KahluaUtil.rawTostring(res);
 							if (resStr != null) {
 
 								int nStrings = 0;
@@ -393,7 +391,7 @@ public class KahluaThread {
 								while (first <= pos) {
 									Object o = callFrame.get(pos);
 									pos--;
-									if (BaseLib.rawTostring(o) == null) {
+									if (KahluaUtil.rawTostring(o) == null) {
 										break;
 									}
 									nStrings++;
@@ -403,7 +401,7 @@ public class KahluaThread {
 
 									int firstString = last - nStrings + 1;
 									while (firstString <= last) {
-										concatBuffer.append(BaseLib
+										concatBuffer.append(KahluaUtil
 												.rawTostring(callFrame
 														.get(firstString)));
 										firstString++;
@@ -736,7 +734,7 @@ public class KahluaThread {
 								&& currentCoroutine.callFrameTop == 1) {
 							callFrame.localBase = callFrame.returnBase;
 							Coroutine coroutine = currentCoroutine;
-							CoroutineLib.yieldHelper(callFrame, callFrame, b);
+							yieldHelper(callFrame, callFrame, b);
 							coroutine.popCallFrame();
 
 							// If this coroutine is called from a java function,
@@ -1239,5 +1237,24 @@ public class KahluaThread {
 
     public Platform getPlatform() {
         return platform;
+    }
+
+    public static void yieldHelper(LuaCallFrame callFrame, LuaCallFrame argsCallFrame, int nArguments) {
+        KahluaUtil.luaAssert(callFrame.canYield, "Can not yield outside of a coroutine");
+
+        Coroutine t = callFrame.coroutine;
+        Coroutine parent = t.parent;
+        t.parent = null;
+
+        LuaCallFrame nextCallFrame = parent.currentCallFrame();
+
+        // Copy arguments
+        nextCallFrame.push(Boolean.TRUE);
+        for (int i = 0; i < nArguments; i++) {
+            Object value = argsCallFrame.get(i);
+            nextCallFrame.push(value);
+        }
+
+        t.thread.currentCoroutine = parent;
     }
 }

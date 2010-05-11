@@ -1,6 +1,5 @@
 package se.krka.kahlua.j2se;
 
-import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.*;
 
 public class MathLib implements JavaFunction {
@@ -120,7 +119,7 @@ public class MathLib implements JavaFunction {
 	}
 
     private static double getDoubleArg(LuaCallFrame callFrame, int argc, String funcname) {
-		return ((Double) BaseLib.getArg(callFrame, argc, BaseLib.TYPE_NUMBER, funcname)).doubleValue();
+		return ((Double) KahluaUtil.getArg(callFrame, argc, KahluaUtil.TYPE_NUMBER, funcname)).doubleValue();
 	}
 
 	// Generic math functions

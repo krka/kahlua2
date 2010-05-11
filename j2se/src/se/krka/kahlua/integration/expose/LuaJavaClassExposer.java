@@ -29,7 +29,6 @@ import se.krka.kahlua.integration.annotations.LuaMethod;
 import se.krka.kahlua.integration.expose.caller.ConstructorCaller;
 import se.krka.kahlua.integration.expose.caller.MethodCaller;
 import se.krka.kahlua.integration.processor.ClassParameterInformation;
-import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.vm.KahluaTable;
 import se.krka.kahlua.vm.KahluaUtil;
 import se.krka.kahlua.vm.Platform;
@@ -390,7 +389,7 @@ public class LuaJavaClassExposer {
             }
             return builder.toString();
         } else {
-            return BaseLib.tostring(obj, KahluaUtil.getWorkerThread(platform, environment));
+            return KahluaUtil.tostring(obj, KahluaUtil.getWorkerThread(platform, environment));
         }
     }
 

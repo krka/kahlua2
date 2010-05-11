@@ -22,12 +22,10 @@
 
 package se.krka.kahlua.j2se;
 
-import se.krka.kahlua.stdlib.TableLib;
 import se.krka.kahlua.vm.*;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class KahluaTableImpl implements KahluaTable {
     private final Map<Object, Object> delegate;
@@ -76,7 +74,7 @@ public class KahluaTableImpl implements KahluaTable {
 
     @Override
     public int len() {
-        return TableLib.len(this, 0, delegate.size());
+        return KahluaUtil.len(this, 0, delegate.size());
     }
 
     @Override
