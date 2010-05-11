@@ -117,7 +117,10 @@
 				</section>
 			</manifest>
 			
-			<zipfileset src="${kahlua-core.jar}" excludes="META-INF/*" />
+			<zipfileset src="${kahlua-core.jar}">
+				<exclude name="META-INF/*" />
+				<exclude name="stdlib.lbc" />
+			</zipfileset>
 			<zipfileset src="${kahlua-cldc11.jar}" excludes="META-INF/*" />
 		</jar>
 	</target>
