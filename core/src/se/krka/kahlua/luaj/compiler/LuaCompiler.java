@@ -84,7 +84,7 @@ public class LuaCompiler implements JavaFunction {
 			InputStream is = (InputStream) callFrame.get(0);
 			KahluaUtil.luaAssert(is != null, "No inputstream given");
 			String name = (String) callFrame.get(1);
-			return callFrame.push(loadis(is, name, callFrame.getEnvironment()));
+			return callFrame.push(loadis(is, name, null, callFrame.getEnvironment()));
 		} catch (RuntimeException e) {
 			return callFrame.push(null, e.getMessage());
 		} catch (IOException e) {
@@ -97,10 +97,10 @@ public class LuaCompiler implements JavaFunction {
 			KahluaUtil.luaAssert(nArguments >= 1, "not enough arguments");
 			String source = (String) callFrame.get(0);
 			KahluaUtil.luaAssert(source != null, "No source given");
-			String name = (String) callFrame.get(1);
-			if (name == null) {
-				name = "<stdin>";
-			}
+			String name = null;
+            if (nArguments >= 2) {
+                name = (String) callFrame.get(1);
+            }
 			return callFrame.push(loadstring(source, name, callFrame.getEnvironment()));
 		} catch (RuntimeException e) {
 			return callFrame.push(null, e.getMessage());
@@ -109,17 +109,24 @@ public class LuaCompiler implements JavaFunction {
 		}
 	}
 
-	public static LuaClosure loadis(InputStream inputStream, String name, KahluaTable environment) throws IOException {
-		return loadis(new InputStreamReader(inputStream), name, environment);
+    public static LuaClosure loadis(InputStream inputStream, String name, KahluaTable environment) throws IOException {
+        return loadis(inputStream, name, null, environment);
+    }
+
+	public static LuaClosure loadis(InputStream inputStream, String name, String source, KahluaTable environment) throws IOException {
+		return loadis(new InputStreamReader(inputStream), name, source, environment);
 	}
 	
-	public static LuaClosure loadis(Reader reader, String name, KahluaTable environment) throws IOException {
-		KahluaUtil.luaAssert(name != null, "no name given the compilation unit");
-		return new LuaClosure(LexState.compile(reader.read(), reader, name), environment);		
+    public static LuaClosure loadis(Reader reader, String name, KahluaTable environment) throws IOException {
+        return loadis(reader, name, null, environment);
+    }
+
+	public static LuaClosure loadis(Reader reader, String name, String source, KahluaTable environment) throws IOException {
+		return new LuaClosure(LexState.compile(reader.read(), reader, name, source), environment);
 	}
 	
 	public static LuaClosure loadstring(String source, String name, KahluaTable environment) throws IOException {
-		return loadis(new ByteArrayInputStream(source.getBytes("UTF-8")), name, environment);
-	}
+        return loadis(new ByteArrayInputStream(source.getBytes("UTF-8")), name, source, environment);
+    }
 }
 

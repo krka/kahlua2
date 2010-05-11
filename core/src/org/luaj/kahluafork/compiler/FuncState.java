@@ -61,7 +61,29 @@ public class FuncState {
 	
 	short actvar[] = new short[LUAI_MAXVARS];  /* declared-variable stack */
 	
-	FuncState() {
+	FuncState(LexState lexState) {
+        Prototype f = new Prototype();
+        if ( lexState.fs!=null )
+            f.name = lexState.fs.f.name;
+        this.f = f;
+
+        this.prev = lexState.fs;  /* linked list of funcstates */
+        this.ls = lexState;
+        lexState.fs = this;
+
+        this.pc = 0;
+        this.lasttarget = -1;
+        this.jpc = LexState.NO_JUMP;
+        this.freereg = 0;
+        this.nk = 0;
+        this.np = 0;
+        this.nlocvars = 0;
+        this.nactvar = 0;
+        this.bl = null;
+        f.maxStacksize = 2;  /* registers 0/1 are always valid */
+        //fs.h = new LTable();
+        this.htable = new Hashtable();
+
 	}
 	
 	

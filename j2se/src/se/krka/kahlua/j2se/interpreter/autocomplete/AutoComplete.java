@@ -268,7 +268,7 @@ public class AutoComplete {
     void showDefinition() {
         String def = getCurrentlySelectedWord().replace(':', '.');
         try {
-            LuaClosure closure = LuaCompiler.loadstring("return definition(" + def + ")", "tmp", env);
+            LuaClosure closure = LuaCompiler.loadstring("return definition(" + def + ")", "def", env);
             Object[] objects = thread.pcall(closure);
             if (objects[0] == Boolean.TRUE && objects.length >= 2 && objects[1] != null && objects[1] instanceof String) {
                 showDefinition((String) objects[1]);

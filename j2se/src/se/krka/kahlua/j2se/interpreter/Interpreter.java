@@ -194,10 +194,10 @@ public class Interpreter extends JPanel {
     private LuaClosure smartCompile(String text) throws IOException {
         LuaClosure luaClosure;
         try {
-            luaClosure = LuaCompiler.loadstring("return " + text, "<interpreter>", thread.getEnvironment());
+            luaClosure = LuaCompiler.loadstring("return " + text, "interpreter", thread.getEnvironment());
         } catch (KahluaException e) {
             // Ignore it and try without "return "
-            luaClosure = LuaCompiler.loadstring(text, "<interpreter>", thread.getEnvironment());
+            luaClosure = LuaCompiler.loadstring(text, "interpreter", thread.getEnvironment());
         }
         return luaClosure;
     }

@@ -172,28 +172,41 @@ public class LexState {
 		return (c <= ' ');
 	}
 	
-	public static Prototype compile(int firstByte, Reader z, String name) {
-		LexState lexstate = new LexState(z);
-		FuncState funcstate = new FuncState();
-		// lexstate.buff = buff;
-		lexstate.setinput(firstByte, z, name);
-		lexstate.open_func(funcstate);
-		/* main func. is always vararg */
-		funcstate.isVararg = FuncState.VARARG_ISVARARG;
-		funcstate.f.name = "@"+name;
-		lexstate.next(); /* read first token */
-		lexstate.chunk();
-		lexstate.check(LexState.TK_EOS);
-		lexstate.close_func();
-		FuncState._assert (funcstate.prev == null);
-		FuncState._assert (funcstate.f.numUpvalues == 0);
-		FuncState._assert (lexstate.fs == null);
-		return funcstate.f;
-	}
+	public static Prototype compile(int firstByte, Reader z, String name, String source) {
+        if (name != null) {
+            source = name;
+        } else {
+            name = "stdin";
+            source = "[string \"" + trim(source, MAXSRC) + "\"]";
+        }
+        LexState lexstate = new LexState(z, firstByte, source);
+        FuncState funcstate = new FuncState(lexstate);
+        // lexstate.buff = buff;
+
+        /* main func. is always vararg */
+        funcstate.isVararg = FuncState.VARARG_ISVARARG;
+        funcstate.f.name = name;
+        lexstate.next(); /* read first token */
+        lexstate.chunk();
+        lexstate.check(LexState.TK_EOS);
+        lexstate.close_func();
+        FuncState._assert(funcstate.prev == null);
+        FuncState._assert(funcstate.f.numUpvalues == 0);
+        FuncState._assert(lexstate.fs == null);
+        return funcstate.f;
+    }
 	
-	public LexState(Reader stream) {
+	public LexState(Reader stream, int firstByte, String source) {
 		this.z = stream;
 		this.buff = new byte[32];
+        this.lookahead.token = TK_EOS; /* no look-ahead token */
+        this.fs = null;
+        this.linenumber = 1;
+        this.lastline = 1;
+        this.source = source;
+        this.nbuff = 0;   /* initialize buffer */
+        this.current = firstByte; /* read first char */
+        this.skipShebang();
 	}
 
 	void nextChar() {
@@ -247,7 +260,7 @@ public class LexState {
 	}
 
 	void lexerror( String msg, int token ) {
-		String cid = chunkid( source.toString() ); // TODO: get source name from source
+		String cid = source;
 		String errorMessage;
 		if ( token != 0 ) {
 			errorMessage = cid+":"+linenumber+": "+msg+" near `"+txtToken(token) + "`";
@@ -257,21 +270,12 @@ public class LexState {
 		throw new KahluaException(errorMessage);
 	}
 
-	String chunkid( String source ) {
-		 if ( source.startsWith("=") )
-			 return source.substring(1);
-		 String end = "";
-		 if ( source.startsWith("@") ) {
-			 source = source.substring(1);
-		 } else {
-			 source = "[string \""+source;
-			 end = "\"]";
-		 }
-		 int n = source.length() + end.length(); 
-		 if ( n > MAXSRC )
-			 source = source.substring(0,MAXSRC-end.length()-3) + "...";
-		 return source + end;
-	}
+    private static String trim(String s, int max) {
+        if (s.length() > max) {
+            return s.substring(0, max - 3) + "...";
+        }
+        return s;
+    }
 
 	void syntaxerror( String msg ) {
 		lexerror( msg, t.token );
@@ -296,18 +300,6 @@ public class LexState {
 			syntaxerror("chunk has too many lines");
 	}
 
-	void setinput(int firstByte, Reader z, String source ) {
-		this.lookahead.token = TK_EOS; /* no look-ahead token */
-		this.z = z;
-		this.fs = null;
-		this.linenumber = 1;
-		this.lastline = 1;
-		this.source = source;
-		this.nbuff = 0;   /* initialize buffer */
-		this.current = firstByte; /* read first char */
-		this.skipShebang();
-	}
-	
 	private void skipShebang() {
 		if ( current == '#' )
 			while (!currIsNewline() && current != EOZ)
@@ -824,28 +816,6 @@ public class LexState {
 		}
 	}
 	
-	void open_func (FuncState fs) {
-		  Prototype f = new Prototype();
-		  if ( this.fs!=null )
-			  f.name = this.fs.f.name;
-		  fs.f = f;
-		  fs.prev = this.fs;  /* linked list of funcstates */
-		  fs.ls = this;
-		  this.fs = fs;
-		  fs.pc = 0;
-		  fs.lasttarget = -1;
-		  fs.jpc = NO_JUMP;
-		  fs.freereg = 0;
-		  fs.nk = 0;
-		  fs.np = 0;
-		  fs.nlocvars = 0;
-		  fs.nactvar = 0;
-		  fs.bl = null;
-		  f.maxStacksize = 2;  /* registers 0/1 are always valid */
-		  //fs.h = new LTable();
-		  fs.htable = new Hashtable();
-	}
-
 	void close_func() {
 		FuncState fs = this.fs;
 		Prototype f = fs.f;
@@ -1021,8 +991,7 @@ public class LexState {
 
 	void body(ExpDesc e, boolean needself, int line) {
 		/* body -> `(' parlist `)' chunk END */
-		FuncState new_fs = new FuncState();
-		open_func(new_fs);
+		FuncState new_fs = new FuncState(this);
 		new_fs.linedefined = line;
 		this.checknext('(');
 		if (needself) {
