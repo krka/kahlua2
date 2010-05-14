@@ -1,10 +1,10 @@
 <component name="libraryTable">
   <library name="midlet">
     <CLASSES>
-      <root url="file://$PROJECT_DIR$/contrib/midlet/lib" />
+      <root url="file://$PROJECT_DIR$/contrib/j2me-lib" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
-    <jarDirectory url="file://$PROJECT_DIR$/contrib/midlet/lib" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/contrib/j2me-lib" recursive="false" />
   </library>
 </component>
