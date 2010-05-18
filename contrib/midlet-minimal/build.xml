@@ -125,10 +125,9 @@
 		</jar>
 	</target>
 
-	<target name="build" depends="clean, compile, compile-lua, package, perform-obfuscation" description="Compiles a version of the game" >
-        <property name="wtk.cldc.version" value="1.1" />
-        <property name="wtk.midp.version" value="2.0" />
-
+	<property name="wtk.cldc.version" value="1.1" />
+	<property name="wtk.midp.version" value="2.0" />
+	<target name="preverify" unless="do.obfuscate">
 		<exec executable="${wtk.home}/bin/preverify">
 			<arg line="-classpath" />
 			<arg line="${wtk.home}/lib/cldcapi11.jar:${wtk.home}/lib/midpapi20.jar" />
@@ -138,8 +137,9 @@
 		</exec>
 		<move file="${baseDir}/output/minimal.jar" tofile="${baseDir}/build/minimal.jar" />
 		<delete dir="${baseDir}/output" failonerror="false"/>
-		
-		
+	</target>
+
+	<target name="jad">
 		<wtkjad
 		        jadfile="${baseDir}/build/minimal.jad"
 		        jarfile="${baseDir}/build/minimal.jar"
@@ -148,6 +148,10 @@
 				version="1.0.0">
 		        <midlet name="minimal" class="${midlet.mainclass}" />
 		</wtkjad>
+	</target>
+		
+	<target name="build" depends="clean, compile, compile-lua, package, perform-obfuscation, preverify, jad" description="Compiles a version of the game" >
+		
 	</target>
 
 	<target name="with-obfuscation">
@@ -171,16 +175,39 @@
 			-overloadaggressively
 			-repackageclasses ''
 			-allowaccessmodification
-			-dontusemixedcaseclassnames            
+			-microedition
+			-printseeds
+			-verbose
+			-mergeinterfacesaggressively
+			-dontusemixedcaseclassnames
+			-optimizationpasses 2
+			
 			-printmapping obfuscation-map.txt
 			-keep public class * extends javax.microedition.midlet.MIDlet
-			-dontoptimize
-	  
+		</proguard>
+		<proguard>
+		  -libraryjars ${wtk.home}/lib/midpapi20.jar
+		  -libraryjars ${wtk.home}/lib/cldcapi11.jar
+		  -injars      ${midlet.jar.name.jar}.obfuscated.jar
+		  -outjars     ${midlet.jar.name.jar}.obfuscated2.jar
+
+			-overloadaggressively
+			-repackageclasses ''
+			-allowaccessmodification
+			-microedition
+			-printseeds
+			-verbose
+			-mergeinterfacesaggressively
+			-dontusemixedcaseclassnames
+			-optimizationpasses 2
+			
+			-printmapping obfuscation-map2.txt
+			-keep public class * extends javax.microedition.midlet.MIDlet
 		</proguard>
 
 		<mkdir dir="${baseDir}/build/unobfuscated/" />
 		<move toFile="${baseDir}/build/unobfuscated/${midlet.jar.name}.jar" file="${midlet.jar.name.jar}" />
-		<move toFile="${midlet.jar.name.jar}" file="${midlet.jar.name.jar}.obfuscated.jar" />
+		<move toFile="${midlet.jar.name.jar}" file="${midlet.jar.name.jar}.obfuscated2.jar" />
 	</target>
 
 	<target name="run" description="Run in emulator">
