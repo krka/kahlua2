@@ -322,7 +322,7 @@ public class LexState {
 		return true;
 	}
 
-	boolean str2d(String str, Token token) {
+	void str2d(String str, Token token) {
         try {
             double d;
             if (str.startsWith("0x")) {
@@ -331,9 +331,8 @@ public class LexState {
                 d = Double.parseDouble(str);
             }
             token.r = d;
-            return true;
         } catch (NumberFormatException e) {
-            throw new KahluaException(e);
+			lexerror("malformed number", TK_NUMBER);
         }
     }
 
