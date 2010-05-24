@@ -7,6 +7,11 @@ import se.krka.kahlua.stdlib.TableLib;
 import se.krka.kahlua.vm.*;
 
 public class CLDC11Platform implements Platform {
+	private static CLDC11Platform INSTANCE = new CLDC11Platform();
+	public static CLDC11Platform getInstance() {
+		return INSTANCE;
+	}
+
     public double pow(double x, double y) {
         return MathLib.pow(x, y);
     }

@@ -15,6 +15,11 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class J2SEPlatform implements Platform {
+	private static J2SEPlatform INSTANCE = new J2SEPlatform();
+	public static J2SEPlatform getInstance() {
+		return INSTANCE;
+	}
+	
     @Override
     public double pow(double x, double y) {
         return Math.pow(x, y);
