@@ -23,16 +23,13 @@
 package se.krka.kahlua.integration.expose;
 
 import se.krka.kahlua.converter.KahluaConverterManager;
-import se.krka.kahlua.converter.KahluaInheritanceExposer;
 import se.krka.kahlua.integration.annotations.Desc;
 import se.krka.kahlua.integration.annotations.LuaConstructor;
 import se.krka.kahlua.integration.annotations.LuaMethod;
 import se.krka.kahlua.integration.expose.caller.ConstructorCaller;
 import se.krka.kahlua.integration.expose.caller.MethodCaller;
 import se.krka.kahlua.integration.processor.ClassParameterInformation;
-import se.krka.kahlua.vm.KahluaTable;
-import se.krka.kahlua.vm.KahluaUtil;
-import se.krka.kahlua.vm.Platform;
+import se.krka.kahlua.vm.*;
 
 import java.lang.reflect.*;
 import java.util.HashMap;
@@ -60,7 +57,30 @@ public class LuaJavaClassExposer {
         this.platform = platform;
         this.environment = environment;
         classMetatables = KahluaUtil.getClassMetatables(platform, environment);
-		KahluaInheritanceExposer.install(manager, this);
+
+		if (classMetatables.getMetatable() == null) {
+			KahluaTable mt = platform.newTable();
+			mt.rawset("__index", new JavaFunction() {
+				@Override
+				public int call(LuaCallFrame callFrame, int nArguments) {
+					Object t = callFrame.get(0);
+					Object key = callFrame.get(1);
+					if (t != classMetatables) {
+						throw new IllegalArgumentException("Expected classmetatables as the first argument to __index");
+					}
+					if (key == null || !(key instanceof Class)) {
+						throw new IllegalArgumentException("key must be a class");
+					}
+					Class clazz = (Class) key;
+					if (!isExposed(clazz) && shouldExpose(clazz)) {
+						exposeClass(clazz);
+						return callFrame.push(classMetatables.rawget(clazz));
+					}
+					throw new IllegalArgumentException(key + " has not been exposed.");
+				}
+			});
+			classMetatables.setMetatable(mt);
+		}
     }
 
     public Map<Class<?>, ClassDebugInformation> getClassDebugInformation() {

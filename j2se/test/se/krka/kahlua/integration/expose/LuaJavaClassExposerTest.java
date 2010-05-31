@@ -24,7 +24,6 @@ package se.krka.kahlua.integration.expose;
 
 import org.junit.Test;
 import se.krka.kahlua.converter.KahluaConverterManager;
-import se.krka.kahlua.converter.KahluaInheritanceExposer;
 import se.krka.kahlua.integration.LuaCaller;
 import se.krka.kahlua.integration.LuaReturn;
 import se.krka.kahlua.integration.annotations.LuaMethod;
@@ -52,6 +51,24 @@ public class LuaJavaClassExposerTest {
 		LuaReturn res = caller.protectedCall(t, closure, new MyClass());
 		assertEquals(true, res.isSuccess());
 		assertEquals("Hello world", res.get(0));
+
+
+	}
+
+	@Test
+	public void testInherited2() throws IOException {
+		Platform platform = J2SEPlatform.getInstance();
+		KahluaTable env = platform.newEnvironment();
+		KahluaConverterManager manager = new KahluaConverterManager();
+
+		LuaJavaClassExposer exposer = new LuaJavaClassExposer(manager, platform, env);
+		exposer.exposeClass(MyInterface.class);
+
+		env.rawset("obj", new MyClass());
+		LuaClosure closure = LuaCompiler.loadstring("return obj:foo()", null, env);
+		KahluaThread t = KahluaUtil.getWorkerThread(platform, env);
+		Object res = t.call(closure, null);
+		assertEquals("Hello world", res);
 
 	}
 

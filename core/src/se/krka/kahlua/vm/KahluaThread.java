@@ -1146,11 +1146,9 @@ public class KahluaThread {
 		if (o instanceof KahluaTable) {
 			KahluaTable t = (KahluaTable) o;
 			metatable = t.getMetatable();
-		}
-
-        if (metatable == null) {
+		} else if (metatable == null) {
             KahluaTable metatables = KahluaUtil.getClassMetatables(platform, getEnvironment());
-            metatable = (KahluaTable) metatables.rawget(o.getClass());
+			metatable = (KahluaTable) tableGet(metatables, o.getClass());
         }
 
 		if (!raw && metatable != null) {
