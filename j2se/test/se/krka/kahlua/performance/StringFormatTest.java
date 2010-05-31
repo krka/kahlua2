@@ -22,6 +22,7 @@
 
 package se.krka.kahlua.performance;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import se.krka.kahlua.j2se.J2SEPlatform;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
@@ -75,6 +76,7 @@ public class StringFormatTest {
 	}
 
 	@Test
+	@Ignore
 	public void testFormat() throws IOException {
 		String format = "Hello %3.2f world %13.2f";
 		Double x = 123.0;

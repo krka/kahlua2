@@ -117,7 +117,7 @@ public class AnnotationTest {
 			thread.call(closure, null);
 			fail();
 		} catch (Exception e) {
-            assertEquals("Expected 2 arguments but got 1. Correct syntax: void obj:inheritedMethodWithArgs(java.lang.String arg1, int arg2)", e.getMessage());
+            assertEquals("Expected 2 arguments but got 1. Correct syntax: void obj:inheritedMethodWithArgs(String arg1, int arg2)\n", e.getMessage());
 		}
 	}
 
@@ -133,7 +133,7 @@ public class AnnotationTest {
 			thread.call(closure, null);
 			fail();
 		} catch (Exception e) {
-			assertEquals(e.getMessage(), "Expected 4 arguments but got 1. Correct syntax: void myGlobalFunction(java.lang.String arg1, double arg2, boolean arg3, int arg4)");
+			assertEquals("Expected 4 arguments but got 1. Correct syntax: void myGlobalFunction(String arg1, double arg2, boolean arg3, int arg4)\n", e.getMessage());
 		}
 	}
 
@@ -266,7 +266,8 @@ public class AnnotationTest {
 			thread.call(closure, null);
 			fail();
 		} catch (Exception e) {
-			assertEquals("Expected 1 arguments but got 0. Correct syntax: java.lang.String obj:withVarargs(java.lang.String arg1, java.lang.String[] arg2)", e.getMessage());
+			assertEquals("Expected 1 arguments but got 0. Correct syntax: String obj:withVarargs(String arg1, String[] arg2)\n" +
+					"Method with varargs\n", e.getMessage());
 		}
 	}
 

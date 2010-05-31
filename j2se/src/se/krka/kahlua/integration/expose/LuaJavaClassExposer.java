@@ -23,6 +23,7 @@
 package se.krka.kahlua.integration.expose;
 
 import se.krka.kahlua.converter.KahluaConverterManager;
+import se.krka.kahlua.converter.KahluaInheritanceExposer;
 import se.krka.kahlua.integration.annotations.Desc;
 import se.krka.kahlua.integration.annotations.LuaConstructor;
 import se.krka.kahlua.integration.annotations.LuaMethod;
@@ -52,12 +53,14 @@ public class LuaJavaClassExposer {
     private final KahluaTable environment;
     private final KahluaTable classMetatables;
     private final Set<Type> visitedTypes = new HashSet<Type>();
+	private Map<Class<?>, Boolean> shouldExposeCache = new HashMap<Class<?>, Boolean>();
 
     public LuaJavaClassExposer(KahluaConverterManager manager, Platform platform, KahluaTable environment) {
         this.manager = manager;
         this.platform = platform;
         this.environment = environment;
         classMetatables = KahluaUtil.getClassMetatables(platform, environment);
+		KahluaInheritanceExposer.install(manager, this);
     }
 
     public Map<Class<?>, ClassDebugInformation> getClassDebugInformation() {
@@ -71,6 +74,7 @@ public class LuaJavaClassExposer {
 
     public void exposeClass(Class<?> clazz) {
         if (clazz != null && !isExposed(clazz)) {
+			shouldExposeCache.clear();
             readDebugData(clazz);
             setupMetaTables(clazz);
 
@@ -215,6 +219,32 @@ public class LuaJavaClassExposer {
             indexTable.rawset(methodName, invoker);
         }
     }
+
+	public boolean shouldExpose(Class<?> clazz) {
+		if (clazz == null) {
+			return false;
+		}
+		Boolean bool = shouldExposeCache.get(clazz);
+		if (bool != null) {
+			return bool.booleanValue();
+		}
+		if (isExposed(clazz)) {
+			shouldExposeCache.put(clazz, Boolean.TRUE);
+			return true;
+		}
+		if (shouldExpose(clazz.getSuperclass())) {
+			shouldExposeCache.put(clazz, Boolean.TRUE);
+			return true;
+		}
+		for (Class<?> sub : clazz.getInterfaces()) {
+			if (shouldExpose(sub)) {
+				shouldExposeCache.put(clazz, Boolean.TRUE);
+				return true;
+			}
+		}
+		shouldExposeCache.put(clazz, Boolean.FALSE);
+		return false;
+	}
 
     private void setupMetaTables(Class<?> clazz) {
         Class<?> superClazz = clazz.getSuperclass();
