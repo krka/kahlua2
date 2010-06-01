@@ -117,11 +117,11 @@ public class RequireTest {
         LuaClosure luaClosure = LuaCompiler.loadstring("require('/a')", "foo", state.getEnvironment());
         Object[] objects = state.pcall(luaClosure);
         assertEquals(Boolean.FALSE, objects[0]);
-        assertEquals("Error in: /a: Error in: /b: [string \"/b\"]:1: '=' expected near `your`", objects[1]);
+        assertEquals("Error in: /a: Error in: /b: /b:1: '=' expected near `your`", objects[1]);
 
         objects = state.pcall(luaClosure);
         assertEquals(Boolean.FALSE, objects[0]);
-        assertEquals("Error in: /a: Error in: /b: [string \"/b\"]:1: '=' expected near `your`", objects[1]);
+        assertEquals("Error in: /a: Error in: /b: /b:1: '=' expected near `your`", objects[1]);
 
     }
 

@@ -32,11 +32,11 @@ public class InteractiveShell {
         KahluaNumberConverter.install(manager);
         KahluaEnumConverter.install(manager);
         new KahluaTableConverter(platform).install(manager);
-        LuaJavaClassExposer exposer = new LuaJavaClassExposer(manager, platform, env);
 
-        KahluaTable staticBase = platform.newTable();
-        env.rawset("Java", staticBase);
-        new ExposeConverter(exposer, staticBase).install(manager);
+		KahluaTable staticBase = platform.newTable();
+		env.rawset("Java", staticBase);
+
+        LuaJavaClassExposer exposer = new LuaJavaClassExposer(manager, platform, env, staticBase);
 
         exposer.exposeGlobalFunctions(exposer);
         exposer.exposeLikeJavaRecursively(Object.class, staticBase);

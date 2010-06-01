@@ -56,15 +56,11 @@ public class Interpreter extends JPanel {
 
     final KahluaConverterManager manager = new KahluaConverterManager();
     final LuaCaller caller = new LuaCaller(manager);
-    final LuaJavaClassExposer exposer;
 
     public Interpreter(Platform platform, KahluaTable env) {
         super(new BorderLayout());
 
         JSyntaxUtil.setup();
-
-        exposer = new LuaJavaClassExposer(manager, platform, env);
-        exposer.exposeGlobalFunctions(this);
 
         final InputTerminal input = new InputTerminal(Color.BLACK);
 

@@ -1,5 +1,6 @@
 package se.krka.kahlua.profiler;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import se.krka.kahlua.j2se.J2SEPlatform;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
@@ -13,6 +14,7 @@ import java.io.PrintWriter;
 
 public class ProfilerTest {
 	@Test
+	@Ignore
 	public void simpleTest() throws IOException {
         Platform platform = new J2SEPlatform();
         KahluaTable env = platform.newEnvironment();

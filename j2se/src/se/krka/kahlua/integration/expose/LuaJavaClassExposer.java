@@ -50,13 +50,19 @@ public class LuaJavaClassExposer {
     private final KahluaTable environment;
     private final KahluaTable classMetatables;
     private final Set<Type> visitedTypes = new HashSet<Type>();
-	private Map<Class<?>, Boolean> shouldExposeCache = new HashMap<Class<?>, Boolean>();
+	private final KahluaTable autoExposeBase;
+	private final Map<Class<?>, Boolean> shouldExposeCache = new HashMap<Class<?>, Boolean>();
 
-    public LuaJavaClassExposer(KahluaConverterManager manager, Platform platform, KahluaTable environment) {
+	public LuaJavaClassExposer(KahluaConverterManager manager, Platform platform, KahluaTable environment) {
+		this(manager, platform, environment, null);
+	}
+
+	public LuaJavaClassExposer(KahluaConverterManager manager, Platform platform, KahluaTable environment, KahluaTable autoExposeBase) {
         this.manager = manager;
         this.platform = platform;
         this.environment = environment;
-        classMetatables = KahluaUtil.getClassMetatables(platform, environment);
+		this.autoExposeBase = autoExposeBase;
+		classMetatables = KahluaUtil.getClassMetatables(platform, environment);
 
 		if (classMetatables.getMetatable() == null) {
 			KahluaTable mt = platform.newTable();
@@ -83,7 +89,7 @@ public class LuaJavaClassExposer {
 		}
     }
 
-    public Map<Class<?>, ClassDebugInformation> getClassDebugInformation() {
+	public Map<Class<?>, ClassDebugInformation> getClassDebugInformation() {
         Object classMap = environment.rawget(DEBUGINFO_KEY);
         if (classMap == null || !(classMap instanceof Map)) {
             classMap = new HashMap<Class<?>, ClassDebugInformation>();
@@ -248,6 +254,10 @@ public class LuaJavaClassExposer {
 		if (bool != null) {
 			return bool.booleanValue();
 		}
+		if (autoExposeBase != null) {
+			exposeLikeJavaRecursively(clazz, autoExposeBase);
+			return true;
+		}
 		if (isExposed(clazz)) {
 			shouldExposeCache.put(clazz, Boolean.TRUE);
 			return true;
@@ -300,6 +310,10 @@ public class LuaJavaClassExposer {
             }
         }
     }
+
+	public void exposeLikeJava(Class clazz) {
+		exposeLikeJava(clazz, autoExposeBase);
+	}
 
     public void exposeLikeJava(Class clazz, KahluaTable staticBase) {
         if (clazz == null || isExposed(clazz)) {
@@ -442,6 +456,10 @@ public class LuaJavaClassExposer {
             return KahluaUtil.tostring(obj, KahluaUtil.getWorkerThread(platform, environment));
         }
     }
+
+	public void exposeLikeJavaRecursively(Type type) {
+		exposeLikeJavaRecursively(type, autoExposeBase);
+	}
 
     public void exposeLikeJavaRecursively(Type type, KahluaTable staticBase) {
         exposeLikeJava(staticBase, visitedTypes, type);
