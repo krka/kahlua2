@@ -119,7 +119,12 @@ public class KahluaTableImpl implements KahluaTable {
 
     }
 
-    @Override
+	@Override
+	public boolean isEmpty() {
+		return delegate.isEmpty();
+	}
+
+	@Override
     public String toString() {
         return "table 0x" + System.identityHashCode(this);
     }

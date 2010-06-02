@@ -35,4 +35,6 @@ public interface KahluaTable {
 	int len();
 
     KahluaTableIterator iterator();
+
+	boolean isEmpty();
 }

@@ -31,7 +31,8 @@ public final class TableLib implements JavaFunction {
 	private static final int REMOVE = 2;
 	private static final int NEWARRAY = 3;
     private static final int PAIRS = 4;
-	private static final int NUM_FUNCTIONS = 5;
+	private static final int ISEMPTY = 5;
+	private static final int NUM_FUNCTIONS = 6;
 
 	private static final String[] names;
 	private static final TableLib[] functions;
@@ -42,7 +43,8 @@ public final class TableLib implements JavaFunction {
 		names[INSERT] = "insert";
 		names[REMOVE] = "remove";
 		names[NEWARRAY] = "newarray";
-        names[PAIRS] = "pairs";
+		names[PAIRS] = "pairs";
+        names[ISEMPTY] = "isempty";
 		functions = new TableLib[NUM_FUNCTIONS];
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
 			functions[i] = new TableLib(i);
@@ -83,12 +85,19 @@ public final class TableLib implements JavaFunction {
 				return newarray(callFrame, nArguments);
             case PAIRS:
                 return pairs(callFrame, nArguments);
+			case ISEMPTY:
+				return isempty(callFrame, nArguments);
 			default:
 				return 0;
 		}
 	}
 
-    private int pairs(LuaCallFrame callFrame, int nArguments) {
+	private int isempty(LuaCallFrame callFrame, int nArguments) {
+		KahluaTable table = getTable(callFrame, nArguments);
+		return callFrame.push(KahluaUtil.toBoolean(table.isEmpty()));
+	}
+
+	private int pairs(LuaCallFrame callFrame, int nArguments) {
         KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
         Object o = callFrame.get(0);
         KahluaUtil.luaAssert(o instanceof KahluaTable, "Expected a table");
@@ -114,8 +123,7 @@ public final class TableLib implements JavaFunction {
 	}
 
 	private static int concat (LuaCallFrame callFrame, int nArguments) {
-		KahluaUtil.luaAssert(nArguments >= 1, "expected table, got no arguments");
-		KahluaTable table = (KahluaTable)callFrame.get(0);
+		KahluaTable table = getTable(callFrame, nArguments);
 
 		String separator = "";
 		if (nArguments >= 2) {
@@ -217,14 +225,19 @@ public final class TableLib implements JavaFunction {
 	}
 	
 	private static int remove (LuaCallFrame callFrame, int nArguments) {
-		KahluaUtil.luaAssert(nArguments >= 1, "expected table, got no arguments");
-		KahluaTable t = (KahluaTable)callFrame.get(0);
+		KahluaTable t = getTable(callFrame, nArguments);
 		int pos = t.len();
 		if (nArguments > 1) {
 			pos = KahluaUtil.rawTonumber(callFrame.get(1)).intValue();
 		}
 		callFrame.push(remove(callFrame.coroutine.thread, t, pos));
 		return 1;
+	}
+
+	private static KahluaTable getTable(LuaCallFrame callFrame, int nArguments) {
+		KahluaUtil.luaAssert(nArguments >= 1, "expected table, got no arguments");
+		KahluaTable t = (KahluaTable)callFrame.get(0);
+		return t;
 	}
 
 }

@@ -157,3 +157,10 @@ do
 	testAssert(v == 2, "returned value is "..tostring(v)..", expected is 2")
 end
 
+local t = {}
+testAssert(table.isempty(t))
+t["asd"] = true
+testAssert(not table.isempty(t))
+t["asd"] = nil
+testAssert(table.isempty(t))
+

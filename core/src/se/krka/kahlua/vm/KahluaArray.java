@@ -69,7 +69,11 @@ public class KahluaArray implements KahluaTable {
         };
     }
 
-    public Object rawget(int index) {
+	public boolean isEmpty() {
+		return len() == 0;
+	}
+
+	public Object rawget(int index) {
         if (index < 1 || index > len) {
             return null;
         }

@@ -98,7 +98,11 @@ public final class KahluaTableImpl implements KahluaTable {
         };
     }
 
-    public String toString() {
+	public boolean isEmpty() {
+		return delegate.isEmpty();
+	}
+
+	public String toString() {
         return "table 0x" + System.identityHashCode(this);
     }
     
