@@ -26,7 +26,6 @@ public class RandomLib implements JavaFunction {
         }
     }
     private static final RandomLib NEWRANDOM_FUN = new RandomLib(NEWRANDOM);
-
     private final int index;
 
     public RandomLib(int index) {
@@ -57,7 +56,8 @@ public class RandomLib implements JavaFunction {
     private int randomSeed(LuaCallFrame callFrame, int nArguments) {
         Random random = getRandom(callFrame, nArguments);
         Object o = callFrame.get(1);
-        random.setSeed(o.hashCode());
+        int hashCode = o == null ? 0 : o.hashCode();
+        random.setSeed(hashCode);
         return 0;
     }
 
