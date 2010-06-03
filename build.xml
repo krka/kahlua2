@@ -281,9 +281,11 @@
 
 	<target name="javadoc" description="Generate javadoc">
 		<javadoc 
-				sourcepath="${src.dir}"
-				destdir="${build.dir}/javadoc"
-		/>
+				destdir="${build.dir}/javadoc">
+				<fileset dir="${core.src.dir}" />
+				<fileset dir="${cldc11.src.dir}" />
+				<fileset dir="${j2se.src.dir}" />
+		</javadoc>
 	</target>
 </project>
 
