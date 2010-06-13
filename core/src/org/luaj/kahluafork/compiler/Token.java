@@ -1,5 +1,8 @@
 package org.luaj.kahluafork.compiler;
 
+/**
+ * @exclude
+ */
 public class Token {
 	int token;
 

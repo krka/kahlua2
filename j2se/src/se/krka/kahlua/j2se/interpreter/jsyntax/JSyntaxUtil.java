@@ -33,6 +33,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.Properties;
 
+/**
+ * @exclude
+ */
 public class JSyntaxUtil {
     private static boolean initialized;
 

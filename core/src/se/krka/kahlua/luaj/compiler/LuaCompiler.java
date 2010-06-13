@@ -113,20 +113,20 @@ public class LuaCompiler implements JavaFunction {
         return loadis(inputStream, name, null, environment);
     }
 
-	public static LuaClosure loadis(InputStream inputStream, String name, String source, KahluaTable environment) throws IOException {
-		return loadis(new InputStreamReader(inputStream), name, source, environment);
-	}
-	
     public static LuaClosure loadis(Reader reader, String name, KahluaTable environment) throws IOException {
         return loadis(reader, name, null, environment);
     }
 
-	public static LuaClosure loadis(Reader reader, String name, String source, KahluaTable environment) throws IOException {
-		return new LuaClosure(LexState.compile(reader.read(), reader, name, source), environment);
-	}
-	
 	public static LuaClosure loadstring(String source, String name, KahluaTable environment) throws IOException {
         return loadis(new ByteArrayInputStream(source.getBytes("UTF-8")), name, source, environment);
     }
+
+	private static LuaClosure loadis(Reader reader, String name, String source, KahluaTable environment) throws IOException {
+		return new LuaClosure(LexState.compile(reader.read(), reader, name, source), environment);
+	}
+
+	private static LuaClosure loadis(InputStream inputStream, String name, String source, KahluaTable environment) throws IOException {
+		return loadis(new InputStreamReader(inputStream), name, source, environment);
+	}
 }
 

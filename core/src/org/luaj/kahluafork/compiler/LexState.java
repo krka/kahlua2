@@ -30,6 +30,9 @@ import se.krka.kahlua.vm.KahluaException;
 import se.krka.kahlua.vm.Prototype;
 
 
+/**
+ * @exclude
+ */
 public class LexState {
 	
 	public int nCcalls;

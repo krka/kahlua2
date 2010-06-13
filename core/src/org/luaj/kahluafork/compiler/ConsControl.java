@@ -1,5 +1,8 @@
 package org.luaj.kahluafork.compiler;
 
+/**
+ * @exclude
+ */
 public class ConsControl {
 	ExpDesc v = new ExpDesc(); /* last list item read */
 	ExpDesc t; /* table descriptor */

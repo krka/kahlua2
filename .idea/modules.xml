@@ -6,6 +6,7 @@
       <module fileurl="file://$PROJECT_DIR$/core/core.iml" filepath="$PROJECT_DIR$/core/core.iml" />
       <module fileurl="file://$PROJECT_DIR$/core-dep/core-dep.iml" filepath="$PROJECT_DIR$/core-dep/core-dep.iml" />
       <module fileurl="file://$PROJECT_DIR$/j2se/j2se.iml" filepath="$PROJECT_DIR$/j2se/j2se.iml" />
+      <module fileurl="file://$PROJECT_DIR$/javadoc/javadoc.iml" filepath="$PROJECT_DIR$/javadoc/javadoc.iml" />
       <module fileurl="file://$PROJECT_DIR$/contrib/midlet/midlet.iml" filepath="$PROJECT_DIR$/contrib/midlet/midlet.iml" />
       <module fileurl="file://$PROJECT_DIR$/testsuite/testsuite.iml" filepath="$PROJECT_DIR$/testsuite/testsuite.iml" />
     </modules>

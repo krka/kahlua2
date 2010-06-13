@@ -21,6 +21,9 @@
 ******************************************************************************/
 package org.luaj.kahluafork.compiler;
 
+/**
+ * @exclude
+ */
 class InstructionPtr {
 	final int[] code;
 	final int idx;

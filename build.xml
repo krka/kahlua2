@@ -279,9 +279,22 @@
 		</emmajava>
 	</target>
 
-	<target name="javadoc" description="Generate javadoc">
+	<target name="compile-doclet">
+		<mkdir dir="${build.dir}/doclet"/>
+		<javac
+			destdir="${build.dir}/doclet"
+			debug="true"
+		>
+			<src path="javadoc/src"/>
+		</javac>
+	</target>
+	
+	<target name="javadoc" description="Generate javadoc" depends="compile-doclet">
 		<javadoc 
-				destdir="${build.dir}/javadoc">
+				doclet="ExcludeDoclet"
+				docletpath="${build.dir}/doclet"
+				destdir="${build.dir}/javadoc"
+				>
 				<fileset dir="${core.src.dir}" />
 				<fileset dir="${cldc11.src.dir}" />
 				<fileset dir="${j2se.src.dir}" />

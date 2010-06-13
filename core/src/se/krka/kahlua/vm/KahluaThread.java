@@ -24,47 +24,88 @@ package se.krka.kahlua.vm;
 import java.io.PrintStream;
 
 public class KahluaThread {
+	/** @exclude */
 	public static final int FIELDS_PER_FLUSH = 50;
+	/** @exclude */
 	public static final int OP_MOVE = 0;
+	/** @exclude */
 	public static final int OP_LOADK = 1;
+	/** @exclude */
 	public static final int OP_LOADBOOL = 2;
+	/** @exclude */
 	public static final int OP_LOADNIL = 3;
+	/** @exclude */
 	public static final int OP_GETUPVAL = 4;
+	/** @exclude */
 	public static final int OP_GETGLOBAL = 5;
+	/** @exclude */
 	public static final int OP_GETTABLE = 6;
+	/** @exclude */
 	public static final int OP_SETGLOBAL = 7;
+	/** @exclude */
 	public static final int OP_SETUPVAL = 8;
+	/** @exclude */
 	public static final int OP_SETTABLE = 9;
+	/** @exclude */
 	public static final int OP_NEWTABLE = 10;
+	/** @exclude */
 	public static final int OP_SELF = 11;
+	/** @exclude */
 	public static final int OP_ADD = 12;
+	/** @exclude */
 	public static final int OP_SUB = 13;
+	/** @exclude */
 	public static final int OP_MUL = 14;
+	/** @exclude */
 	public static final int OP_DIV = 15;
+	/** @exclude */
 	public static final int OP_MOD = 16;
+	/** @exclude */
 	public static final int OP_POW = 17;
+	/** @exclude */
 	public static final int OP_UNM = 18;
+	/** @exclude */
 	public static final int OP_NOT = 19;
+	/** @exclude */
 	public static final int OP_LEN = 20;
+	/** @exclude */
 	public static final int OP_CONCAT = 21;
+	/** @exclude */
 	public static final int OP_JMP = 22;
+	/** @exclude */
 	public static final int OP_EQ = 23;
+	/** @exclude */
 	public static final int OP_LT = 24;
+	/** @exclude */
 	public static final int OP_LE = 25;
+	/** @exclude */
 	public static final int OP_TEST = 26;
+	/** @exclude */
 	public static final int OP_TESTSET = 27;
+	/** @exclude */
 	public static final int OP_CALL = 28;
+	/** @exclude */
 	public static final int OP_TAILCALL = 29;
+	/** @exclude */
 	public static final int OP_RETURN = 30;
+	/** @exclude */
 	public static final int OP_FORLOOP = 31;
+	/** @exclude */
 	public static final int OP_FORPREP = 32;
+	/** @exclude */
 	public static final int OP_TFORLOOP = 33;
+	/** @exclude */
 	public static final int OP_SETLIST = 34;
+	/** @exclude */
 	public static final int OP_CLOSE = 35;
+	/** @exclude */
 	public static final int OP_CLOSURE = 36;
+	/** @exclude */
 	public static final int OP_VARARG = 37;
+	/** @exclude */
     private static final int MAX_INDEX_RECURSION = 100;
 
+	/** @exclude */
     private static final String meta_ops[];
     static {
         meta_ops = new String[38];
@@ -80,8 +121,11 @@ public class KahluaThread {
         meta_ops[OP_LE] = "__le";
     }
 
+	/** @exclude */
 	public Coroutine currentCoroutine;
+	/** @exclude */
     private final PrintStream out;
+	/** @exclude */
     private final Platform platform;
 
     public KahluaThread(Platform platform, KahluaTable environment) {
@@ -936,7 +980,7 @@ public class KahluaThread {
 		}
 	}
 
-	public Object getMetaOp(Object o, String meta_op) {
+	protected Object getMetaOp(Object o, String meta_op) {
 		KahluaTable meta = (KahluaTable) getmetatable(o, true);
 		if (meta == null) {
 			return null;
@@ -1237,6 +1281,9 @@ public class KahluaThread {
         return platform;
     }
 
+	/**
+	 * @exclude
+	 */
     public static void yieldHelper(LuaCallFrame callFrame, LuaCallFrame argsCallFrame, int nArguments) {
         KahluaUtil.luaAssert(callFrame.canYield, "Can not yield outside of a coroutine");
 

@@ -24,8 +24,10 @@ package se.krka.kahlua.j2se.interpreter.jsyntax;
 
 import jsyntaxpane.DefaultSyntaxKit;
 import jsyntaxpane.Lexer;
-import jsyntaxpane.lexers.LuaLexer;
 
+/**
+ * @exclude
+ */
 public class KahluaKit extends DefaultSyntaxKit {
 
     public KahluaKit(Lexer lexer) {

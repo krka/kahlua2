@@ -27,6 +27,9 @@ import se.krka.kahlua.vm.Prototype;
 import java.util.Hashtable;
 
 
+/**
+ * @exclude
+ */
 public class FuncState {
 
 	private static final Object NULL_OBJECT = new Object();
