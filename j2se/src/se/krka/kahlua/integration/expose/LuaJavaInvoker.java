@@ -31,6 +31,7 @@ import se.krka.kahlua.vm.JavaFunction;
 import se.krka.kahlua.vm.LuaCallFrame;
 
 /**
+ * <pre>
  * Various variants:
  *
  * Object method or static (from lua) function:
@@ -46,7 +47,7 @@ import se.krka.kahlua.vm.LuaCallFrame;
  * Varargs or not:
  * ---------------
  * obj:method(a, b, c, [d, e, f]) -> varargs = {d, e, f}; method.invoke(obj, args[1:3] + {varargs}) 
- *
+ * </pre>
  */
 public class LuaJavaInvoker implements JavaFunction {
 	private final LuaJavaClassExposer exposer;

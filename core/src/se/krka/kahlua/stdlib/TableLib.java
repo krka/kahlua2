@@ -106,7 +106,7 @@ public final class TableLib implements JavaFunction {
     }
 
     private int newarray(LuaCallFrame callFrame, int arguments) {
-		Object param = KahluaUtil.getOptArg(callFrame, 1, null);
+		Object param = KahluaUtil.getOptionalArg(callFrame, 1);
 		KahluaArray ret = new KahluaArray();
 		if (param instanceof KahluaTable && arguments == 1) {
 			KahluaTable t = (KahluaTable) param;

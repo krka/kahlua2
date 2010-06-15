@@ -118,28 +118,24 @@ public class MathLib implements JavaFunction {
 		}
 	}
 
-    private static double getDoubleArg(LuaCallFrame callFrame, int argc, String funcname) {
-		return ((Double) KahluaUtil.getArg(callFrame, argc, KahluaUtil.TYPE_NUMBER, funcname)).doubleValue();
-	}
-
 	// Generic math functions
 	private static int abs(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[ABS]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[ABS]);
 		callFrame.push(KahluaUtil.toDouble(Math.abs(x)));
 		return 1;
 	}
 
 	private static int ceil(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x =getDoubleArg(callFrame,1,names[CEIL]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[CEIL]);
 		callFrame.push(KahluaUtil.toDouble(Math.ceil(x)));
 		return 1;
 	}
 
 	private static int floor(LuaCallFrame callFrame, int nArguments)  {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[FLOOR]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[FLOOR]);
 		callFrame.push(KahluaUtil.toDouble(Math.floor(x)));
 		return 1;
 	}
@@ -167,7 +163,7 @@ public class MathLib implements JavaFunction {
 
 	private static int modf(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[MODF]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[MODF]);
 
 		boolean negate = false;
 		if (isNegative(x)) {
@@ -191,8 +187,8 @@ public class MathLib implements JavaFunction {
 
 	private static int fmod(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 2, "Not enough arguments");
-		double v1 = getDoubleArg(callFrame,1,names[FMOD]);
-		double v2 = getDoubleArg(callFrame,2,names[FMOD]);
+		double v1 = KahluaUtil.getDoubleArg(callFrame, 1, names[FMOD]);
+		double v2 = KahluaUtil.getDoubleArg(callFrame, 2, names[FMOD]);
 
 		double res;
 		if (Double.isInfinite(v1) || Double.isNaN(v1)) {
@@ -219,21 +215,21 @@ public class MathLib implements JavaFunction {
 
 	private static int cosh(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[COSH]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[COSH]);
 		callFrame.push(KahluaUtil.toDouble(Math.cosh(x)));
 		return 1;
 	}
 
 	private static int sinh(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[SINH]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[SINH]);
 		callFrame.push(KahluaUtil.toDouble(Math.sinh(x)));
 		return 1;
 	}
 
 	private static int tanh(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[TANH]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[TANH]);
 		callFrame.push(KahluaUtil.toDouble(Math.tanh(x)));
 		return 1;
 	}
@@ -241,43 +237,43 @@ public class MathLib implements JavaFunction {
 	// Trig functions
 	private static int deg(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[DEG]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[DEG]);
 		callFrame.push(KahluaUtil.toDouble(Math.toDegrees(x)));
 		return 1;
 	}
 
 	private static int rad(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[RAD]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[RAD]);
 		callFrame.push(KahluaUtil.toDouble(Math.toRadians(x)));
 		return 1;
 	}
 
 	private static int acos(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[ACOS]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[ACOS]);
 		callFrame.push(KahluaUtil.toDouble(Math.acos(x)));
 		return 1;
 	}
 
 	private static int asin(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[ASIN]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[ASIN]);
 		callFrame.push(KahluaUtil.toDouble(Math.asin(x)));
 		return 1;
 	}
 
 	private static int atan(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[ATAN]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[ATAN]);
 		callFrame.push(KahluaUtil.toDouble(Math.atan(x)));
 		return 1;
 	}
 
 	private static int atan2(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 2, "Not enough arguments");
-		double y = getDoubleArg(callFrame,1,names[ATAN2]);
-		double x = getDoubleArg(callFrame,2,names[ATAN2]);
+		double y = KahluaUtil.getDoubleArg(callFrame, 1, names[ATAN2]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 2, names[ATAN2]);
 		callFrame.push(KahluaUtil.toDouble(Math.atan2(y, x)));
 		return 1;
 	}
@@ -285,21 +281,21 @@ public class MathLib implements JavaFunction {
 
 	private static int cos(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[COS]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[COS]);
 		callFrame.push(KahluaUtil.toDouble(Math.cos(x)));
 		return 1;
 	}
 
 	private static int sin(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[SIN]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[SIN]);
 		callFrame.push(KahluaUtil.toDouble(Math.sin(x)));
 		return 1;
 	}
 
 	private static int tan(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[TAN]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[TAN]);
 		callFrame.push(KahluaUtil.toDouble(Math.tan(x)));
 		return 1;
 	}
@@ -307,36 +303,36 @@ public class MathLib implements JavaFunction {
 	// Power functions
 	private static int sqrt(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[SQRT]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[SQRT]);
 		callFrame.push(KahluaUtil.toDouble(Math.sqrt(x)));
 		return 1;
 	}
 
 	private static int exp(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[EXP]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[EXP]);
 		callFrame.push(KahluaUtil.toDouble(Math.exp(x)));
 		return 1;
 	}
 
 	private static int pow(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 2, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[POW]);
-		double y = getDoubleArg(callFrame,2,names[POW]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[POW]);
+		double y = KahluaUtil.getDoubleArg(callFrame, 2, names[POW]);
 		callFrame.push(KahluaUtil.toDouble(Math.pow(x, y)));
 		return 1;
 	}
 
 	private static int log(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[LOG]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[LOG]);
 		callFrame.push(KahluaUtil.toDouble(Math.log(x)));
 		return 1;
 	}
 
 	private static int log10(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[LOG10]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[LOG10]);
 		callFrame.push(KahluaUtil.toDouble(Math.log10(x)));
 		return 1;
 	}
@@ -344,7 +340,7 @@ public class MathLib implements JavaFunction {
 
 	private static int frexp(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
-		double x = getDoubleArg(callFrame,1,names[FREXP]);
+		double x = KahluaUtil.getDoubleArg(callFrame, 1, names[FREXP]);
 
 		double e, m;
 		if (Double.isInfinite(x) || Double.isNaN(x)) {
@@ -361,8 +357,8 @@ public class MathLib implements JavaFunction {
 
 	private static int ldexp(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 2, "Not enough arguments");
-		double m = getDoubleArg(callFrame,1,names[LDEXP]);
-		double dE = getDoubleArg(callFrame,2,names[LDEXP]);
+		double m = KahluaUtil.getDoubleArg(callFrame, 1, names[LDEXP]);
+		double dE = KahluaUtil.getDoubleArg(callFrame, 2, names[LDEXP]);
 
 		double ret;
 		double tmp = m + dE;

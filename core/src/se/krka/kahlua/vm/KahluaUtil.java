@@ -1,7 +1,5 @@
 package se.krka.kahlua.vm;
 
-import se.krka.kahlua.stdlib.BaseLib;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -111,10 +109,6 @@ public class KahluaUtil {
         return Double.doubleToLongBits(vDouble) < 0;
     }
 
-    public static double getDoubleArg(LuaCallFrame callFrame, int argc, String funcname) {
-        return ((Double) getArg(callFrame, argc, TYPE_NUMBER, funcname)).doubleValue();
-    }
-            
     public static KahluaTable getClassMetatables(Platform platform, KahluaTable env) {
         return getOrCreateTable(platform, env, "__classmetatables");
     }
@@ -202,24 +196,23 @@ public class KahluaUtil {
         if (o instanceof Boolean) {
             return o == Boolean.TRUE ? "true" : "false";
         }
-if (o instanceof LuaClosure) {
-return "closure 0x" + System.identityHashCode(o);
-}
-        if (o instanceof JavaFunction) {
-            return "function 0x" + System.identityHashCode(o);
-        }
+		if (o instanceof LuaClosure) {
+			return "closure 0x" + System.identityHashCode(o);
+		}
+		if (o instanceof JavaFunction) {
+			return "function 0x" + System.identityHashCode(o);
+		}
 
-if (thread != null) {
-Object tostringFun = thread.getMetaOp(o, "__tostring");
-if (tostringFun != null) {
-String res = (String) thread.call(tostringFun, o, null, null);
+		if (thread != null) {
+			Object tostringFun = thread.getMetaOp(o, "__tostring");
+			if (tostringFun != null) {
+				String res = (String) thread.call(tostringFun, o, null, null);
+				return res;
+			}
+		}
 
-return res;
-}
-}
-
-return o.toString();
-    }
+		return o.toString();
+	}
 
     public static Double tonumber(String s) {
         return tonumber(s, 10);
@@ -271,67 +264,60 @@ return o.toString();
         return null;
     }
 
-    /**
-	 *
-	 * @param callFrame
-	 * @param n
-	 * @param type must be "string" or "number" or one of the other built in types. Note that this parameter must be interned!
-	 * It's not valid to call it with new String("number").  Use null if you don't care which type or expect
-	 * more than one type for this argument.
-	 * @param function name of the function that calls this. Only for pretty exceptions.
-	 * @return variable with index n on the stack, returned as type "type".
-	 */
-	public static Object getArg(LuaCallFrame callFrame, int n, String type,
-				String function) {
-		Object o = callFrame.get(n - 1);
-		if (o == null) {
-			throw new RuntimeException("bad argument #" + n + "to '" + function +
-				"' (" + type + " expected, got no value)");
+	public static String getStringArg(LuaCallFrame callFrame, int n, String function) {
+		Object o = getArg(callFrame, n, function);
+		String res = rawTostring(o);
+		if (res == null) {
+			fail(n, function, "string", type(res));
 		}
-		// type coercion
-		if (type == TYPE_STRING) {
-			String res = rawTostring(o);
-			if (res != null) {
-				return res;
-			}
-		} else if (type == TYPE_NUMBER) {
-			Double d = rawTonumber(o);
-			if (d != null) {
-				return d;
-			}
-			throw new RuntimeException("bad argument #" + n + " to '" + function +
-			"' (number expected, got string)");
-		}
-		if (type != null) {
-			// type checking
-			String isType = type(o);
-			if (type != isType) {
-				fail("bad argument #" + n + " to '" + function +"' (" + type +
-					" expected, got " + isType + ")");
-			}
-		}
-		return o;
-
+		return res;
 	}
 
-    public static Object getOptArg(LuaCallFrame callFrame, int n, String type) {
-		// Outside of stack
-		if (n - 1 >= callFrame.getTop()) {
-			return null;
-		}
+	public static String getOptionalStringArg(LuaCallFrame callFrame, int n) {
+		Object o = getOptionalArg(callFrame, n);
+		return rawTostring(o);
+	}
 
-		Object o = callFrame.get(n-1);
+	public static Double getNumberArg(LuaCallFrame callFrame, int n, String function) {
+		Object o = getArg(callFrame, n, function);
+		Double res = rawTonumber(o);
+		if (res == null) {
+			fail(n, function, "double", type(res));
+		}
+		return res;
+	}
+
+	public static Double getOptionalNumberArg(LuaCallFrame callFrame, int n) {
+		Object o = getOptionalArg(callFrame, n);
+		return rawTonumber(o);
+	}
+
+	private static void fail(int n, String function, String wantedType, String gotten) {
+		throw new RuntimeException("bad argument #" + n + " to '" + function +
+				"' (" + wantedType + " expected, got " + gotten + ")");
+	}
+
+	public static void assertArgNotNull(Object o, int n, String type, String function) {
 		if (o == null) {
+			fail(n, function, type, "null");
+		}
+	}
+
+	public static Object getOptionalArg(LuaCallFrame callFrame, int n) {
+		int top = callFrame.getTop();
+		int index = n - 1;
+		if (index >= top) {
 			return null;
 		}
-		// type coercion
-		if (type == TYPE_STRING) {
-			return rawTostring(o);
-		} else if (type == TYPE_NUMBER) {
-			return rawTonumber(o);
+		return callFrame.get(n - 1);
+	}
+
+	public static Object getArg(LuaCallFrame callFrame, int n, String function) {
+		Object res = getOptionalArg(callFrame, n);
+		if (res == null) {
+			throw new RuntimeException("missing argument #" + n + "to '" + function + "'");
 		}
-		// no type checking, this is optional after all
-		return o;
+		return callFrame.get(n - 1);
 	}
 
     public static int len(KahluaTable kahluaTable, int low, int high) {
@@ -346,4 +332,8 @@ return o.toString();
         }
         return low;
     }
+
+	public static double getDoubleArg(LuaCallFrame callFrame, int i, String name) {
+		return getNumberArg(callFrame, i, name).doubleValue();
+	}
 }

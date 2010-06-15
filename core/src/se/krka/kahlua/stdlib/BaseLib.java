@@ -132,21 +132,21 @@ public final class BaseLib implements JavaFunction {
 	}
 	
 	private int debugstacktrace(LuaCallFrame callFrame, int nArguments) {
-		Coroutine coroutine = (Coroutine) KahluaUtil.getOptArg(callFrame, 1, KahluaUtil.TYPE_COROUTINE);
+		Coroutine coroutine = (Coroutine) KahluaUtil.getOptionalArg(callFrame, 1);
 		if (coroutine == null) {
 			coroutine = callFrame.coroutine;
 		}
-		Double levelDouble = (Double) KahluaUtil.getOptArg(callFrame, 2, KahluaUtil.TYPE_NUMBER);
+		Double levelDouble = KahluaUtil.getOptionalNumberArg(callFrame, 2);
 		int level = 0;
 		if (levelDouble != null) {
 			level = levelDouble.intValue();
 		}
-		Double countDouble = (Double) KahluaUtil.getOptArg(callFrame, 3, KahluaUtil.TYPE_NUMBER);
+		Double countDouble = KahluaUtil.getOptionalNumberArg(callFrame, 3);
 		int count = Integer.MAX_VALUE;
 		if (countDouble != null) {
 			count = countDouble.intValue(); 
 		}
-		Double haltAtDouble = (Double) KahluaUtil.getOptArg(callFrame, 4, KahluaUtil.TYPE_NUMBER);
+		Double haltAtDouble = KahluaUtil.getOptionalNumberArg(callFrame, 4);
 		int haltAt = 0;
 		if (haltAtDouble != null) {
 			haltAt = haltAtDouble.intValue(); 
@@ -281,7 +281,7 @@ public final class BaseLib implements JavaFunction {
 
 	private int error(LuaCallFrame callFrame, int nArguments) {
 		if (nArguments >= 1) {
-			String stacktrace = (String) KahluaUtil.getOptArg(callFrame, 2, KahluaUtil.TYPE_STRING);
+			String stacktrace = KahluaUtil.getOptionalStringArg(callFrame, 2);
 			if (stacktrace == null) {
 				stacktrace = "";
 			}
@@ -432,7 +432,7 @@ public final class BaseLib implements JavaFunction {
 	}
 
     private static int bytecodeloader(LuaCallFrame callFrame, int nArguments) {
-		String modname = (String) KahluaUtil.getArg(callFrame, 1, "string", "loader");
+		String modname = KahluaUtil.getStringArg(callFrame, 1, "loader");
 
 		KahluaTable packageTable = (KahluaTable) callFrame.getEnvironment().rawget("package");
 		String classpath = (String) packageTable.rawget("classpath");

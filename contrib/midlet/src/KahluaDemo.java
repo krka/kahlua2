@@ -86,6 +86,7 @@ public class KahluaDemo extends MIDlet implements Runnable, ItemStateListener, J
 			notifyDestroyed();
 		}
 	}
+	
 	private void doRun() throws IOException {
 		while (true) {
 			String response = query("", "Please choose a game", options);

@@ -121,7 +121,7 @@ public final class StringLib implements JavaFunction {
 	}
 	
 	private int format(LuaCallFrame callFrame, int nArguments) {
-		String f = (String) KahluaUtil.getArg(callFrame, 1, KahluaUtil.TYPE_STRING, names[FORMAT]);
+		String f = KahluaUtil.getStringArg(callFrame, 1, names[FORMAT]);
 
 		int len = f.length();
 		int argc = 2;
@@ -657,15 +657,15 @@ public final class StringLib implements JavaFunction {
 	}
 	
 	private String getStringArg(LuaCallFrame callFrame, int argc, String funcname) {
-		return (String) KahluaUtil.getArg(callFrame, argc, KahluaUtil.TYPE_STRING, funcname);
+		return KahluaUtil.getStringArg(callFrame, argc, funcname);
 	}
 	
 	private Double getDoubleArg(LuaCallFrame callFrame, int argc) {
 		return getDoubleArg(callFrame, argc, names[FORMAT]);
 	}
 
-	private Double getDoubleArg(LuaCallFrame callFrame, int argc, String funcname) {
-		return (Double) KahluaUtil.getArg(callFrame, argc, KahluaUtil.TYPE_NUMBER, funcname);
+	private Double getDoubleArg(LuaCallFrame callFrame, int argc, String name) {
+		return KahluaUtil.getNumberArg(callFrame, argc, name);
 	}
 
 	private int lower(LuaCallFrame callFrame, int nArguments) {
@@ -696,49 +696,40 @@ public final class StringLib implements JavaFunction {
 		KahluaUtil.luaAssert(nArguments >= 1, "not enough arguments");
 		String s = getStringArg(callFrame, 1, names[BYTE]);
 
-		Double di = null;
-		Double dj = null;
-		if (nArguments >= 2) {
-			di = getDoubleArg(callFrame, 2, names[BYTE]);
-			if (nArguments >= 3) {
-				dj = getDoubleArg(callFrame, 3, names[BYTE]);
-			}
-		}
-		double di2 = 1;
-		if (di != null) {
-			di2 = KahluaUtil.fromDouble(di);
-		}
-		double dj2 = di2;
-		if (dj != null) {
-			dj2 = KahluaUtil.fromDouble(dj);
-		}
-
-		int ii = (int) di2, ij = (int) dj2;
+		int i = nullDefault(1, KahluaUtil.getOptionalNumberArg(callFrame, 2));
+		int j = nullDefault(i, KahluaUtil.getOptionalNumberArg(callFrame, 3));
 
 		int len = s.length();
-		if (ii < 0) {
-			ii += len + 1;
+		if (i < 0) {
+			i += len + 1;
 		}
-		if (ii <= 0) {
-			ii = 1;
+		if (i <= 0) {
+			i = 1;
 		}
-		if (ij < 0) {
-			ij += len + 1;
-		} else if (ij > len) {
-			ij = len;
+		if (j < 0) {
+			j += len + 1;
+		} else if (j > len) {
+			j = len;
 		}
-		int nReturns = 1 +ij - ii;
+		int nReturns = 1 +j - i;
 
 		if (nReturns <= 0) {
 			return 0;
 		}
 		callFrame.setTop(nReturns);
-		int offset = ii - 1;
-		for (int i = 0; i < nReturns; i++) {
-			char c = s.charAt(offset + i);
-			callFrame.set(i, new Double((double) c));                   
+		int offset = i - 1;
+		for (int i2 = 0; i2 < nReturns; i2++) {
+			char c = s.charAt(offset + i2);
+			callFrame.set(i2, new Double((double) c));
 		}
 		return nReturns;
+	}
+
+	private int nullDefault(int defaultValue, Double val) {
+		if (val == null) {
+			return defaultValue;
+		}
+		return val.intValue();
 	}
 
 	private int stringChar(LuaCallFrame callFrame, int nArguments) {
@@ -989,10 +980,10 @@ public final class StringLib implements JavaFunction {
 
 	private static int findAux (LuaCallFrame callFrame, boolean find ) {
 		String f = find ? names[FIND] : names[MATCH];
-		String source = (String) KahluaUtil.getArg(callFrame, 1, KahluaUtil.TYPE_STRING, f);
-		String pattern = (String) KahluaUtil.getArg(callFrame, 2, KahluaUtil.TYPE_STRING, f);
-		Double i = ((Double)(KahluaUtil.getOptArg(callFrame, 3, KahluaUtil.TYPE_NUMBER)));
-		boolean plain = KahluaUtil.boolEval(KahluaUtil.getOptArg(callFrame, 4, KahluaUtil.TYPE_BOOLEAN));
+		String source = KahluaUtil.getStringArg(callFrame, 1, f);
+		String pattern = KahluaUtil.getStringArg(callFrame, 2, f);
+		Double i = KahluaUtil.getOptionalNumberArg(callFrame, 3);
+		boolean plain = KahluaUtil.boolEval(KahluaUtil.getOptionalArg(callFrame, 4));
 		int init = (i == null ? 0 : i.intValue() - 1);
 
 		if ( init < 0 ) {
@@ -1403,16 +1394,16 @@ public final class StringLib implements JavaFunction {
 	}
 
 	private static int gsub(LuaCallFrame cf, int nargs) {
-		String srcTemp = (String) KahluaUtil.getArg(cf, 1, KahluaUtil.TYPE_STRING, names[GSUB]);
-		String pTemp = (String) KahluaUtil.getArg(cf, 2, KahluaUtil.TYPE_STRING, names[GSUB]);
-		Object repl = KahluaUtil.getArg(cf, 3, null, names[GSUB]);
+		String srcTemp = KahluaUtil.getStringArg(cf, 1, names[GSUB]);
+		String pTemp = KahluaUtil.getStringArg(cf, 2, names[GSUB]);
+		Object repl = KahluaUtil.getArg(cf, 3, names[GSUB]);
 		{
 			String tmp = KahluaUtil.rawTostring(repl);
 			if (tmp != null) {
 				repl = tmp;
 			}
 		}			
-		Double num = (Double) KahluaUtil.getOptArg(cf, 4, KahluaUtil.TYPE_NUMBER);
+		Double num = KahluaUtil.getOptionalNumberArg(cf, 4);
 		// if i isn't supplied, we want to substitute all occurrences of the pattern
 		int maxSubstitutions = (num == null) ? Integer.MAX_VALUE : num.intValue(); 
 
@@ -1432,7 +1423,7 @@ public final class StringLib implements JavaFunction {
 			KahluaUtil.fail(("string/function/table expected, got "+replType));
 		}
 
-		MatchState ms = new MatchState ();
+		MatchState ms = new MatchState();
 		ms.callFrame = cf;
 		ms.src_init = src.getClone();
 		ms.endIndex = src.length();
