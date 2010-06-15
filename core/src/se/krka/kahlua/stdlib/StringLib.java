@@ -720,7 +720,7 @@ public final class StringLib implements JavaFunction {
 		int offset = i - 1;
 		for (int i2 = 0; i2 < nReturns; i2++) {
 			char c = s.charAt(offset + i2);
-			callFrame.set(i2, new Double((double) c));
+			callFrame.set(i2, KahluaUtil.toDouble(c));
 		}
 		return nReturns;
 	}
@@ -809,24 +809,25 @@ public final class StringLib implements JavaFunction {
       */
 
 	public static class MatchState {
+		public final LuaCallFrame callFrame;
+		public final StringPointer src_init;  /* init of source string */
+		public final int endIndex; /* end (`\0') of source string */
+		public final Capture[] capture;
 
-		public MatchState () {
-			capture = new Capture[ LUA_MAXCAPTURES ];
-			for ( int i = 0; i < LUA_MAXCAPTURES; i ++ ) {
-				capture[i] = new Capture ();
+		public MatchState(LuaCallFrame callFrame, StringPointer srcInit, int endIndex) {
+			this.callFrame = callFrame;
+			this.src_init = srcInit;
+			this.endIndex = endIndex;
+			capture = new Capture[LUA_MAXCAPTURES];
+			for (int i = 0; i < LUA_MAXCAPTURES; i++) {
+				capture[i] = new Capture();
 			}
 		}
-		public StringPointer src_init;  /* init of source string */
 
-		public int endIndex; /* end (`\0') of source string */
 
-		public LuaCallFrame callFrame;
 		public int level;  /* total number of captures (finished or unfinished) */
 
-		public Capture[] capture;
-
 		public static class Capture {
-
 			public StringPointer init;
 			public int len;
 		}
@@ -848,8 +849,7 @@ public final class StringLib implements JavaFunction {
 	}
 
 	public static class StringPointer {
-
-		private String string;
+		private final String string;
 		private int index = 0;
 
 		public StringPointer(String original) {
@@ -862,32 +862,26 @@ public final class StringLib implements JavaFunction {
 		}
 
 		public StringPointer getClone() {
-			StringPointer newSP = new StringPointer( this.getOriginalString(), this.getIndex() );
-			return newSP;
+			return new StringPointer(string, index);
 		}
 
 		public int getIndex () {
 			return index;
 		}
 
-		public void setIndex ( int ind ) {
+		public void setIndex (int ind) {
 			index = ind;
 		}
 
-		public String getOriginalString () {
-			return string;
-		}
-
-		public void setOriginalString(String orStr) {
-			string = orStr;
-		}
-
-		public String getString() {
+		public String getStringgetString() {
 			return getString(0);
 		}
 
 		public String getString(int i) {
-			return string.substring ( index + i, string.length () );
+			if (index + i == 0) {
+				return string;
+			}
+			return string.substring(index + i, string.length());
 		}
 
 		public char getChar() {
@@ -895,36 +889,33 @@ public final class StringLib implements JavaFunction {
 		}
 
 		public char getChar(int strIndex) {
-			if ( index + strIndex >= string.length () )
+			int i = index + strIndex;
+			if (i >= string.length()) {
 				return '\0';
-			else
-				return string.charAt ( index + strIndex );
+			} else {
+				return string.charAt(i);
+			}
 		}
 
 		public int length() {
 			return string.length () - index;
 		}
 
-		public int postIncrStringI ( int num ) {
+		public int postIncrStringI(int num) {
 			int oldIndex = index;
 			index += num;
 			return oldIndex;
 		}
 
-		public int preIncrStringI ( int num ) {
+		public int preIncrStringI(int num) {
 			index += num;
 			return index;
 		}
 
-		public char postIncrString ( int num ) {
+		public char postIncrString (int num) {
 			char c = getChar();
 			index += num;
 			return c;
-		}
-
-		public char preIncrString ( int num ) {
-			index += num;
-			return getChar();
 		}
 
 		public int compareTo(StringPointer cmp, int len) {
@@ -1006,23 +997,21 @@ public final class StringLib implements JavaFunction {
 			StringPointer s = new StringPointer(source);
 			StringPointer p = new StringPointer(pattern);
 
-			MatchState ms = new MatchState ();
 			boolean anchor = false;
-			if ( p.getChar () == '^' ) {
+			if (p.getChar() == '^') {
 				anchor = true;
-				p.postIncrString ( 1 );
+				p.postIncrString(1);
 			}
 			StringPointer s1 = s.getClone();
-			s1.postIncrString ( init );
+			s1.postIncrString(init);
 
-			ms.callFrame = callFrame;
-			ms.src_init = s.getClone();
-			ms.endIndex = s.getString().length();
+			MatchState ms = new MatchState(callFrame, s.getClone(), s.getString().length());
+
 			do {
 				StringPointer res;
 				ms.level = 0;
-				if ( ( res = match ( ms, s1, p ) ) != null ) {
-					if ( find ) {
+				if ((res = match(ms, s1, p)) != null) {
+					if (find) {
 						return callFrame.push(new Double(s.length () - s1.length () + 1), new Double(s.length () - res.length ())) +
 						push_captures ( ms, null, null );
 					} else {
@@ -1423,10 +1412,7 @@ public final class StringLib implements JavaFunction {
 			KahluaUtil.fail(("string/function/table expected, got "+replType));
 		}
 
-		MatchState ms = new MatchState();
-		ms.callFrame = cf;
-		ms.src_init = src.getClone();
-		ms.endIndex = src.length();
+		MatchState ms = new MatchState(cf, src.getClone(), src.length());
 
 		int n = 0;
 		StringBuffer b = new StringBuffer();
@@ -1457,7 +1443,7 @@ public final class StringLib implements JavaFunction {
 	private static void addValue(MatchState ms, Object repl, StringBuffer b, StringPointer src, StringPointer e) {
 		String type = KahluaUtil.type(repl);
 		if (type == KahluaUtil.TYPE_NUMBER || type == KahluaUtil.TYPE_STRING) {
-			b.append(addString (ms, repl, src, e));
+			b.append(addString(ms, repl, src, e));
 		} else {
 			String match = src.getString().substring(0, e.getIndex() - src.getIndex());
 			Object[] captures = ms.getCaptures();
