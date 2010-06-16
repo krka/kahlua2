@@ -832,19 +832,15 @@ public final class StringLib implements JavaFunction {
 			public int len;
 		}
 
-		public Object[] getCaptures() {
-			if (level <= 0) {
+		public Object getCapture(int i) {
+			if (i >= level) {
 				return null;
 			}
-			Object[] caps = new String[level];
-			for (int i = 0; i < level; i++) {
-				if (capture[i].len == CAP_POSITION) {
-					caps[i] = new Double(src_init.length() - capture[i].init.length() + 1);
-				} else {
-					caps[i] = capture[i].init.getString().substring(0, capture[i].len);
-				}
+			if (capture[i].len == CAP_POSITION) {
+				return new Double(src_init.length() - capture[i].init.length() + 1);
+			} else {
+				return capture[i].init.getStringSubString(capture[i].len);
 			}
-			return caps;
 		}
 	}
 
@@ -873,7 +869,7 @@ public final class StringLib implements JavaFunction {
 			index = ind;
 		}
 
-		public String getStringgetString() {
+		public String getString() {
 			return getString(0);
 		}
 
@@ -882,6 +878,10 @@ public final class StringLib implements JavaFunction {
 				return string;
 			}
 			return string.substring(index + i, string.length());
+		}
+
+		public String getStringSubString(int len) {
+			return string.substring(index, index + len);
 		}
 
 		public char getChar() {
@@ -1445,10 +1445,10 @@ public final class StringLib implements JavaFunction {
 		if (type == KahluaUtil.TYPE_NUMBER || type == KahluaUtil.TYPE_STRING) {
 			b.append(addString(ms, repl, src, e));
 		} else {
-			String match = src.getString().substring(0, e.getIndex() - src.getIndex());
-			Object[] captures = ms.getCaptures();
+			String match = src.getStringSubString(e.getIndex() - src.getIndex());
+			Object captures = ms.getCapture(0);
 			if (captures != null) {
-				match = KahluaUtil.rawTostring(captures[0]);
+				match = KahluaUtil.rawTostring(captures);
 			}
 			Object res = null;
 			if (type == KahluaUtil.TYPE_FUNCTION) {
@@ -1482,7 +1482,7 @@ public final class StringLib implements JavaFunction {
 					}
 					buf.append(str.substring(0, len));
 				} else {
-					Object o = ms.getCaptures()[replStr.getChar(i) - '1'];
+					Object o = ms.getCapture(replStr.getChar(i) - '1');
 					if(o instanceof Double) {
 						Double doubleValue = ((Double)o);
 						if( doubleValue.doubleValue() - doubleValue.intValue() == 0 ) {

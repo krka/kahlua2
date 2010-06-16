@@ -67,7 +67,7 @@
 		<mkdir dir="${test.lua.output.dir}"/>
 	</target>
 
-	<target name="compile" depends="setup, compile-core, compile-cldc11, compile-j2se, annotation-processor-j2se" description="Compiles Kahlua">
+	<target name="compile" depends="setup, compile-core, compile-cldc11, compile-j2se" description="Compiles Kahlua">
 	</target>
 	
 	<target name="build" depends="compile, build-stdlib" description="Builds Kahlua">
