@@ -1445,10 +1445,12 @@ public final class StringLib implements JavaFunction {
 		if (type == KahluaUtil.TYPE_NUMBER || type == KahluaUtil.TYPE_STRING) {
 			b.append(addString(ms, repl, src, e));
 		} else {
-			String match = src.getStringSubString(e.getIndex() - src.getIndex());
 			Object captures = ms.getCapture(0);
+			String match;
 			if (captures != null) {
 				match = KahluaUtil.rawTostring(captures);
+			} else {
+				match = src.getStringSubString(e.getIndex() - src.getIndex());
 			}
 			Object res = null;
 			if (type == KahluaUtil.TYPE_FUNCTION) {
@@ -1465,17 +1467,17 @@ public final class StringLib implements JavaFunction {
 
 	private static String addString(MatchState ms, Object repl, StringPointer s, StringPointer e) {
 		String replTemp = KahluaUtil.tostring(repl, ms.callFrame.coroutine.thread);
-		StringPointer replStr = new StringPointer (replTemp);
+		StringPointer replStr = new StringPointer(replTemp);
 		StringBuffer buf = new StringBuffer();
 		for (int i = 0; i < replTemp.length(); i++) {
-			if (replStr.getChar ( i ) != L_ESC) {
+			if (replStr.getChar(i) != L_ESC) {
 				buf.append(replStr.getChar(i));
 			} else {
 				i ++;  // skip ESC
 				if (!Character.isDigit(replStr.getChar(i))) {
 					buf.append(replStr.getChar(i));
 				} else if (replStr.getChar(i) == '0') {
-					String str = s.getString ();
+					String str = s.getString();
 					int len = s.length() - e.length();
 					if (len > str.length() ) {
 						len = str.length();
@@ -1483,16 +1485,7 @@ public final class StringLib implements JavaFunction {
 					buf.append(str.substring(0, len));
 				} else {
 					Object o = ms.getCapture(replStr.getChar(i) - '1');
-					if(o instanceof Double) {
-						Double doubleValue = ((Double)o);
-						if( doubleValue.doubleValue() - doubleValue.intValue() == 0 ) {
-							buf.append(String.valueOf(((Double)o).intValue())); 
-						} else {
-							buf.append(String.valueOf(((Double)o).doubleValue()));
-						}
-					} else {
-						buf.append(o);
-					}
+					buf.append(KahluaUtil.tostring(o, null));
 				}
 			}
 		}
