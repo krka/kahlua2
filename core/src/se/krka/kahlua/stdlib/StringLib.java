@@ -1483,11 +1483,8 @@ public final class StringLib implements JavaFunction {
 				if (!Character.isDigit(replStr.getChar(i))) {
 					buf.append(replStr.getChar(i));
 				} else if (replStr.getChar(i) == '0') {
+					int len = s.getStringLength() - e.length();
 					String str = s.getString();
-					int len = s.length() - e.length();
-					if (len > str.length() ) {
-						len = str.length();
-					}
 					buf.append(str.substring(0, len));
 				} else {
 					Object o = ms.getCapture(replStr.getChar(i) - '1');
