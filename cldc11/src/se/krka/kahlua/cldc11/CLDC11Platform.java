@@ -5,6 +5,7 @@ import se.krka.kahlua.stdlib.CoroutineLib;
 import se.krka.kahlua.stdlib.StringLib;
 import se.krka.kahlua.stdlib.TableLib;
 import se.krka.kahlua.vm.*;
+import se.krka.kahlua.vm.Version;
 
 public class CLDC11Platform implements Platform {
 	private static CLDC11Platform INSTANCE = new CLDC11Platform();
@@ -24,7 +25,7 @@ public class CLDC11Platform implements Platform {
         KahluaTable env = newTable();
 
         env.rawset("_G", env);
-        env.rawset("_VERSION", "Kahlua 2 for CLDC 1.1");
+		env.rawset("_VERSION", Version.VERSION + " (CLDC 1.1)");
 
         BaseLib.register(env);
         MathLib.register(env);

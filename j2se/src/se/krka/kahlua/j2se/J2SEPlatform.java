@@ -10,6 +10,7 @@ import se.krka.kahlua.stdlib.TableLib;
 import se.krka.kahlua.test.UserdataArray;
 import se.krka.kahlua.threading.BlockingKahluaThread;
 import se.krka.kahlua.vm.*;
+import se.krka.kahlua.vm.Version;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,7 +36,7 @@ public class J2SEPlatform implements Platform {
         KahluaTable env = newTable();
 
         env.rawset("_G", env);
-        env.rawset("_VERSION", "Kahlua 2 for J2SE");
+        env.rawset("_VERSION", Version.VERSION + " (J2SE)");
 
         MathLib.register(this, env);
         BaseLib.register(env);

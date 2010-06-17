@@ -3,6 +3,8 @@
 	<property file="local.properties" />
 	<property file="version.properties" />
 
+	<property name="version" value="${lua.version}_${kahlua.major}.${kahlua.minor}.${kahlua.fix}" />
+	
 	<dirname property="baseDir" file="${ant.file}"/>
 	
 	<property name="emma.dir" value="/usr/share/java" />
@@ -55,7 +57,7 @@
 
 	<path id="emma.lib" >
 		<pathelement location="${emma.dir}/emma.jar" />
-		<pathelement location="${emma.dirm}/emma_ant.jar" />
+		<pathelement location="${emma.dir}/emma_ant.jar" />
 	</path>
 	<taskdef resource="emma_ant.properties" classpathref="emma.lib" />
 
@@ -91,7 +93,8 @@
 		<copy todir="${build.dir}/core-src-replaced">
 			<fileset dir="${core.src.dir}" />
 		</copy>
-		<!--replace dir="${build.dir}/core-src-replaced" /-->
+		<replace dir="${build.dir}/core-src-replaced" replacefilterfile="version.properties">
+		</replace>
 		<javac
 			destdir="${classes.dir}/core"
 			debug="true"
@@ -177,16 +180,16 @@
 	</target>
 
     <target name="package" depends="setup, build" description="Package the final kahlua jar">
-    	<jar jarfile="${build.dir}/kahlua-core.jar">
+    	<jar jarfile="${build.dir}/kahlua-${version}-core.jar">
     		<fileset dir="${classes.dir}/core" />
     	</jar>
-    	<jar jarfile="${build.dir}/kahlua-cldc11.jar">
+    	<jar jarfile="${build.dir}/kahlua-${version}-cldc11.jar">
     		<fileset dir="${classes.dir}/cldc11" />
     	</jar>
-    	<jar jarfile="${build.dir}/kahlua-j2se.jar">
+    	<jar jarfile="${build.dir}/kahlua-${version}-j2se.jar">
     		<fileset dir="${classes.dir}/j2se" />
     	</jar>
-    	<jar jarfile="${build.dir}/kahlua-interpreter.jar">
+    	<jar jarfile="${build.dir}/kahlua-${version}-interpreter.jar">
     		<fileset dir="${classes.dir}/interpreter" />
     	</jar>
     </target>
