@@ -27,7 +27,11 @@ public abstract class AbstractCaller implements Caller {
 
         this.needsMultipleReturnValues = needsMultipleReturnValues;
         this.varargType = varargType;
-        this.parameters = Arrays.copyOfRange(parameters, needsMultipleReturnValues ? 1 : 0, parameters.length - (varargType == null ? 0 : 1));
+		int from = needsMultipleReturnValues ? 1 : 0;
+		int to = parameters.length - (varargType == null ? 0 : 1);
+		int len = to - from;
+		this.parameters = new Class[len];
+		System.arraycopy(parameters, from, this.parameters, 0, len);
     }
 
     @Override
