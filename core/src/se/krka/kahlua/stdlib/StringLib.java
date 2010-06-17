@@ -169,7 +169,7 @@ public final class StringLib implements JavaFunction {
 					// Detect width
 					int width = 0;
 					while (c >= '0' && c <= '9') {
-						width = 10 * width + (int) (c - '0');
+						width = 10 * width + c - '0';
 						i++;
 						KahluaUtil.luaAssert(i < len, "incomplete option to 'format'");
 						c = f.charAt(i);
@@ -185,7 +185,7 @@ public final class StringLib implements JavaFunction {
 						c = f.charAt(i);
 
 						while (c >= '0' && c <= '9') {
-							precision = 10 * precision + (int) (c - '0');
+							precision = 10 * precision + c - '0';
 							i++;
 							KahluaUtil.luaAssert(i < len, "incomplete option to 'format'");
 							c = f.charAt(i);
@@ -1107,7 +1107,7 @@ public final class StringLib implements JavaFunction {
 		return null;  /* string ends out of balance */
 	}
 
-	private static StringPointer classEnd ( MatchState ms, StringPointer pp ) {
+	private static StringPointer classEnd(StringPointer pp) {
 		StringPointer p = pp.getClone();
 		switch ( p.postIncrString ( 1 ) ) {
 		case L_ESC: {
@@ -1257,7 +1257,7 @@ public final class StringLib implements JavaFunction {
 					p.postIncrString (2);
 					KahluaUtil.luaAssert(p.getChar() == '[' , "missing '[' after '%%f' in pattern");
 
-					StringPointer ep = classEnd(ms, p);  // points to what is next
+					StringPointer ep = classEnd(p);  // points to what is next
 					char previous = (s.getIndex() == ms.src_init.getIndex()) ? '\0' : s.getChar(-1);
 
 					StringPointer ep1 = ep.getClone();
@@ -1298,8 +1298,7 @@ public final class StringLib implements JavaFunction {
 			}
 
 			if (isDefault) { // it is a pattern item
-				isDefault = false;
-				StringPointer ep = classEnd(ms, p);  // points to what is next
+				StringPointer ep = classEnd(p);  // points to what is next
 				boolean m = (s.getIndex () < ms.endIndex && singleMatch(s.getChar(), p, ep));
 				switch (ep.getChar()) {
 				case '?':  { // optional
@@ -1416,10 +1415,9 @@ public final class StringLib implements JavaFunction {
 
 		int n = 0;
 		StringBuffer b = new StringBuffer();
-		StringPointer e = null;
 		while (n < maxSubstitutions) {
 			ms.level = 0;
-			e = match(ms, src, pattern);
+			StringPointer e = match(ms, src, pattern);
 			if (e != null) {
 				n++;
 				addValue(ms, repl, b, src, e);
