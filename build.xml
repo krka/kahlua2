@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Kahlua" basedir="." default="all">
 	<property file="local.properties" />
+	<property file="version.properties" />
 
 	<dirname property="baseDir" file="${ant.file}"/>
 	
@@ -9,6 +10,7 @@
 	<property name="cldc11.src.dir"       value="${baseDir}/cldc11/src"/>
 	<property name="core.src.dir"       value="${baseDir}/core/src"/>
 	<property name="j2se.src.dir"       value="${baseDir}/j2se/src"/>
+	<property name="interpreter.src.dir"       value="${baseDir}/interpreter/src"/>
 
 	<property name="build.dir"     value="${baseDir}/bin"/>
 	<property name="classes.dir"     value="${build.dir}/classes"/>
@@ -28,12 +30,22 @@
 
     <path id="j2se.dependencies">
         <pathelement path="${classes.dir}/core"/>
+    </path>
+
+    <path id="interpreter.dependencies">
+        <path refid="j2se.dependencies" />
+        <pathelement path="${classes.dir}/j2se"/>
         <pathelement location="${baseDir}/j2se/lib/jsyntaxpane-0.9.5.jar" />
     </path>
 
 	<path id="main.classpath">
 		<pathelement path="${classes.dir}/j2se"/>
         <path refid="j2se.dependencies" />
+	</path>
+
+	<path id="interpreter.classpath">
+		<pathelement path="${classes.dir}/interpreter"/>
+        <path refid="interpreter.dependencies" />
 	</path>
 
 	<path id="test.classpath">
@@ -43,7 +55,7 @@
 
 	<path id="emma.lib" >
 		<pathelement location="${emma.dir}/emma.jar" />
-		<pathelement location="${emma.dir}/emma_ant.jar" />
+		<pathelement location="${emma.dirm}/emma_ant.jar" />
 	</path>
 	<taskdef resource="emma_ant.properties" classpathref="emma.lib" />
 
@@ -60,20 +72,26 @@
 		<mkdir dir="${build.dir}"/>
 		<mkdir dir="${classes.dir}/core"/>
 		<mkdir dir="${classes.dir}/j2se"/>
+		<mkdir dir="${classes.dir}/interpreter"/>
 		<mkdir dir="${classes.dir}/cldc11"/>
+		<mkdir dir="${build.dir}/core-src-replaced"/>
 
 		<mkdir dir="${test.build.dir}"/>
 		<mkdir dir="${test.classes.dir}"/>
 		<mkdir dir="${test.lua.output.dir}"/>
 	</target>
 
-	<target name="compile" depends="setup, compile-core, compile-cldc11, compile-j2se" description="Compiles Kahlua">
+	<target name="compile" depends="setup, compile-core, compile-cldc11, compile-j2se, compile-interpreter" description="Compiles Kahlua">
 	</target>
 	
 	<target name="build" depends="compile, build-stdlib" description="Builds Kahlua">
 	</target>
 	
 	<target name="compile-core" depends="setup">
+		<copy todir="${build.dir}/core-src-replaced">
+			<fileset dir="${core.src.dir}" />
+		</copy>
+		<!--replace dir="${build.dir}/core-src-replaced" /-->
 		<javac
 			destdir="${classes.dir}/core"
 			debug="true"
@@ -84,7 +102,7 @@
 			<compilerarg value="-bootclasspath" />
 			<compilerarg value="" />
 
-			<src path="${core.src.dir}"/>
+			<src path="${build.dir}/core-src-replaced"/>
 		</javac>
 	</target>
 
@@ -110,12 +128,28 @@
 		<javac
 			destdir="${classes.dir}/j2se"
 			debug="true"
+			target="1.5"
+			source="1.5"
             classpathref="j2se.dependencies"
 		>
 			<src path="${j2se.src.dir}"/>
 		</javac>
         <copy todir="${classes.dir}/j2se">
             <fileset dir="${baseDir}/j2se/resources">
+            </fileset>
+        </copy>
+	</target>
+
+	<target name="compile-interpreter" depends="compile-j2se">
+		<javac
+			destdir="${classes.dir}/interpreter"
+			debug="true"
+            classpathref="interpreter.dependencies"
+		>
+			<src path="${interpreter.src.dir}"/>
+		</javac>
+        <copy todir="${classes.dir}/interpreter">
+            <fileset dir="${baseDir}/interpreter/resources">
             </fileset>
         </copy>
 	</target>
@@ -151,6 +185,9 @@
     	</jar>
     	<jar jarfile="${build.dir}/kahlua-j2se.jar">
     		<fileset dir="${classes.dir}/j2se" />
+    	</jar>
+    	<jar jarfile="${build.dir}/kahlua-interpreter.jar">
+    		<fileset dir="${classes.dir}/interpreter" />
     	</jar>
     </target>
 
@@ -238,7 +275,7 @@
 	
     <target name="run-interpreter" depends="build" description="Run the gui interpreter">
 		<java classname="se.krka.kahlua.j2se.interpreter.InteractiveShell" fork="true" dir="${baseDir}">
-			<classpath refid="main.classpath" />
+			<classpath refid="interpreter.classpath" />
 		</java>
     </target>
 
