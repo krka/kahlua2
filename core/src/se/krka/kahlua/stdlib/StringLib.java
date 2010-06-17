@@ -870,7 +870,10 @@ public final class StringLib implements JavaFunction {
 		}
 
 		public String getString() {
-			return getString(0);
+			if (index == 0) {
+				return string;
+			}
+			return string.substring(index);
 		}
 
 		public int getStringLength() {
@@ -879,13 +882,6 @@ public final class StringLib implements JavaFunction {
 
 		public int getStringLength(int i) {
 			return string.length() - (index + i);
-		}
-
-		public String getString(int i) {
-			if (index + i == 0) {
-				return string;
-			}
-			return string.substring(index + i, string.length());
 		}
 
 		public String getStringSubString(int len) {
@@ -927,8 +923,13 @@ public final class StringLib implements JavaFunction {
 		}
 
 		public int compareTo(StringPointer cmp, int len) {
-			return this.string.substring(this.index,this.index+len).compareTo(
-					cmp.string.substring(cmp.index, cmp.index+len));
+			for (int i = 0; i < len; i++) {
+				int val = getChar(i) - cmp.getChar(i);
+				if (val != 0) {
+					return val;
+				}
+			}
+			return 0;
 		}
 	}
 
@@ -1479,13 +1480,12 @@ public final class StringLib implements JavaFunction {
 			if (replStr.getChar(i) != L_ESC) {
 				buf.append(replStr.getChar(i));
 			} else {
-				i ++;  // skip ESC
+				i++;  // skip ESC
 				if (!Character.isDigit(replStr.getChar(i))) {
 					buf.append(replStr.getChar(i));
 				} else if (replStr.getChar(i) == '0') {
 					int len = s.getStringLength() - e.length();
-					String str = s.getString();
-					buf.append(str.substring(0, len));
+					buf.append(s.getStringSubString(len));
 				} else {
 					Object o = ms.getCapture(replStr.getChar(i) - '1');
 					buf.append(KahluaUtil.tostring(o, null));
