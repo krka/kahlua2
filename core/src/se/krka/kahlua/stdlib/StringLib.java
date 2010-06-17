@@ -873,6 +873,14 @@ public final class StringLib implements JavaFunction {
 			return getString(0);
 		}
 
+		public int getStringLength() {
+			return getStringLength(0);
+		}
+
+		public int getStringLength(int i) {
+			return string.length() - (index + i);
+		}
+
 		public String getString(int i) {
 			if (index + i == 0) {
 				return string;
@@ -1005,7 +1013,7 @@ public final class StringLib implements JavaFunction {
 			StringPointer s1 = s.getClone();
 			s1.postIncrString(init);
 
-			MatchState ms = new MatchState(callFrame, s.getClone(), s.getString().length());
+			MatchState ms = new MatchState(callFrame, s.getClone(), s.getStringLength());
 
 			do {
 				StringPointer res;
