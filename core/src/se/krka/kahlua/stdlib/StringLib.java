@@ -169,7 +169,7 @@ public final class StringLib implements JavaFunction {
 					// Detect width
 					int width = 0;
 					while (c >= '0' && c <= '9') {
-						width = 10 * width + (int) (c - '0');
+						width = 10 * width + c - '0';
 						i++;
 						KahluaUtil.luaAssert(i < len, "incomplete option to 'format'");
 						c = f.charAt(i);
@@ -185,7 +185,7 @@ public final class StringLib implements JavaFunction {
 						c = f.charAt(i);
 
 						while (c >= '0' && c <= '9') {
-							precision = 10 * precision + (int) (c - '0');
+							precision = 10 * precision + c - '0';
 							i++;
 							KahluaUtil.luaAssert(i < len, "incomplete option to 'format'");
 							c = f.charAt(i);
@@ -870,14 +870,18 @@ public final class StringLib implements JavaFunction {
 		}
 
 		public String getString() {
-			return getString(0);
-		}
-
-		public String getString(int i) {
-			if (index + i == 0) {
+			if (index == 0) {
 				return string;
 			}
-			return string.substring(index + i, string.length());
+			return string.substring(index);
+		}
+
+		public int getStringLength() {
+			return getStringLength(0);
+		}
+
+		public int getStringLength(int i) {
+			return string.length() - (index + i);
 		}
 
 		public String getStringSubString(int len) {
@@ -919,8 +923,13 @@ public final class StringLib implements JavaFunction {
 		}
 
 		public int compareTo(StringPointer cmp, int len) {
-			return this.string.substring(this.index,this.index+len).compareTo(
-					cmp.string.substring(cmp.index, cmp.index+len));
+			for (int i = 0; i < len; i++) {
+				int val = getChar(i) - cmp.getChar(i);
+				if (val != 0) {
+					return val;
+				}
+			}
+			return 0;
 		}
 	}
 
@@ -1005,7 +1014,7 @@ public final class StringLib implements JavaFunction {
 			StringPointer s1 = s.getClone();
 			s1.postIncrString(init);
 
-			MatchState ms = new MatchState(callFrame, s.getClone(), s.getString().length());
+			MatchState ms = new MatchState(callFrame, s.getClone(), s.getStringLength());
 
 			do {
 				StringPointer res;
@@ -1107,7 +1116,7 @@ public final class StringLib implements JavaFunction {
 		return null;  /* string ends out of balance */
 	}
 
-	private static StringPointer classEnd ( MatchState ms, StringPointer pp ) {
+	private static StringPointer classEnd(StringPointer pp) {
 		StringPointer p = pp.getClone();
 		switch ( p.postIncrString ( 1 ) ) {
 		case L_ESC: {
@@ -1257,7 +1266,7 @@ public final class StringLib implements JavaFunction {
 					p.postIncrString (2);
 					KahluaUtil.luaAssert(p.getChar() == '[' , "missing '[' after '%%f' in pattern");
 
-					StringPointer ep = classEnd(ms, p);  // points to what is next
+					StringPointer ep = classEnd(p);  // points to what is next
 					char previous = (s.getIndex() == ms.src_init.getIndex()) ? '\0' : s.getChar(-1);
 
 					StringPointer ep1 = ep.getClone();
@@ -1298,8 +1307,7 @@ public final class StringLib implements JavaFunction {
 			}
 
 			if (isDefault) { // it is a pattern item
-				isDefault = false;
-				StringPointer ep = classEnd(ms, p);  // points to what is next
+				StringPointer ep = classEnd(p);  // points to what is next
 				boolean m = (s.getIndex () < ms.endIndex && singleMatch(s.getChar(), p, ep));
 				switch (ep.getChar()) {
 				case '?':  { // optional
@@ -1416,10 +1424,9 @@ public final class StringLib implements JavaFunction {
 
 		int n = 0;
 		StringBuffer b = new StringBuffer();
-		StringPointer e = null;
 		while (n < maxSubstitutions) {
 			ms.level = 0;
-			e = match(ms, src, pattern);
+			StringPointer e = match(ms, src, pattern);
 			if (e != null) {
 				n++;
 				addValue(ms, repl, b, src, e);
@@ -1473,16 +1480,12 @@ public final class StringLib implements JavaFunction {
 			if (replStr.getChar(i) != L_ESC) {
 				buf.append(replStr.getChar(i));
 			} else {
-				i ++;  // skip ESC
+				i++;  // skip ESC
 				if (!Character.isDigit(replStr.getChar(i))) {
 					buf.append(replStr.getChar(i));
 				} else if (replStr.getChar(i) == '0') {
-					String str = s.getString();
-					int len = s.length() - e.length();
-					if (len > str.length() ) {
-						len = str.length();
-					}
-					buf.append(str.substring(0, len));
+					int len = s.getStringLength() - e.length();
+					buf.append(s.getStringSubString(len));
 				} else {
 					Object o = ms.getCapture(replStr.getChar(i) - '1');
 					buf.append(KahluaUtil.tostring(o, null));
