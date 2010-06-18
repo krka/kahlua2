@@ -37,7 +37,7 @@
     <path id="interpreter.dependencies">
         <path refid="j2se.dependencies" />
         <pathelement path="${classes.dir}/j2se"/>
-        <pathelement location="${baseDir}/j2se/lib/jsyntaxpane-0.9.5.jar" />
+        <pathelement location="${baseDir}/interpreter/lib/jsyntaxpane-0.9.5.jar" />
     </path>
 
 	<path id="main.classpath">

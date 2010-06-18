@@ -1,16 +1,11 @@
 package se.krka.kahlua.j2se;
 
+import se.krka.kahlua.Version;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
-import se.krka.kahlua.stdlib.BaseLib;
-import se.krka.kahlua.stdlib.CoroutineLib;
-import se.krka.kahlua.stdlib.OsLib;
-import se.krka.kahlua.stdlib.RandomLib;
-import se.krka.kahlua.stdlib.StringLib;
-import se.krka.kahlua.stdlib.TableLib;
+import se.krka.kahlua.stdlib.*;
 import se.krka.kahlua.test.UserdataArray;
 import se.krka.kahlua.threading.BlockingKahluaThread;
 import se.krka.kahlua.vm.*;
-import se.krka.kahlua.vm.Version;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;

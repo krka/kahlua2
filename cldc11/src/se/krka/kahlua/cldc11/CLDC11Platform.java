@@ -1,11 +1,11 @@
 package se.krka.kahlua.cldc11;
 
+import se.krka.kahlua.Version;
 import se.krka.kahlua.stdlib.BaseLib;
 import se.krka.kahlua.stdlib.CoroutineLib;
 import se.krka.kahlua.stdlib.StringLib;
 import se.krka.kahlua.stdlib.TableLib;
 import se.krka.kahlua.vm.*;
-import se.krka.kahlua.vm.Version;
 
 public class CLDC11Platform implements Platform {
 	private static CLDC11Platform INSTANCE = new CLDC11Platform();
