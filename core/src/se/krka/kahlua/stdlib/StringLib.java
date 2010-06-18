@@ -1477,17 +1477,19 @@ public final class StringLib implements JavaFunction {
 		StringPointer replStr = new StringPointer(replTemp);
 		StringBuffer buf = new StringBuffer();
 		for (int i = 0; i < replTemp.length(); i++) {
-			if (replStr.getChar(i) != L_ESC) {
-				buf.append(replStr.getChar(i));
+			char c = replStr.getChar(i);
+			if (c != L_ESC) {
+				buf.append(c);
 			} else {
 				i++;  // skip ESC
-				if (!Character.isDigit(replStr.getChar(i))) {
-					buf.append(replStr.getChar(i));
-				} else if (replStr.getChar(i) == '0') {
+				c = replStr.getChar(i);
+				if (!Character.isDigit(c)) {
+					buf.append(c);
+				} else if (c == '0') {
 					int len = s.getStringLength() - e.length();
 					buf.append(s.getStringSubString(len));
 				} else {
-					Object o = ms.getCapture(replStr.getChar(i) - '1');
+					Object o = ms.getCapture(c - '1');
 					buf.append(KahluaUtil.tostring(o, null));
 				}
 			}
