@@ -361,7 +361,7 @@ public class KahluaThread {
 						String meta_op = meta_ops[opcode];
 
 						Object metafun = getBinMetaOp(bo, co, meta_op);
-						if (!(metafun != null)) {
+						if (metafun == null) {
 							KahluaUtil.fail((meta_op + " not defined for operands"));
 						}
 						res = call(metafun, bo, co, null);
@@ -464,7 +464,7 @@ public class KahluaThread {
 
 							Object metafun = getBinMetaOp(leftConcat, res,
 									"__concat");
-							if (!(metafun != null)) {
+							if (metafun == null) {
 								KahluaUtil.fail(("__concat not defined for operands: " + leftConcat + " and " + res));
 							}
 							res = call(metafun, leftConcat, res, null);
@@ -557,7 +557,7 @@ public class KahluaThread {
 							if (metafun == null && opcode == OP_EQ) {
 								resBool = KahluaUtil.luaEquals(bo, co);
 							} else {
-								if (!(metafun != null)) {
+								if (metafun == null) {
 									KahluaUtil.fail((meta_op + " not defined for operand"));
 								}
 								Object res = call(metafun, bo, co, null);
@@ -621,7 +621,7 @@ public class KahluaThread {
 					Object funObject = callFrame.get(a);
 					KahluaUtil.luaAssert(funObject != null, "Tried to call nil");
 					Object fun = prepareMetatableCall(funObject);
-					if (!(fun != null)) {
+					if (fun == null) {
 						KahluaUtil.fail(("Object " + funObject + " did not have __call metatable set"));
 					}
 
@@ -688,7 +688,7 @@ public class KahluaThread {
 					Object funObject = callFrame.get(a);
 					KahluaUtil.luaAssert(funObject != null, "Tried to call nil");
 					Object fun = prepareMetatableCall(funObject);
-					if (!(fun != null)) {
+					if (fun == null) {
 						KahluaUtil.fail(("Object " + funObject + " did not have __call metatable set"));
 					}
 
