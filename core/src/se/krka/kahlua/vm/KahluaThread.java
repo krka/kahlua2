@@ -191,8 +191,9 @@ public class KahluaThread {
 		int top = callFrame.getTop();
 		int actualReturnBase = top - nReturnValues;
 
-		callFrame.stackCopy(actualReturnBase, -1, nReturnValues);
-		callFrame.setTop(nReturnValues - 1);
+		int diff = returnBase - localBase;
+		callFrame.stackCopy(actualReturnBase, diff, nReturnValues);
+		callFrame.setTop(nReturnValues + diff);
 
 		coroutine.popCallFrame();
 
@@ -644,7 +645,7 @@ public class KahluaThread {
 						opcodes = prototype.code;
 						returnBase = callFrame.returnBase;
 					} else if (fun instanceof JavaFunction) {
-						callJava((JavaFunction) fun, base + a + 1, base + a,
+						callJava((JavaFunction) fun, localBase2, returnBase2,
 								nArguments2);
 
 						callFrame = currentCoroutine.currentCallFrame();

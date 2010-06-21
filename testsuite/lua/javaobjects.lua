@@ -29,3 +29,16 @@ testAssert(getmetatable(x) == mt)
 testAssert(getmetatable(y) == nil)
 --]]
 
+
+
+-- test Java calls
+do
+	local t = {}
+	local a, b, c, tt, na = luareturnparam(t, 1, 2, 3)
+	testAssert(a == 3 and b == 2 and c == 1 and tt == t and na == 4)
+	
+    local mt = {__call = luareturnparam}
+	setmetatable(t, mt)
+	a, b, c, tt, na = t(1, 2, 3)
+	testAssert(a == 3 and b == 2 and c == 1 and tt == t and na == 4)
+end

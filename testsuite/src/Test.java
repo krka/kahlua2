@@ -44,6 +44,18 @@ public class Test {
             }
         });
 
+		thread.getEnvironment().rawset("luareturnparam", new JavaFunction() {
+			@Override
+			public int call(LuaCallFrame callFrame, int nArguments) {
+				for (int i = 0; i < nArguments; i++) {
+					callFrame.push(callFrame.get(nArguments - i - 1));
+				}
+				callFrame.push(KahluaUtil.toDouble(nArguments));
+				return nArguments + 1;
+			}
+		});
+
+
 		//thread = runLua(dir, thread, new File(dir, "stdlib.lbc"));
 		File testhelper = new File(dir, "testhelper.lua");
 		LuaClosure closure = LuaCompiler.loadis(new FileInputStream(testhelper), testhelper.getName(), thread.getEnvironment());
