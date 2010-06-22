@@ -26,7 +26,6 @@ import jsyntaxpane.lexers.LuaLexer;
 import se.krka.kahlua.converter.KahluaConverterManager;
 import se.krka.kahlua.integration.LuaCaller;
 import se.krka.kahlua.integration.LuaReturn;
-import se.krka.kahlua.integration.expose.LuaJavaClassExposer;
 import se.krka.kahlua.j2se.interpreter.autocomplete.AutoComplete;
 import se.krka.kahlua.j2se.interpreter.jsyntax.JSyntaxUtil;
 import se.krka.kahlua.j2se.interpreter.jsyntax.KahluaKit;
@@ -69,7 +68,7 @@ public class Interpreter extends JPanel {
         new AutoComplete(input, platform, env);
 
 
-        terminal = new OutputTerminal(Color.BLACK, input.getFont(), input);
+        terminal = new OutputTerminal(Color.BLACK, input);
         terminal.setPreferredSize(new Dimension(800, 400));
         terminal.addKeyListener(new KeyListener() {
             @Override

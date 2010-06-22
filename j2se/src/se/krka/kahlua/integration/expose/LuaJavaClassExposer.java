@@ -75,14 +75,14 @@ public class LuaJavaClassExposer {
 						throw new IllegalArgumentException("Expected classmetatables as the first argument to __index");
 					}
 					if (key == null || !(key instanceof Class)) {
-						throw new IllegalArgumentException("key must be a class");
+						return callFrame.pushNil();
 					}
 					Class clazz = (Class) key;
 					if (!isExposed(clazz) && shouldExpose(clazz)) {
 						exposeClass(clazz);
 						return callFrame.push(classMetatables.rawget(clazz));
 					}
-					throw new IllegalArgumentException(key + " has not been exposed.");
+					return callFrame.pushNil();
 				}
 			});
 			classMetatables.setMetatable(mt);

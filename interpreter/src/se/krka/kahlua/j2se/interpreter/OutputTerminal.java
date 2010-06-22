@@ -29,34 +29,26 @@ import se.krka.kahlua.j2se.interpreter.jsyntax.KahluaKit;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Segment;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.*;
 
 public class OutputTerminal extends JPanel implements FocusListener {
-    private final JScrollPane scrollpane;
-    private boolean scrollDown;
+	private final AppenderThread appender;
+
+    final JScrollPane scrollpane;
+    boolean scrollDown;
     private static final Border EMPTY_BORDER = BorderFactory.createEmptyBorder(1, 5, 1, 5);
-    private final Font font;
 
-    private final JEditorPane editorPane;
-    private final VoidLexer voidLexer;
-
-    private final Color background;
-    private final Color errorColor = Color.RED.brighter().brighter();
-    private final Color infoColor = Color.GREEN.brighter().brighter().brighter();
-    private final Color outputColor = Color.WHITE;
+	final JEditorPane editorPane;
+    final VoidLexer voidLexer;
 
     private final PrintStream printStream = new PrintStream(new OutputStream() {
         @Override
         public void write(int b) throws IOException {
-            appendOutput(String.valueOf((char) b));
+			appender.append((char) b);
         }
     });
 
@@ -65,14 +57,13 @@ public class OutputTerminal extends JPanel implements FocusListener {
     private Lexer outputLexer = new TypeLexer(null);
     private Lexer infoLexer = new TypeLexer(TokenType.WARNING);
 
-    public OutputTerminal(Color background, Font font, JComponent input) {
+    public OutputTerminal(Color background, JComponent input) {
         super(new BorderLayout());
-
-        this.background = background;
-        this.font = font;
 
         editorPane = new JEditorPane();
         voidLexer = new VoidLexer();
+
+		appender = new AppenderThread(outputLexer, this);
 
         JSyntaxUtil.installSyntax(editorPane, false, new KahluaKit(voidLexer));
         voidLexer.doc = (SyntaxDocument) editorPane.getDocument();
@@ -101,14 +92,10 @@ public class OutputTerminal extends JPanel implements FocusListener {
 
         setFocusable(true);
         add(scrollpane, BorderLayout.CENTER);
-    }
+	}
 
     public synchronized void appendLua(String text) {
         append(text, luaLexer);
-    }
-
-    public synchronized void appendOutput(String text) {
-        append(text, outputLexer);
     }
 
     public synchronized void appendError(String text) {
@@ -119,25 +106,8 @@ public class OutputTerminal extends JPanel implements FocusListener {
         append(text, infoLexer);
     }
 
-    private synchronized void append(String text, Lexer lexer) {
-        JScrollBar vert = scrollpane.getVerticalScrollBar();
-        boolean isAtBottom = vert.getValue() + vert.getVisibleAmount() >= vert.getMaximum() - 32;
-        scrollDown = !vert.getValueIsAdjusting() && isAtBottom;
-
-        try {
-            Document document = editorPane.getDocument();
-            int startPos = document.getLength();
-
-            Segment insertSegment = new Segment(text.toCharArray(), 0, text.length());
-            ArrayList<Token> newTokens = new ArrayList<Token>();
-            lexer.parse(insertSegment, 0, newTokens);
-            voidLexer.setNewTokens(newTokens, document.getLength());
-
-            document.insertString(startPos, text, null);
-
-        } catch (BadLocationException e) {
-            e.printStackTrace();
-        }
+    private synchronized void append(final String text, final Lexer lexer) {
+		SwingUtilities.invokeLater(new SyntaxTextAppender(this, text, lexer));
     }
 
     public PrintStream getPrintStream() {
@@ -168,4 +138,8 @@ public class OutputTerminal extends JPanel implements FocusListener {
         return panel2;
     }
 
+
+	public void appendOutput(String s) {
+		appender.append(s);
+	}
 }
