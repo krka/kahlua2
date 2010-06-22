@@ -63,7 +63,7 @@ public class AppenderThread {
 	public AppenderThread(Lexer lexer, OutputTerminal outputTerminal) {
 		this.lexer = lexer;
 		this.outputTerminal = outputTerminal;
-		worker.setDaemon(false);
+		worker.setDaemon(true);
 		worker.start();
 	}
 
