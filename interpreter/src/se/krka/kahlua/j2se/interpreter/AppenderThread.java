@@ -27,6 +27,8 @@ import jsyntaxpane.Lexer;
 import javax.swing.SwingUtilities;
 
 public class AppenderThread {
+	private static final int MIN_RUNTIME = 50;
+
 	private final StringBuilder buffer = new StringBuilder();
 	private final OutputTerminal outputTerminal;
 	private final Lexer lexer;
@@ -34,7 +36,7 @@ public class AppenderThread {
 	private final Thread worker = new Thread() {
 		@Override
 		public void run() {
-			long runTime = 1;
+			long runTime = MIN_RUNTIME;
 			try {
 				while (true) {
 					if (buffer.length() > 0) {
@@ -49,7 +51,7 @@ public class AppenderThread {
 							SwingUtilities.invokeLater(appender);
 							appender.await();
 							long t2 = System.currentTimeMillis();
-							runTime = Math.min(1, t2 - t1);
+							runTime = Math.min(MIN_RUNTIME, t2 - t1);
 						}
 					}
 					Thread.sleep(10 * runTime);

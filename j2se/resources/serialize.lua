@@ -1,3 +1,15 @@
+local function append(t, a, b, c)
+  if a and a ~= "" then
+    t[#t + 1] = a
+  end
+  if b and b ~= "" then
+    t[#t + 1] = b
+  end
+  if c and c ~= "" then
+    t[#t + 1] = c
+  end
+end
+
 local function desFun(index, t)
    local old = _G[index]
    if old then
@@ -35,12 +47,12 @@ end
 local serialize_pass2
 
 local typeSerialize = {}
-local function nilSerialize(value)
-    return tostring(value)
+local function nilSerialize(buf, value)
+  append(buf, tostring(value))
 end
 
-local function stringSerialize(value)
-   return string.format("%q", value)
+local function stringSerialize(buf, value)
+   append(buf, string.format("%q", value))
 end
 typeSerialize["string"] = stringSerialize
 
@@ -67,83 +79,85 @@ keywords["nil"] = 1
 keywords["in"] = 1
 keywords["for"] = 1
 
-local function tableKey(key, vars, multiline)
+local function tableKey2(buf, key, vars, multiline, indent)
+      append(buf, "[")
+      serialize_pass2(buf, key, vars, multiline, indent)
+      append(buf, "]")
+end
+
+local function tableKey(buf, key, vars, multiline, indent)
    if type(key) ~= "string" then
-      return "[" .. serialize_pass2(key, vars, multiline) .."]"
+      return tableKey2(buf, key, vars, multiline, indent)
    end
    if not keywords[key] and string.find(key, "^[%a_][%a%d_]*$") then
-      return key
+      return append(buf, key)
    else
-      return "[" .. serialize_pass2(key, vars, multiline) .."]"
+      return tableKey2(buf, key, vars, multiline, indent)
    end
 end
 
-local function tableSerialize(value, vars, multiline, indent)
+local function tableSerialize(buf, value, vars, multiline, indent)
    local var = vars[value]
 
    if var then
       local touched = vars[var]
       if touched then
-	 return "_(" .. var .. ")"
+          return append(buf, "_(", var, ")")
       else
-	 vars[var] = true
+	     vars[var] = true
       end
    end
 
-   local res = (multiline and "\n" or "") .. indent
    if var then
-      res = "_(" .. var .. ",{"
+      append(buf, "_(", var, ",{")
    else
-      res = "{"
+      append(buf, "{")
    end
    local wantComma
    local lastInt = 0
    local nextIndent = indent .. " "
    for k, v in ipairs(value) do
-      local vs = serialize_pass2(v, vars, multiline, nextIndent)
-      if vs == "nil" then
-	 -- abort, since this will mean the end of integer keys
-	 break
+      if v == nil then
+        break
       end
       if wantComma then
-	 res = res .. ","
+         append(buf, ",")
       end
-        res = res .. (multiline and "\n" or "") .. nextIndent
-      res = res .. vs
+      append(buf, multiline, nextIndent)
+      serialize_pass2(buf, v, vars, multiline, nextIndent)
       wantComma = true
 
       lastInt = k
    end
    for k, v in pairs(value) do
       if type(k) == "number" and k == math.floor(k) and 1 <= k and k <= lastInt then
-	 -- ignore this, it's already in the table
+    	 -- ignore this, it's already in the table
       else
-	 local ks = tableKey(k, vars, multiline, nextIndent)
-	 local vs = serialize_pass2(v, vars, multiline, nextIndent)
-	 if ks ~= "nil" and vs ~= "nil" then
-	    if wantComma then
-	       res = res .. ","
-	    end
-        res = res .. (multiline and "\n" or "") .. nextIndent
-	    res = res .. ks .. "=" .. vs
-	    wantComma = true
-	 end
-      end
+         if k ~= nil and v ~= nil then
+              if wantComma then
+                append(buf, ",")
+              end
+              append(buf, multiline, nextIndent)
+              tableKey(buf, k, vars, multiline, nextIndent)
+              append(buf, "=")
+              serialize_pass2(buf, v, vars, multiline, nextIndent)
+              wantComma = true
+          end
+       end
    end
-   res = res .. (multiline and "\n" or "") .. indent
+   append(buf, multiline, indent)
    if var then
-      res = res .. "})"
+       append(buf, "})")
    else
-      res = res .. "}"
+       append(buf, "}")
    end
-   return res
 end
 typeSerialize["table"] = tableSerialize
 
 
-serialize_pass2 = function(value, vars, multiline, indent)
+serialize_pass2 = function(buf, value, vars, multiline, indent)
    local f = typeSerialize[type(value)] or nilSerialize
-   return f(value, vars, multiline, indent)
+   f(buf, value, vars, multiline, indent)
 end
 
 local function getVars(value, t, curVar)
@@ -168,6 +182,7 @@ local function getVars(value, t, curVar)
 end
 
 function serialize(value, multiline, indent)
+   multiline = multiline or ""
    indent = indent or ""
    local vars = getVars(value, nil, 1)
    for k, v in pairs(vars) do
@@ -175,9 +190,11 @@ function serialize(value, multiline, indent)
 	 vars[k] = nil
       end
    end
-   return serialize_pass2(value, vars, multiline, indent)
+   local buf = {}
+   serialize_pass2(buf, value, vars, multiline, indent)
+   return table.concat(buf)
 end
 
 function pp(value)
-    return serialize(value, true)
+    return serialize(value, "\n")
 end
