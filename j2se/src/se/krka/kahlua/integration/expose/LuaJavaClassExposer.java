@@ -39,9 +39,11 @@ import java.util.Set;
 
 /**
  * A tool to automatically expose java classes and
- * methods to a lua thread
- * NOTE: This tool requires annotations (java 1.5 or higher) to work
- * and is therefore not supported in J2ME.
+ * methods to a lua thread.
+ *
+ * NOTE: This tool requires annotations and reflection
+ * (java 1.5 or higher) to work
+ * and is therefore not supported in CLDC.
  */
 public class LuaJavaClassExposer {
     private final static Object DEBUGINFO_KEY = new Object();

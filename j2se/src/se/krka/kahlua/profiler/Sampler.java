@@ -8,6 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * A sampler holds a timer task which periodically
+ * inspects the current call frame stack of a Kahlua thread.
+ *
+ * For each sample taken, the sampler provides it to the profiler.
+ */
 public class Sampler {
     private static final AtomicInteger NEXT_ID = new AtomicInteger();
 
@@ -17,6 +23,12 @@ public class Sampler {
 	private final Profiler profiler;
 
 
+	/**
+	 *
+	 * @param thread the Kahlua thread to measure.
+	 * @param period the number of milliseconds between each sample.
+	 * @param profiler the profiler which should receive the samples.
+	 */
     public Sampler(KahluaThread thread, long period, Profiler profiler) {
 		this.thread = thread;
 		this.period = period;

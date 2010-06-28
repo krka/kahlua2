@@ -25,6 +25,7 @@ package se.krka.kahlua.integration;
 
 import se.krka.kahlua.vm.KahluaUtil;
 
+/** @exclude */
 public class LuaFail extends LuaReturn {
 	LuaFail(Object[] returnValues) {
 		super(returnValues);

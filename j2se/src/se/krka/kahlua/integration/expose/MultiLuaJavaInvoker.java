@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+/** @exclude */
 public class MultiLuaJavaInvoker implements JavaFunction {
     private final List<LuaJavaInvoker> invokers = new ArrayList<LuaJavaInvoker>();
     private static final Comparator<? super LuaJavaInvoker> COMPARATOR = new Comparator<LuaJavaInvoker>() {

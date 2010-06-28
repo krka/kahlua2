@@ -46,8 +46,7 @@ public class Require implements JavaFunction {
         KahluaTable env = callFrame.getEnvironment();
         Map<String, Result> states = (Map<String, Result>) callFrame.coroutine.thread.tableGet(env, this);
 
-        KahluaUtil.luaAssert(nArguments >= 1, "not enough args");
-        String path = (String) callFrame.get(0);
+		String path = KahluaUtil.getStringArg(callFrame, 1, "require");
 
         Result result = states.get(path);
         if (result == null) {

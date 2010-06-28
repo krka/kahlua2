@@ -1,7 +1,7 @@
 package se.krka.kahlua.profiler;
 
+/** @exclude */
 public interface StacktraceElement {
-	public String name();
-
+	String name();
 	String type();
 }

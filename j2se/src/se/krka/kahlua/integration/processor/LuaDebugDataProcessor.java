@@ -36,6 +36,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 
+/** @exclude */
 public class LuaDebugDataProcessor implements Processor, ElementVisitor<Void, Void> {
 
 	private HashMap<String, ClassParameterInformation> classes;

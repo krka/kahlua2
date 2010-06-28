@@ -2,6 +2,7 @@ package se.krka.kahlua.profiler;
 
 import java.util.*;
 
+/** @exclude */
 public class StacktraceCounter {
 	private final Map<StacktraceElement, StacktraceCounter> children = new HashMap<StacktraceElement, StacktraceCounter>();
 	private long time = 0;

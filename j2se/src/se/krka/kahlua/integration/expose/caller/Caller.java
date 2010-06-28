@@ -26,6 +26,7 @@ import se.krka.kahlua.integration.expose.ReturnValues;
 
 import java.lang.reflect.InvocationTargetException;
 
+/** @exclude */
 public interface Caller {
 	void call(Object self, ReturnValues rv, Object[] params) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InstantiationException;
 	

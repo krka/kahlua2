@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 
 
+/** @exclude */
 public class MethodParameterInformation implements Serializable {
     public static final MethodParameterInformation EMPTY = new MethodParameterInformation(Collections.EMPTY_LIST);
 	private static final long serialVersionUID = -3059552311721486815L;

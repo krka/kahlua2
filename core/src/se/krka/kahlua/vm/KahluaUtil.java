@@ -4,27 +4,24 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class KahluaUtil {
-    public static final Object WORKER_THREAD_KEY = new Object();
-    public static final String TYPE_NIL = "nil";
-    public static final String TYPE_STRING = "string";
-    public static final String TYPE_NUMBER = "number";
-    public static final String TYPE_BOOLEAN = "boolean";
-    public static final String TYPE_FUNCTION = "function";
-    public static final String TYPE_TABLE = "table";
-    public static final String TYPE_COROUTINE = "coroutine";
-    public static final String TYPE_USERDATA = "userdata";
-
-    public static boolean luaEquals(Object a, Object b) {
-		if (a == null || b == null) {
-			return a == b;
-		}
-		if (a instanceof Double && b instanceof Double) {
-			Double ad = (Double) a;
-			Double bd = (Double) b;
-			return ad.doubleValue() == bd.doubleValue();
-		}
-		return a == b;
-	}
+	/** @exclude */
+    private static final Object WORKER_THREAD_KEY = new Object();
+	/** @exclude */
+    private static final String TYPE_NIL = "nil";
+	/** @exclude */
+    private static final String TYPE_STRING = "string";
+	/** @exclude */
+    private static final String TYPE_NUMBER = "number";
+	/** @exclude */
+    private static final String TYPE_BOOLEAN = "boolean";
+	/** @exclude */
+    private static final String TYPE_FUNCTION = "function";
+	/** @exclude */
+    private static final String TYPE_TABLE = "table";
+	/** @exclude */
+    private static final String TYPE_COROUTINE = "coroutine";
+	/** @exclude */
+    private static final String TYPE_USERDATA = "userdata";
 
 	public static double fromDouble(Object o) {
 		return ((Double) o).doubleValue();
@@ -122,6 +119,9 @@ public class KahluaUtil {
         return (KahluaThread) workerThread;
     }
 
+	public static void setWorkerThread(KahluaTable env, KahluaThread thread) {
+		env.rawset(WORKER_THREAD_KEY, thread);
+	}
 
 
     public static KahluaTable getOrCreateTable(Platform platform, KahluaTable env, String name) {
@@ -317,7 +317,7 @@ public class KahluaUtil {
 		if (res == null) {
 			throw new RuntimeException("missing argument #" + n + "to '" + function + "'");
 		}
-		return callFrame.get(n - 1);
+		return res;
 	}
 
     public static int len(KahluaTable kahluaTable, int low, int high) {

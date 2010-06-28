@@ -25,6 +25,7 @@ package se.krka.kahlua.integration.expose;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
+/** @exclude */
 public class AnnotationUtil {
     public static <T extends Annotation> T getAnnotation(Method method, Class<T> annotation) {
         return getAnnotation(method.getDeclaringClass(), method.getName(), method.getParameterTypes(), annotation);

@@ -59,8 +59,8 @@ public class J2SEPlatform implements Platform {
 
     private KahluaThread setupWorkerThread(KahluaTable env) {
         BlockingKahluaThread thread = new BlockingKahluaThread(this, env);
-        env.rawset(KahluaUtil.WORKER_THREAD_KEY, thread);
-        return thread;
+		KahluaUtil.setWorkerThread(env, thread);
+		return thread;
     }
 
 }

@@ -21,91 +21,52 @@
  */
 package se.krka.kahlua.vm;
 
+import se.krka.kahlua.stdlib.BaseLib;
+
 import java.io.PrintStream;
 
 public class KahluaThread {
-	/** @exclude */
-	public static final int FIELDS_PER_FLUSH = 50;
-	/** @exclude */
-	public static final int OP_MOVE = 0;
-	/** @exclude */
-	public static final int OP_LOADK = 1;
-	/** @exclude */
-	public static final int OP_LOADBOOL = 2;
-	/** @exclude */
-	public static final int OP_LOADNIL = 3;
-	/** @exclude */
-	public static final int OP_GETUPVAL = 4;
-	/** @exclude */
-	public static final int OP_GETGLOBAL = 5;
-	/** @exclude */
-	public static final int OP_GETTABLE = 6;
-	/** @exclude */
-	public static final int OP_SETGLOBAL = 7;
-	/** @exclude */
-	public static final int OP_SETUPVAL = 8;
-	/** @exclude */
-	public static final int OP_SETTABLE = 9;
-	/** @exclude */
-	public static final int OP_NEWTABLE = 10;
-	/** @exclude */
-	public static final int OP_SELF = 11;
-	/** @exclude */
-	public static final int OP_ADD = 12;
-	/** @exclude */
-	public static final int OP_SUB = 13;
-	/** @exclude */
-	public static final int OP_MUL = 14;
-	/** @exclude */
-	public static final int OP_DIV = 15;
-	/** @exclude */
-	public static final int OP_MOD = 16;
-	/** @exclude */
-	public static final int OP_POW = 17;
-	/** @exclude */
-	public static final int OP_UNM = 18;
-	/** @exclude */
-	public static final int OP_NOT = 19;
-	/** @exclude */
-	public static final int OP_LEN = 20;
-	/** @exclude */
-	public static final int OP_CONCAT = 21;
-	/** @exclude */
-	public static final int OP_JMP = 22;
-	/** @exclude */
-	public static final int OP_EQ = 23;
-	/** @exclude */
-	public static final int OP_LT = 24;
-	/** @exclude */
-	public static final int OP_LE = 25;
-	/** @exclude */
-	public static final int OP_TEST = 26;
-	/** @exclude */
-	public static final int OP_TESTSET = 27;
-	/** @exclude */
-	public static final int OP_CALL = 28;
-	/** @exclude */
-	public static final int OP_TAILCALL = 29;
-	/** @exclude */
-	public static final int OP_RETURN = 30;
-	/** @exclude */
-	public static final int OP_FORLOOP = 31;
-	/** @exclude */
-	public static final int OP_FORPREP = 32;
-	/** @exclude */
-	public static final int OP_TFORLOOP = 33;
-	/** @exclude */
-	public static final int OP_SETLIST = 34;
-	/** @exclude */
-	public static final int OP_CLOSE = 35;
-	/** @exclude */
-	public static final int OP_CLOSURE = 36;
-	/** @exclude */
-	public static final int OP_VARARG = 37;
-	/** @exclude */
+	private static final int FIELDS_PER_FLUSH = 50;
+	private static final int OP_MOVE = 0;
+	private static final int OP_LOADK = 1;
+	private static final int OP_LOADBOOL = 2;
+	private static final int OP_LOADNIL = 3;
+	private static final int OP_GETUPVAL = 4;
+	private static final int OP_GETGLOBAL = 5;
+	private static final int OP_GETTABLE = 6;
+	private static final int OP_SETGLOBAL = 7;
+	private static final int OP_SETUPVAL = 8;
+	private static final int OP_SETTABLE = 9;
+	private static final int OP_NEWTABLE = 10;
+	private static final int OP_SELF = 11;
+	private static final int OP_ADD = 12;
+	private static final int OP_SUB = 13;
+	private static final int OP_MUL = 14;
+	private static final int OP_DIV = 15;
+	private static final int OP_MOD = 16;
+	private static final int OP_POW = 17;
+	private static final int OP_UNM = 18;
+	private static final int OP_NOT = 19;
+	private static final int OP_LEN = 20;
+	private static final int OP_CONCAT = 21;
+	private static final int OP_JMP = 22;
+	private static final int OP_EQ = 23;
+	private static final int OP_LT = 24;
+	private static final int OP_LE = 25;
+	private static final int OP_TEST = 26;
+	private static final int OP_TESTSET = 27;
+	private static final int OP_CALL = 28;
+	private static final int OP_TAILCALL = 29;
+	private static final int OP_RETURN = 30;
+	private static final int OP_FORLOOP = 31;
+	private static final int OP_FORPREP = 32;
+	private static final int OP_TFORLOOP = 33;
+	private static final int OP_SETLIST = 34;
+	private static final int OP_CLOSE = 35;
+	private static final int OP_CLOSURE = 36;
+	private static final int OP_VARARG = 37;
     private static final int MAX_INDEX_RECURSION = 100;
 
-	/** @exclude */
     private static final String meta_ops[];
     static {
         meta_ops = new String[38];
@@ -123,9 +84,7 @@ public class KahluaThread {
 
 	/** @exclude */
 	public Coroutine currentCoroutine;
-	/** @exclude */
     private final PrintStream out;
-	/** @exclude */
     private final Platform platform;
 
     public KahluaThread(Platform platform, KahluaTable environment) {
@@ -555,7 +514,7 @@ public class KahluaThread {
 							}
 
 							if (metafun == null && opcode == OP_EQ) {
-								resBool = KahluaUtil.luaEquals(bo, co);
+								resBool = BaseLib.luaEquals(bo, co);
 							} else {
 								if (metafun == null) {
 									KahluaUtil.fail((meta_op + " not defined for operand"));

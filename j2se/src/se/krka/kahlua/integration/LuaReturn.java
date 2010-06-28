@@ -25,6 +25,7 @@ package se.krka.kahlua.integration;
 import java.util.AbstractList;
 
 public abstract class LuaReturn extends AbstractList<Object> {
+	/** @exclude */
 	protected final Object[] returnValues;
 
 	protected LuaReturn(Object[] returnValues) {

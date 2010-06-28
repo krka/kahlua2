@@ -26,6 +26,7 @@ import java.lang.reflect.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/** @exclude */
 public class TypeUtil {
     private static final Pattern pattern = Pattern.compile("([\\.a-z0-9]*)\\.([A-Za-z][A-Za-z0-9_]*)");
     public static String removePackages(String s) {

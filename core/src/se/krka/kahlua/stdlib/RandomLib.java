@@ -54,7 +54,7 @@ public class RandomLib implements JavaFunction {
     }
 
     private int randomSeed(LuaCallFrame callFrame, int nArguments) {
-        Random random = getRandom(callFrame, nArguments);
+        Random random = getRandom(callFrame, "seed");
         Object o = callFrame.get(1);
         int hashCode = o == null ? 0 : o.hashCode();
         random.setSeed(hashCode);
@@ -62,41 +62,33 @@ public class RandomLib implements JavaFunction {
     }
 
     private int random(LuaCallFrame callFrame, int nArguments) {
-        Random random = getRandom(callFrame, nArguments);
+        Random random = getRandom(callFrame, "random");
 
-        if (nArguments <= 1) {
-            return callFrame.push(KahluaUtil.toDouble(random.nextDouble()));
-        }
-
-        double tmp = KahluaUtil.getDoubleArg(callFrame, 2, names[RANDOM]);
-        int m = (int) tmp;
-        int n;
-        if (nArguments == 2) {
-            n = m;
-            m = 1;
-        } else {
-            tmp = KahluaUtil.getDoubleArg(callFrame, 3, names[RANDOM]);
-            n = (int) tmp;
-        }
+		Double min = KahluaUtil.getOptionalNumberArg(callFrame, 2);
+		Double max = KahluaUtil.getOptionalNumberArg(callFrame, 3);
+		if (min == null) {
+			return callFrame.push(KahluaUtil.toDouble(random.nextDouble()));
+		}
+		int m = min.intValue();
+		int n;
+		if (max == null) {
+			n = m;
+			m = 1;
+		} else {
+			n = max.intValue();
+		}
         return callFrame.push(KahluaUtil.toDouble(m + random.nextInt(n - m + 1)));
     }
 
-    private Random getRandom(LuaCallFrame callFrame, int nArguments) {
-        Random random = null;
-        if (nArguments > 0) {
-            Object o = callFrame.get(0);
-            if (o instanceof Random) {
-                random = (Random) o;
-            }
-        }
-        if (random == null) {
-            KahluaUtil.fail("First argument must be an object of type random.");
-        }
-        return random;
+    private Random getRandom(LuaCallFrame callFrame, String name) {
+		Object obj = KahluaUtil.getArg(callFrame, 1, name);
+		if (!(obj instanceof Random)) {
+			KahluaUtil.fail("First argument to " + name + " must be an object of type random.");
+		}
+		return (Random) obj;
     }
 
     private int newRandom(LuaCallFrame callFrame) {
-        Random random = new Random();
-        return callFrame.push(random);
+		return callFrame.push(new Random());
     }
 }

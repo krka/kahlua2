@@ -27,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import se.krka.kahlua.integration.expose.ReturnValues;
 import se.krka.kahlua.integration.processor.DescriptorUtil;
 
+/** @exclude */
 public class ConstructorCaller extends AbstractCaller {
 
 	private final Constructor<?> constructor;

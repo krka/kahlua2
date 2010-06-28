@@ -393,11 +393,7 @@ public final class MathLib implements JavaFunction {
 		return 1;
 	}
 
-
-
-
-
-	public static final double EPS = 1e-15;
+	private static final double EPS = 1e-15;
 
 	/*
 	 * Simple implementation of the taylor expansion of
@@ -502,19 +498,19 @@ public final class MathLib implements JavaFunction {
 
 
 	// constants
-	static final double sq2p1 = 2.414213562373095048802e0;
-	static final double sq2m1  = .414213562373095048802e0;
-	static final double p4  = .161536412982230228262e2;
-	static final double p3  = .26842548195503973794141e3;
-	static final double p2  = .11530293515404850115428136e4;
-	static final double p1  = .178040631643319697105464587e4;
-	static final double p0  = .89678597403663861959987488e3;
-	static final double q4  = .5895697050844462222791e2;
-	static final double q3  = .536265374031215315104235e3;
-	static final double q2  = .16667838148816337184521798e4;
-	static final double q1  = .207933497444540981287275926e4;
-	static final double q0  = .89678597403663861962481162e3;
-	static final double PIO2 = 1.5707963267948966135E0;
+	private static final double sq2p1 = 2.414213562373095048802e0;
+	private static final double sq2m1  = .414213562373095048802e0;
+	private static final double p4  = .161536412982230228262e2;
+	private static final double p3  = .26842548195503973794141e3;
+	private static final double p2  = .11530293515404850115428136e4;
+	private static final double p1  = .178040631643319697105464587e4;
+	private static final double p0  = .89678597403663861959987488e3;
+	private static final double q4  = .5895697050844462222791e2;
+	private static final double q3  = .536265374031215315104235e3;
+	private static final double q2  = .16667838148816337184521798e4;
+	private static final double q1  = .207933497444540981287275926e4;
+	private static final double q0  = .89678597403663861962481162e3;
+	private static final double PIO2 = 1.5707963267948966135E0;
 
 	// reduce
 	private static double mxatan(double arg)

@@ -33,6 +33,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+/** @exclude */
 public class ClassParameterInformation implements Serializable {
 	private static final long serialVersionUID = 7634190901254143200L;
 

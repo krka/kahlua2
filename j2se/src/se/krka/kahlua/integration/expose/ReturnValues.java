@@ -35,13 +35,13 @@ public class ReturnValues {
 		this.callFrame = callFrame;
 	}
 	
-	public ReturnValues push(Object o) {
-        args += callFrame.push(manager.fromJavaToLua(o));
+	public ReturnValues push(Object obj) {
+        args += callFrame.push(manager.fromJavaToLua(obj));
         return this;
 	}
 	
-	public ReturnValues push(Object... params) {
-		for (Object o: params) {
+	public ReturnValues push(Object... objects) {
+		for (Object o: objects) {
 			push(o);
 		}
 		return this;

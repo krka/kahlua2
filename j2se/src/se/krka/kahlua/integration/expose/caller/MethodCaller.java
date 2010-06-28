@@ -27,6 +27,7 @@ import java.lang.reflect.Method;
 import se.krka.kahlua.integration.expose.ReturnValues;
 import se.krka.kahlua.integration.processor.DescriptorUtil;
 
+/** @exclude */
 public class MethodCaller extends AbstractCaller {
 
 	private final Method method;

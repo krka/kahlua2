@@ -3,6 +3,7 @@ package se.krka.kahlua.profiler;
 import java.util.*;
 import java.io.PrintWriter;
 
+/** @exclude */
 public class StacktraceNode {
     private final long time;
 	private final StacktraceElement element;

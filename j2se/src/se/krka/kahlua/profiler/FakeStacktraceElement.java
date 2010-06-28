@@ -1,5 +1,6 @@
 package se.krka.kahlua.profiler;
 
+/** @exclude */
 public class FakeStacktraceElement implements StacktraceElement {
 	private final String name;
 	private final String type;

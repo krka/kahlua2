@@ -4,6 +4,7 @@ import se.krka.kahlua.integration.expose.ReturnValues;
 
 import java.util.Arrays;
 
+/** @exclude */
 public abstract class AbstractCaller implements Caller {
     protected final Class<?>[] parameters;
     protected final boolean needsMultipleReturnValues;

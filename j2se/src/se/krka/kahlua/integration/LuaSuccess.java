@@ -22,6 +22,7 @@
 
 package se.krka.kahlua.integration;
 
+/** @exclude */
 public class LuaSuccess extends LuaReturn {
 	LuaSuccess(Object[] returnValues) {
 		super(returnValues);

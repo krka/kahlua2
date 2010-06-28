@@ -52,10 +52,10 @@ public final class StringLib implements JavaFunction {
 	private static final int CAP_POSITION = ( -2 );
 
 	private static final String[] names;
-	private static final StringLib[] functions;  
+	private static final StringLib[] functions;
 
 	// NOTE: String.class won't work in J2ME - so this is used as a workaround
-	public static final Class STRING_CLASS = "".getClass();
+	private static final Class STRING_CLASS = "".getClass();
 	
 	static {
 		names = new String[NUM_FUNCTIONS];
@@ -76,6 +76,7 @@ public final class StringLib implements JavaFunction {
 		}
 	}
 
+	/** @exclude */
 	private final int methodId;
 	public StringLib(int index) {
 		this.methodId = index;
@@ -808,6 +809,7 @@ public final class StringLib implements JavaFunction {
       * Original code that this was adapted from is copyright (c) 2008 groundspeak, inc.
       */
 
+	/** @exclude */
 	public static class MatchState {
 		public final LuaCallFrame callFrame;
 		public final StringPointer src_init;  /* init of source string */
@@ -827,6 +829,7 @@ public final class StringLib implements JavaFunction {
 
 		public int level;  /* total number of captures (finished or unfinished) */
 
+		/** @exclude */
 		public static class Capture {
 			public StringPointer init;
 			public int len;
@@ -844,6 +847,7 @@ public final class StringLib implements JavaFunction {
 		}
 	}
 
+	/** @exclude */
 	public static class StringPointer {
 		private final String string;
 		private int index = 0;
@@ -1413,11 +1417,12 @@ public final class StringLib implements JavaFunction {
 			pattern.postIncrString ( 1 );
 		}
 
-		String replType = KahluaUtil.type(repl);
-		if (!(replType == KahluaUtil.TYPE_FUNCTION ||
-						replType == KahluaUtil.TYPE_STRING ||
-						replType == KahluaUtil.TYPE_TABLE)) {
-			KahluaUtil.fail(("string/function/table expected, got "+replType));
+		if (!(repl instanceof Double ||
+						repl instanceof String ||
+						repl instanceof LuaClosure ||
+						repl instanceof JavaFunction ||
+						repl instanceof KahluaTable )) {
+			KahluaUtil.fail(("string/function/table expected, got " + repl));
 		}
 
 		MatchState ms = new MatchState(cf, src.getClone(), src.length());
@@ -1448,9 +1453,9 @@ public final class StringLib implements JavaFunction {
 	}
 
 	private static void addValue(MatchState ms, Object repl, StringBuffer b, StringPointer src, StringPointer e) {
-		String type = KahluaUtil.type(repl);
-		if (type == KahluaUtil.TYPE_NUMBER || type == KahluaUtil.TYPE_STRING) {
-			b.append(addString(ms, repl, src, e));
+		String replString = KahluaUtil.rawTostring(repl);
+		if (replString != null) {
+			b.append(addString(ms, replString, src, e));
 		} else {
 			Object captures = ms.getCapture(0);
 			String match;
@@ -1460,10 +1465,10 @@ public final class StringLib implements JavaFunction {
 				match = src.getStringSubString(e.getIndex() - src.getIndex());
 			}
 			Object res = null;
-			if (type == KahluaUtil.TYPE_FUNCTION) {
-				res = ms.callFrame.coroutine.thread.call(repl, match, null, null);
-			} else if (type == KahluaUtil.TYPE_TABLE) {
+			if (repl instanceof KahluaTable) {
 				res = ((KahluaTable)repl).rawget(match);
+			} else {
+				res = ms.callFrame.coroutine.thread.call(repl, match, null, null);
 			}
 			if (res == null) {
 				res = match;
@@ -1472,11 +1477,10 @@ public final class StringLib implements JavaFunction {
 		}
 	}
 
-	private static String addString(MatchState ms, Object repl, StringPointer s, StringPointer e) {
-		String replTemp = KahluaUtil.tostring(repl, ms.callFrame.coroutine.thread);
-		StringPointer replStr = new StringPointer(replTemp);
+	private static String addString(MatchState ms, String repl, StringPointer s, StringPointer e) {
+		StringPointer replStr = new StringPointer(repl);
 		StringBuffer buf = new StringBuffer();
-		for (int i = 0; i < replTemp.length(); i++) {
+		for (int i = 0; i < repl.length(); i++) {
 			char c = replStr.getChar(i);
 			if (c != L_ESC) {
 				buf.append(c);

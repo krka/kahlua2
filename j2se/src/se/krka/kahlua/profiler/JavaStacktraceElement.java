@@ -2,6 +2,7 @@ package se.krka.kahlua.profiler;
 
 import se.krka.kahlua.vm.JavaFunction;
 
+/** @exclude */
 public class JavaStacktraceElement implements StacktraceElement {
 	private final JavaFunction javaFunction;
 

@@ -167,7 +167,7 @@ public class CoroutineLib implements JavaFunction {
 		return 0;
 	}
 
-	public static int yield(LuaCallFrame callFrame, int nArguments) {
+	private static int yield(LuaCallFrame callFrame, int nArguments) {
 		Coroutine t = callFrame.coroutine;
 		Coroutine parent = t.parent;
 

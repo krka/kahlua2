@@ -2,6 +2,7 @@ package se.krka.kahlua.profiler;
 
 import se.krka.kahlua.vm.Prototype;
 
+/** @exclude */
 public class LuaStacktraceElement implements StacktraceElement {
 	private final int pc;
 	private final Prototype prototype;

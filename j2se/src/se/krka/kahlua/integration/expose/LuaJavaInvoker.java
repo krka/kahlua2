@@ -31,6 +31,8 @@ import se.krka.kahlua.vm.JavaFunction;
 import se.krka.kahlua.vm.LuaCallFrame;
 
 /**
+ * This is a JavaFunction that is an adapter for Java methods.
+ *
  * <pre>
  * Various variants:
  *

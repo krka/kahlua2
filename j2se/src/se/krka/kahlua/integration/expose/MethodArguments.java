@@ -22,6 +22,7 @@
 
 package se.krka.kahlua.integration.expose;
 
+/** @exclude */
 public class MethodArguments {
     private ReturnValues returnValues;
     private Object self;

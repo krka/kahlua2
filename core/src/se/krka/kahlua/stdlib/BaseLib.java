@@ -179,7 +179,7 @@ public final class BaseLib implements JavaFunction {
         Object o1 = callFrame.get(0);
         Object o2 = callFrame.get(1);
 
-        callFrame.push(KahluaUtil.toBoolean(KahluaUtil.luaEquals(o1, o2)));
+        callFrame.push(KahluaUtil.toBoolean(luaEquals(o1, o2)));
         return 1;
 	}
 
@@ -460,5 +460,16 @@ public final class BaseLib implements JavaFunction {
 		return callFrame.push("Could not find the bytecode for '" + modname + "' in classpath");
 	}
 
-	
+	/** @exclude */
+	public static boolean luaEquals(Object a, Object b) {
+		if (a == null || b == null) {
+			return a == b;
+		}
+		if (a instanceof Double && b instanceof Double) {
+			Double ad = (Double) a;
+			Double bd = (Double) b;
+			return ad.doubleValue() == bd.doubleValue();
+		}
+		return a == b;
+	}
 }
