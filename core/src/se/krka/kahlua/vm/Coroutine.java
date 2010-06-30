@@ -46,11 +46,8 @@ public class Coroutine {
 
 	public LuaCallFrame[] callFrameStack;
 	public int callFrameTop;
-	
 
-	public int expectedResults;
-
-    public Coroutine() {
+	public Coroutine() {
         thread = null;
         platform = null;
     }
