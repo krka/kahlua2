@@ -33,7 +33,7 @@ public class Coroutine {
 	
 	public String stackTrace = "";
 
-	public Vector liveUpvalues;
+	private final Vector liveUpvalues = new Vector();
 
 	public static final int MAX_STACK_SIZE = 1000;
 	public static final int INITIAL_STACK_SIZE = 10;
@@ -62,7 +62,6 @@ public class Coroutine {
 		
 		objectStack = new Object[INITIAL_STACK_SIZE];
 		callFrameStack = new LuaCallFrame[INITIAL_CALL_FRAME_STACK_SIZE];
-		liveUpvalues = new Vector();		
 	}
 
 	public final LuaCallFrame pushNewCallFrame(LuaClosure closure,
