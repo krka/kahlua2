@@ -107,25 +107,20 @@ public class CoroutineLib implements JavaFunction {
 
 	private int status(LuaCallFrame callFrame, int nArguments) {
 		Coroutine t = getCoroutine(callFrame, nArguments);
-		
-		String status = getStatus(t, callFrame.coroutine);
-		callFrame.push(status);
-		return 1;
-	}
 
-	private String getStatus(Coroutine t, Coroutine caller) {
-		if (caller == t) {
-			return "running";
+		if (callFrame.coroutine == t) {
+			return callFrame.push("running");
 		}
-		return t.getStatus();
+
+		return callFrame.push(t.getStatus());
 	}
 
 	private int resume(LuaCallFrame callFrame, int nArguments) {
 		Coroutine t = getCoroutine(callFrame, nArguments);
 		
-		String status = getStatus(t, callFrame.coroutine);
+		String status = t.getStatus();
 		// equals on strings works because they are both constants
-		if (!(status == "suspended")) {
+		if (status != "suspended") {
 			KahluaUtil.fail(("Can not resume coroutine that is in status: " + status));
 		}
 
