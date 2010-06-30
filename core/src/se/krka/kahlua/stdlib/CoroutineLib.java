@@ -106,7 +106,7 @@ public class CoroutineLib implements JavaFunction {
 	}
 
 	private int status(LuaCallFrame callFrame, int nArguments) {
-		Coroutine t = getCoroutine(callFrame, nArguments);
+		Coroutine t = getCoroutine(callFrame, "status");
 
 		if (callFrame.coroutine == t) {
 			return callFrame.push("running");
@@ -116,7 +116,7 @@ public class CoroutineLib implements JavaFunction {
 	}
 
 	private int resume(LuaCallFrame callFrame, int nArguments) {
-		Coroutine t = getCoroutine(callFrame, nArguments);
+		Coroutine t = getCoroutine(callFrame, "resume");
 		
 		String status = t.getStatus();
 		// equals on strings works because they are both constants
@@ -162,7 +162,7 @@ public class CoroutineLib implements JavaFunction {
 	}
 
     private int create(LuaCallFrame callFrame, int nArguments) {
-		LuaClosure c = getFunction(callFrame, nArguments);
+		LuaClosure c = getFunction(callFrame, "create");
 
 		Coroutine coroutine = new Coroutine(callFrame.coroutine.thread, callFrame.coroutine.environment);
 		coroutine.pushNewCallFrame(c, null, 0, 0, -1, true, true);
@@ -170,18 +170,16 @@ public class CoroutineLib implements JavaFunction {
 		return 1;
 	}
 
-	private LuaClosure getFunction(LuaCallFrame callFrame, int nArguments) {
-		KahluaUtil.luaAssert(nArguments >= 1, "not enough arguments");
-		Object o = callFrame.get(0);
-		KahluaUtil.luaAssert(o instanceof LuaClosure, "argument 1 must be a lua function");
+	private LuaClosure getFunction(LuaCallFrame callFrame, String name) {
+		Object o = KahluaUtil.getArg(callFrame, 1, name);
+		KahluaUtil.luaAssert(o instanceof LuaClosure, "argument must be a lua function");
 		LuaClosure c = (LuaClosure) o;
 		return c;
 	}
 
-	private Coroutine getCoroutine(LuaCallFrame callFrame, int nArguments) {
-		KahluaUtil.luaAssert(nArguments >= 1, "not enough arguments");
-		Object o = callFrame.get(0);
-		KahluaUtil.luaAssert(o instanceof Coroutine, "argument 1 must be a coroutine");
+	private Coroutine getCoroutine(LuaCallFrame callFrame, String name) {
+		Object o = KahluaUtil.getArg(callFrame, 1, name);
+		KahluaUtil.luaAssert(o instanceof Coroutine, "argument must be a coroutine");
 		Coroutine t = (Coroutine) o;
 		return t;
 	}
