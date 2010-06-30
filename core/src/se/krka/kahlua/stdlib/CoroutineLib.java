@@ -114,22 +114,10 @@ public class CoroutineLib implements JavaFunction {
 	}
 
 	private String getStatus(Coroutine t, Coroutine caller) {
-		String status = null;
-		if (t.parent == null) {
-			if (t.isDead()) {
-				status = "dead";
-			} else {
-				status = "suspended";
-			}
-		} else {
-			if (caller == t) {
-				status = "running";
-			} else {
-				status = "normal";
-			}
-			
+		if (caller == t) {
+			return "running";
 		}
-		return status;
+		return t.getStatus();
 	}
 
 	private int resume(LuaCallFrame callFrame, int nArguments) {

@@ -347,4 +347,16 @@ public class Coroutine {
     public Platform getPlatform() {
         return platform;
     }
+
+	public String getStatus() {
+		if (parent == null) {
+			if (isDead()) {
+				return "dead";
+			} else {
+				return "suspended";
+			}
+		} else {
+			return "normal";
+		}
+	}
 }
