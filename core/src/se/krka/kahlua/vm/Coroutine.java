@@ -35,8 +35,8 @@ public class Coroutine {
 
 	private final Vector liveUpvalues = new Vector();
 
-	public static final int MAX_STACK_SIZE = 1000;
-	public static final int INITIAL_STACK_SIZE = 10;
+	private static final int MAX_STACK_SIZE = 1000;
+	private static final int INITIAL_STACK_SIZE = 10;
 
 	private static final int MAX_CALL_FRAME_STACK_SIZE = 100;
 	private static final int INITIAL_CALL_FRAME_STACK_SIZE = 10;
