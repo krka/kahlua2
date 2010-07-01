@@ -42,7 +42,7 @@ public class Coroutine {
 	private static final int INITIAL_CALL_FRAME_STACK_SIZE = 10;
 	
 	public Object[] objectStack;
-	public int top;
+	private int top;
 
 	private LuaCallFrame[] callFrameStack;
 	private int callFrameTop;
