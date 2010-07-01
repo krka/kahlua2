@@ -50,9 +50,10 @@ public class Sampler {
 
 	private void appendList(List<StacktraceElement> list, Coroutine coroutine) {
         while (coroutine != null) {
-            int top = coroutine.callFrameTop;
-            for (int i = top - 1; i >= 0; i--) {
-                LuaCallFrame frame = coroutine.callFrameStack[i];
+			LuaCallFrame[] stack = coroutine.getCallframeStack();
+			int top = Math.min(stack.length, coroutine.getCallframeTop());
+			for (int i = top - 1; i >= 0; i--) {
+				LuaCallFrame frame = stack[i];
 
                 int pc = frame.pc - 1;
                 LuaClosure closure = frame.closure;

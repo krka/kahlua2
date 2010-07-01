@@ -735,7 +735,7 @@ public class KahluaThread {
 
 					if (callFrame.fromLua) {
 						if (callFrame.canYield
-								&& currentCoroutine.callFrameTop == 1) {
+								&& currentCoroutine.atBottom()) {
 							callFrame.localBase = callFrame.returnBase;
 							Coroutine coroutine = currentCoroutine;
 							yieldHelper(callFrame, callFrame, b);

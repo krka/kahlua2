@@ -155,13 +155,13 @@ public class CoroutineLib implements JavaFunction {
 		Coroutine parent = t.parent;
 
 		KahluaUtil.luaAssert(parent != null, "Can not yield outside of a coroutine");
-		
-		LuaCallFrame realCallFrame = t.callFrameStack[t.callFrameTop - 2];
+
+		LuaCallFrame realCallFrame = t.getCallFrame(-2);
 		KahluaThread.yieldHelper(realCallFrame, callFrame, nArguments);
 		return 0;
 	}
 
-    private int create(LuaCallFrame callFrame, int nArguments) {
+	private int create(LuaCallFrame callFrame, int nArguments) {
 		LuaClosure c = getFunction(callFrame, "create");
 
 		Coroutine coroutine = new Coroutine(callFrame.coroutine.thread, callFrame.coroutine.environment);

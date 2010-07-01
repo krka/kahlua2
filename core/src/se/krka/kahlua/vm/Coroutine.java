@@ -44,8 +44,8 @@ public class Coroutine {
 	public Object[] objectStack;
 	public int top;
 
-	public LuaCallFrame[] callFrameStack;
-	public int callFrameTop;
+	private LuaCallFrame[] callFrameStack;
+	private int callFrameTop;
 
 	public Coroutine() {
         thread = null;
@@ -354,5 +354,25 @@ public class Coroutine {
 		} else {
 			return "normal";
 		}
+	}
+
+	public boolean atBottom() {
+		return callFrameTop == 1;
+	}
+
+	public int getCallframeTop() {
+		return callFrameTop;
+	}
+
+	public LuaCallFrame[] getCallframeStack() {
+		return callFrameStack;
+	}
+
+
+	public LuaCallFrame getCallFrame(int index) {
+		if (index < 0) {
+			index += callFrameTop;
+		}
+		return callFrameStack[index];
 	}
 }
