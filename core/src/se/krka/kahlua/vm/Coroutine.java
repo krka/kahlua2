@@ -70,14 +70,7 @@ public class Coroutine {
 											   boolean insideCoroutine) {
 		setCallFrameStackTop(callFrameTop + 1);
 		LuaCallFrame callFrame = currentCallFrame();
-		
-		callFrame.localBase = localBase;
-		callFrame.returnBase = returnBase;
-		callFrame.nArguments = nArguments;
-		callFrame.fromLua = fromLua;
-		callFrame.canYield = insideCoroutine;
-		callFrame.closure = closure;
-		callFrame.javaFunction = javaFunction;
+		callFrame.setup(closure, javaFunction, localBase, returnBase, nArguments, fromLua, insideCoroutine);
 		return callFrame;
 	}
 

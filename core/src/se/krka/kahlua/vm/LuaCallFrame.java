@@ -187,4 +187,14 @@ public class LuaCallFrame {
     public Platform getPlatform() {
         return platform;
     }
+
+	void setup(LuaClosure closure, JavaFunction javaFunction, int localBase, int returnBase, int nArguments, boolean fromLua, boolean insideCoroutine) {
+		this.localBase = localBase;
+		this.returnBase = returnBase;
+		this.nArguments = nArguments;
+		this.fromLua = fromLua;
+		this.canYield = insideCoroutine;
+		this.closure = closure;
+		this.javaFunction = javaFunction;
+	}
 }
