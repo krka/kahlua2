@@ -61,7 +61,7 @@ public final class KahluaTableImpl implements KahluaTable {
     }
 
     public int len() {
-        return KahluaUtil.len(this, 0, delegate.size());
+        return KahluaUtil.len(this, 0, 2 * delegate.size());
     }
 
     public KahluaTableIterator iterator() {
