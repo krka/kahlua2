@@ -330,6 +330,9 @@ public class KahluaUtil {
                 low = middle;
             }
         }
+		while (kahluaTable.rawget(low + 1) != null) {
+			low++;
+		}
         return low;
     }
 

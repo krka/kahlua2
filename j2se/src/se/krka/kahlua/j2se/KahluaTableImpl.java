@@ -74,7 +74,7 @@ public class KahluaTableImpl implements KahluaTable {
 
     @Override
     public int len() {
-        return KahluaUtil.len(this, 0, delegate.size());
+        return KahluaUtil.len(this, 0, 2 * delegate.size());
     }
 
     @Override
