@@ -1468,7 +1468,7 @@ public final class StringLib implements JavaFunction {
 			if (repl instanceof KahluaTable) {
 				res = ((KahluaTable)repl).rawget(match);
 			} else {
-				res = ms.callFrame.coroutine.thread.call(repl, match, null, null);
+				res = ms.callFrame.getThread().call(repl, match, null, null);
 			}
 			if (res == null) {
 				res = match;

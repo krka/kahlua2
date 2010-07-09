@@ -24,13 +24,13 @@ package se.krka.kahlua.vm;
 import java.util.Vector;
 
 public class Coroutine {
-    public final KahluaThread thread;
-    private final Platform platform;
+	private final Platform platform;
+
+	private KahluaThread thread;
+	private Coroutine parent;
 
 	public KahluaTable environment;
 
-	public Coroutine parent;
-	
 	public String stackTrace = "";
 
 	private final Vector liveUpvalues = new Vector();
@@ -48,17 +48,19 @@ public class Coroutine {
 	private int callFrameTop;
 
 	public Coroutine() {
-        thread = null;
         platform = null;
     }
 
-    public Coroutine(KahluaThread thread, KahluaTable environment) {
-		this.thread = thread;
-        platform = thread.getPlatform();
+	public Coroutine(Platform platform, KahluaTable environment, KahluaThread thread) {
+		this.platform = platform;
 		this.environment = environment;
-		
+		this.thread = thread;
 		objectStack = new Object[INITIAL_STACK_SIZE];
 		callFrameStack = new LuaCallFrame[INITIAL_CALL_FRAME_STACK_SIZE];
+	}
+
+    public Coroutine(Platform platform, KahluaTable environment) {
+		this(platform, environment, null);
 	}
 
 	public final LuaCallFrame pushNewCallFrame(LuaClosure closure,
@@ -367,5 +369,51 @@ public class Coroutine {
 			index += callFrameTop;
 		}
 		return callFrameStack[index];
+	}
+
+	/**
+	 * @exclude
+	 */
+    public static void yieldHelper(LuaCallFrame callFrame, LuaCallFrame argsCallFrame, int nArguments) {
+        KahluaUtil.luaAssert(callFrame.canYield, "Can not yield outside of a coroutine");
+
+		Coroutine coroutine = callFrame.coroutine;
+
+		KahluaThread thread = coroutine.getThread();
+        Coroutine parent = coroutine.parent;
+
+		KahluaUtil.luaAssert(parent != null, "Internal error, coroutine must be running");
+		KahluaUtil.luaAssert(coroutine == thread.currentCoroutine, "Internal error, must yield current thread");
+        coroutine.parent = null;
+		coroutine.thread = null;
+
+        LuaCallFrame nextCallFrame = parent.currentCallFrame();
+
+        // Copy arguments
+        nextCallFrame.push(Boolean.TRUE);
+        for (int i = 0; i < nArguments; i++) {
+            Object value = argsCallFrame.get(i);
+            nextCallFrame.push(value);
+        }
+
+        thread.currentCoroutine = parent;
+    }
+
+	public void resume(Coroutine parent) {
+		this.parent = parent;
+		this.thread = parent.thread;
+	}
+
+	public KahluaThread getThread() {
+		return thread;
+	}
+
+	public Coroutine getParent() {
+		return parent;
+	}
+
+	public void destroy() {
+		this.parent = null;
+		this.thread = null;
 	}
 }

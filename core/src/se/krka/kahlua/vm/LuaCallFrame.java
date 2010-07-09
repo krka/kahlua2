@@ -197,4 +197,8 @@ public class LuaCallFrame {
 		this.closure = closure;
 		this.javaFunction = javaFunction;
 	}
+
+	public KahluaThread getThread() {
+		return coroutine.getThread();
+	}
 }

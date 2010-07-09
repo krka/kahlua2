@@ -44,7 +44,7 @@ public class Require implements JavaFunction {
 
     public int call(LuaCallFrame callFrame, int nArguments) {
         KahluaTable env = callFrame.getEnvironment();
-        Map<String, Result> states = (Map<String, Result>) callFrame.coroutine.thread.tableGet(env, this);
+        Map<String, Result> states = (Map<String, Result>) callFrame.getThread().tableGet(env, this);
 
 		String path = KahluaUtil.getStringArg(callFrame, 1, "require");
 
@@ -60,7 +60,7 @@ public class Require implements JavaFunction {
             try {
                 LuaClosure luaClosure = LuaCompiler.loadis(source, path, env);
                 setState(states, path, Result.LOADING);
-                callFrame.coroutine.thread.call(luaClosure, null, null, null);
+                callFrame.getThread().call(luaClosure, null, null, null);
                 setState(states, path, Result.LOADED);
 
                 return 0;

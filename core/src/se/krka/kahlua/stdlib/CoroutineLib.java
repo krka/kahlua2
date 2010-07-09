@@ -97,12 +97,11 @@ public class CoroutineLib implements JavaFunction {
 		
 		// same behaviour as in original lua,
 		// return nil if it's the root coroutine
-		if (t.parent == null) {
+		if (t.getStatus() != "normal") {
 			t = null;
 		}
 		
-		callFrame.push(t);
-		return 1;
+		return callFrame.push(t);
 	}
 
 	private int status(LuaCallFrame callFrame, int nArguments) {
@@ -125,8 +124,8 @@ public class CoroutineLib implements JavaFunction {
 		}
 
 		Coroutine parent = callFrame.coroutine;
-		t.parent = parent;
-		
+		t.resume(parent);
+
 		LuaCallFrame nextCallFrame = t.currentCallFrame();
 
 		// Is this the first time the coroutine is resumed?
@@ -145,26 +144,26 @@ public class CoroutineLib implements JavaFunction {
 			nextCallFrame.init();
 		}
 
-		callFrame.coroutine.thread.currentCoroutine = t;
+		callFrame.getThread().currentCoroutine = t;
 		
 		return 0;
 	}
 
 	private static int yield(LuaCallFrame callFrame, int nArguments) {
 		Coroutine t = callFrame.coroutine;
-		Coroutine parent = t.parent;
+		Coroutine parent = t.getParent();
 
 		KahluaUtil.luaAssert(parent != null, "Can not yield outside of a coroutine");
 
 		LuaCallFrame realCallFrame = t.getCallFrame(-2);
-		KahluaThread.yieldHelper(realCallFrame, callFrame, nArguments);
+		Coroutine.yieldHelper(realCallFrame, callFrame, nArguments);
 		return 0;
 	}
 
 	private int create(LuaCallFrame callFrame, int nArguments) {
 		LuaClosure c = getFunction(callFrame, "create");
 
-		Coroutine coroutine = new Coroutine(callFrame.coroutine.thread, callFrame.coroutine.environment);
+		Coroutine coroutine = new Coroutine(callFrame.getPlatform(), callFrame.getEnvironment());
 		coroutine.pushNewCallFrame(c, null, 0, 0, -1, true, true);
 		callFrame.push(coroutine);
 		return 1;

@@ -199,14 +199,14 @@ public final class TableLib implements JavaFunction {
 		KahluaUtil.luaAssert(nArguments >= 2, "Not enough arguments");
 		KahluaTable t = (KahluaTable)callFrame.get(0);
 		int pos = t.len() + 1;
-		Object elem = null;
+		Object elem;
 		if (nArguments > 2) {
 			pos = KahluaUtil.rawTonumber(callFrame.get(1)).intValue();
 			elem = callFrame.get(2);
 		} else {
 			elem = callFrame.get(1);
 		}
-		insert(callFrame.coroutine.thread, t, pos, elem);
+		insert(callFrame.getThread(), t, pos, elem);
 		return 0;
 	}
 	
@@ -230,7 +230,7 @@ public final class TableLib implements JavaFunction {
 		if (nArguments > 1) {
 			pos = KahluaUtil.rawTonumber(callFrame.get(1)).intValue();
 		}
-		callFrame.push(remove(callFrame.coroutine.thread, t, pos));
+		callFrame.push(remove(callFrame.getThread(), t, pos));
 		return 1;
 	}
 

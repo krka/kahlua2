@@ -292,11 +292,11 @@ public final class BaseLib implements JavaFunction {
 	}
 
 	public static int pcall(LuaCallFrame callFrame, int nArguments) {
-		return callFrame.coroutine.thread.pcall(nArguments - 1);
+		return callFrame.getThread().pcall(nArguments - 1);
 	}
 
 	private static int print(LuaCallFrame callFrame, int nArguments) {
-		KahluaThread thread = callFrame.coroutine.thread;
+		KahluaThread thread = callFrame.getThread();
 		KahluaTable env = thread.getEnvironment();
 		Object toStringFun = thread.tableGet(env, "tostring");
 		StringBuffer sb = new StringBuffer();
@@ -336,7 +336,7 @@ public final class BaseLib implements JavaFunction {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
 		Object o = callFrame.get(0);
 
-		Object metatable = callFrame.coroutine.thread.getmetatable(o, false);
+		Object metatable = callFrame.getThread().getmetatable(o, false);
 		callFrame.push(metatable);
 		return 1;
 	}
@@ -347,7 +347,7 @@ public final class BaseLib implements JavaFunction {
 		Object o = callFrame.get(0);
 
 		KahluaTable newMeta = (KahluaTable) (callFrame.get(1));
-		setmetatable(callFrame.coroutine.thread, o, newMeta, false);
+		setmetatable(callFrame.getThread(), o, newMeta, false);
 
 		callFrame.setTop(1);
 		return 1;
@@ -374,7 +374,7 @@ public final class BaseLib implements JavaFunction {
     private static int tostring(LuaCallFrame callFrame, int nArguments) {
 		KahluaUtil.luaAssert(nArguments >= 1, "Not enough arguments");
 		Object o = callFrame.get(0);
-		Object res = KahluaUtil.tostring(o, callFrame.coroutine.thread);
+		Object res = KahluaUtil.tostring(o, callFrame.getThread());
 		callFrame.push(res);
 		return 1;
 	}

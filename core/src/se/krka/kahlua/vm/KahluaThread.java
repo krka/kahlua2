@@ -94,7 +94,7 @@ public class KahluaThread {
 	public KahluaThread(PrintStream stream, Platform platform, KahluaTable environment) {
         this.platform = platform;
 		out = stream;
-        currentCoroutine = new Coroutine(this, environment);
+        currentCoroutine = new Coroutine(platform, environment, this);
 	}
 
     // For debugging purposes only
@@ -683,13 +683,13 @@ public class KahluaThread {
 						if (oldCoroutine != currentCoroutine) {
 							if (oldCoroutine.isDead()) {
 
-								if (currentCoroutine.parent == oldCoroutine) {
-									currentCoroutine.parent = oldCoroutine.parent;
-									oldCoroutine.parent = null;
+								if (currentCoroutine.getParent() == oldCoroutine) {
+									currentCoroutine.resume(oldCoroutine.getParent());
+									oldCoroutine.destroy();
 
 									// This is an implicit yield, so push a TRUE
 									// to the parent
-									currentCoroutine.parent.currentCallFrame()
+									currentCoroutine.getParent().currentCallFrame()
 											.push(Boolean.TRUE);
 								}
 							}
@@ -738,7 +738,7 @@ public class KahluaThread {
 								&& currentCoroutine.atBottom()) {
 							callFrame.localBase = callFrame.returnBase;
 							Coroutine coroutine = currentCoroutine;
-							yieldHelper(callFrame, callFrame, b);
+							Coroutine.yieldHelper(callFrame, callFrame, b);
 							coroutine.popCallFrame();
 
 							// If this coroutine is called from a java function,
@@ -897,10 +897,8 @@ public class KahluaThread {
 				while (true) {
 					callFrame = currentCoroutine.currentCallFrame();
 					if (callFrame == null) {
-						Coroutine parent = currentCoroutine.parent;
+						Coroutine parent = currentCoroutine.getParent();
 						if (parent != null) {
-							currentCoroutine.parent = null;
-							// Yield and fail
 
 							// Copy arguments
 							LuaCallFrame nextCallFrame = parent
@@ -910,7 +908,9 @@ public class KahluaThread {
 							nextCallFrame.push(e.getMessage());
 							nextCallFrame.push(currentCoroutine.stackTrace);
 
-							currentCoroutine.thread.currentCoroutine = parent;
+							// Yield and fail
+							currentCoroutine.destroy();
+
 							currentCoroutine = parent;
 							callFrame = currentCoroutine.currentCallFrame();
 							closure = callFrame.closure;
@@ -1241,25 +1241,4 @@ public class KahluaThread {
         return platform;
     }
 
-	/**
-	 * @exclude
-	 */
-    public static void yieldHelper(LuaCallFrame callFrame, LuaCallFrame argsCallFrame, int nArguments) {
-        KahluaUtil.luaAssert(callFrame.canYield, "Can not yield outside of a coroutine");
-
-        Coroutine t = callFrame.coroutine;
-        Coroutine parent = t.parent;
-        t.parent = null;
-
-        LuaCallFrame nextCallFrame = parent.currentCallFrame();
-
-        // Copy arguments
-        nextCallFrame.push(Boolean.TRUE);
-        for (int i = 0; i < nArguments; i++) {
-            Object value = argsCallFrame.get(i);
-            nextCallFrame.push(value);
-        }
-
-        t.thread.currentCoroutine = parent;
-    }
 }

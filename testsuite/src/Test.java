@@ -101,6 +101,7 @@ public class Test {
 				LuaClosure closure = LuaCompiler.loadis(new FileInputStream(child), child.getName(), thread.getEnvironment());
 				//LuaClosure closure = LuaPrototype.loadByteCode(new FileInputStream(child), thread.getEnvironment());
 				System.out.println("Running " + child + "...");
+				verifyCorrectStack(thread);
 				Object[] results = thread.pcall(runTest, new Object[] {child.getName(), closure});
 				if (results[0] != Boolean.TRUE) {
 					Object errorMessage = results[1];
@@ -110,7 +111,10 @@ public class Test {
 					if (stacktrace != null) {
 						stacktrace.printStackTrace();
 					}
+					verifyCorrectStack(thread);					
+					return;
 				} else {
+					verifyCorrectStack(thread);
 					if (!(results[1] instanceof KahluaTable)) {
 						KahluaUtil.fail(("Did not get a table back from " + child + ", got a " + results[1] + " instead."));
 					}
@@ -144,5 +148,13 @@ public class Test {
 			((Throwable) (results[3])).printStackTrace();
 			System.out.println(results[2]);
 		}
+	}
+
+	private static void verifyCorrectStack(KahluaThread thread) {
+		KahluaUtil.luaAssert(thread.currentCoroutine.getCallframeTop() == 0, "");
+		KahluaUtil.luaAssert(thread.currentCoroutine != null, "coroutine is missing");
+		KahluaUtil.luaAssert(thread.currentCoroutine.getThread() != null, "coroutine is missing thread " + thread.currentCoroutine);
+		KahluaUtil.luaAssert(thread.currentCoroutine.getThread() == thread, "coroutine has wrong thread");
+		KahluaUtil.luaAssert(thread.currentCoroutine.getParent() == null, "coroutine is not top level");
 	}
 }

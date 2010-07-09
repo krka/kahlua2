@@ -64,7 +64,7 @@ public class Sampler {
 					list.add(new JavaStacktraceElement(javaFunction));
 				}
             }
-            coroutine = coroutine.parent;
+            coroutine = coroutine.getParent();
         }
     }
 
