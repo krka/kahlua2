@@ -384,17 +384,25 @@ public class Coroutine {
 
 		KahluaUtil.luaAssert(parent != null, "Internal error, coroutine must be running");
 		KahluaUtil.luaAssert(coroutine == thread.currentCoroutine, "Internal error, must yield current thread");
-        coroutine.parent = null;
-		coroutine.thread = null;
+        coroutine.destroy();
 
         LuaCallFrame nextCallFrame = parent.currentCallFrame();
 
-        // Copy arguments
-        nextCallFrame.push(Boolean.TRUE);
-        for (int i = 0; i < nArguments; i++) {
-            Object value = argsCallFrame.get(i);
-            nextCallFrame.push(value);
-        }
+		if (nextCallFrame == null) {
+			parent.setTop(nArguments + 1);
+			parent.objectStack[0] = Boolean.TRUE;
+			for (int i = 0; i < nArguments; i++) {
+				parent.objectStack[i + 1] = argsCallFrame.get(i);
+			}
+		} else {
+			nextCallFrame.push(Boolean.TRUE);
+			// Copy arguments
+			for (int i = 0; i < nArguments; i++) {
+				Object value = argsCallFrame.get(i);
+				nextCallFrame.push(value);
+			}
+		}
+
 
         thread.currentCoroutine = parent;
     }

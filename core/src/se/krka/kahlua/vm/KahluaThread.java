@@ -82,8 +82,10 @@ public class KahluaThread {
         meta_ops[OP_LE] = "__le";
     }
 
+	private final Coroutine rootCoroutine;
 	/** @exclude */
 	public Coroutine currentCoroutine;
+
     private final PrintStream out;
     private final Platform platform;
 
@@ -94,7 +96,8 @@ public class KahluaThread {
 	public KahluaThread(PrintStream stream, Platform platform, KahluaTable environment) {
         this.platform = platform;
 		out = stream;
-        currentCoroutine = new Coroutine(platform, environment, this);
+		rootCoroutine = new Coroutine(platform, environment, this);
+		currentCoroutine = rootCoroutine;
 	}
 
     // For debugging purposes only
@@ -611,7 +614,7 @@ public class KahluaThread {
 
 						// This means that we got back from a yield to a java
 						// function, such as pcall
-						if (callFrame.isJava()) {
+						if (callFrame == null || callFrame.isJava()) {
 							return;
 						}
 
@@ -682,8 +685,9 @@ public class KahluaThread {
 
 						if (oldCoroutine != currentCoroutine) {
 							if (oldCoroutine.isDead()) {
-
-								if (currentCoroutine.getParent() == oldCoroutine) {
+								if (oldCoroutine == rootCoroutine) {
+									// do something clever here
+								} else if (currentCoroutine.getParent() == oldCoroutine) {
 									currentCoroutine.resume(oldCoroutine.getParent());
 									oldCoroutine.destroy();
 
@@ -744,7 +748,7 @@ public class KahluaThread {
 							// If this coroutine is called from a java function,
 							// return immediately
 							callFrame = currentCoroutine.currentCallFrame();
-							if (callFrame.isJava()) {
+							if (callFrame == null || callFrame.isJava()) {
 								return;
 							}
 						} else {
@@ -886,7 +890,7 @@ public class KahluaThread {
 				while (true) {
 					callFrame = currentCoroutine.currentCallFrame();
 
-					if (callFrame.isLua()) {
+					if (callFrame == null || callFrame.isLua()) {
 						break;
 					}
 					currentCoroutine.addStackTrace(callFrame);
@@ -1197,7 +1201,10 @@ public class KahluaThread {
 		Object errorMessage;
 		Throwable exception;
 		try {
+			int oldCallframetop = coroutine.getCallframeTop();
 			int nValues = call(nArguments);
+			int newCallframeTop = coroutine.getCallframeTop();
+			KahluaUtil.luaAssert(oldCallframetop == newCallframeTop, "error - call stack depth changed.");
 			int newTop = oldBase + nValues + 1;
 			coroutine.setTop(newTop);
 			coroutine.stackCopy(oldBase, oldBase + 1, nValues);
