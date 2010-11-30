@@ -144,13 +144,13 @@ public class FuncState {
 		checklimit(f.numUpvalues + 1, LUAI_MAXUPVALUES, "upvalues");
 		if ( upvalues == null || f.numUpvalues + 1 > upvalues.length)
 			upvalues = realloc( upvalues, f.numUpvalues*2+1 );
-		upvalues[f.numUpvalues] = name;
 		_assert (v.k == LexState.VLOCAL || v.k == LexState.VUPVAL);
 		
 		int numUpvalues = f.numUpvalues;
 		f.numUpvalues++;
-		upvalues_k[numUpvalues] = (byte) (v.k);
-		upvalues_info[numUpvalues] = (byte) (v.info);
+		upvalues[numUpvalues] = name;
+		upvalues_k[numUpvalues] = v.k;
+		upvalues_info[numUpvalues] = v.info;
 		return numUpvalues;
 	}
 		
