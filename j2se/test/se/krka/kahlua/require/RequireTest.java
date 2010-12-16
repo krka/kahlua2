@@ -33,11 +33,15 @@ public class RequireTest {
         LuaClosure luaClosure = LuaCompiler.loadstring("require('/a')", "foo", state.getEnvironment());
         Object[] objects = state.pcall(luaClosure);
         assertEquals(Boolean.TRUE, objects[0]);
-        String outputString = new String(byteArrayOutputStream.toByteArray());
+        String outputString = setNewLines(new String(byteArrayOutputStream.toByteArray()));
         assertEquals("Great success\n", outputString);
     }
 
-    @Test
+	private String setNewLines(String s) {
+		return s.replace("\r\n", "\n");
+	}
+
+	@Test
     public void testSourceNotFound() throws IOException {
         MockProvider provider = new MockProvider();
         provider.addSource("/a", "require('/b')\nrequire('/b')");
@@ -77,7 +81,7 @@ public class RequireTest {
         LuaClosure luaClosure = LuaCompiler.loadstring("require('/a')", "foo", state.getEnvironment());
         Object[] objects = state.pcall(luaClosure);
         assertEquals(Boolean.TRUE, objects[0]);
-        String outputString = new String(byteArrayOutputStream.toByteArray());
+        String outputString = setNewLines(new String(byteArrayOutputStream.toByteArray()));
         assertEquals("Great success\n", outputString);
     }
 
