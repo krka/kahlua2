@@ -1,13 +1,10 @@
 Main developer:
-	Copyright (c) 2007-2009 Kristofer Karlsson <kristofer.karlsson@gmail.com>
+	Copyright (c) 2007-2010 Kristofer Karlsson <kristofer.karlsson@gmail.com>
 
 Partial copyrights:
 	src/se/krka/kahlua/stdlib/OsLib.java:
 	Copyright (c) 2008 Kevin Lundberg <kevinrlundberg@gmail.com>
 
-	src/se/krka/kahlua/vm/LuaTable.java: partial code copyright
-	Copyright (c) 2007 Andre Bogus <andre@m3n.de>
-	
 	src/se/krka/kahlua/stdlib/StringLib.java: partical code copyright for string.match
 	Copyright (c) 2008 groundspeak, inc.
 	

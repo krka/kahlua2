@@ -1,10 +1,6 @@
-#summary User manual for J2SE Util
+#summary User manual for utility features available in J2SE
 =Contents=
 <wiki:toc max_depth="3" />
-
-Kahlua J2SE Util is a package of various tools for making the usage of Kahlua
-easier to use in J2SE environment. These tools all use parts of Java not available in J2ME,
-which is why it is separated into its own package.
 
 =Conversions=
 

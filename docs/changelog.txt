@@ -1,8 +1,18 @@
 Kahlua 2
 ----------
+
+Incompatible changes from Kahlua
+--------------------------------
 * Removed "next" and reworked tables entirely.
-* Removed __mode to support weak tables.
-* Removed lua 5.1 table semantics:
-  * -0 == 0 for keys
-  * not allowing null keys / NaN keys
+* Changed __mode to no longer support weak tables.
+* Changed lua 5.1 table semantics:
+  * -0 == 0 for keys in tables is no longer true
+  * tables may now use NaN as key.
+
+New features
+------------
+* Concurrency support - different LuaThreads may share data (such as the environment).
+* Platform abstraction - J2SE and J2ME now uses completely different implementations for some tasks.
+* New GUI example interpreter - play around with Kahlua interactively, with syntax highlighting and auto-complete.
+* Coroutines can be shared between threads as long as both threads don't try to resume at the same time.
 

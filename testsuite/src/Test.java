@@ -19,16 +19,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
 
 import se.krka.kahlua.j2se.J2SEPlatform;
 import se.krka.kahlua.luaj.compiler.LuaCompiler;
 import se.krka.kahlua.stdlib.OsLib;
 import se.krka.kahlua.vm.*;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class Test {
 	private static KahluaThread getThread(File dir) throws FileNotFoundException, IOException {
@@ -128,23 +128,17 @@ public class Test {
 		}
 		Object testParent = results[1];
 		
-		System.out.println("Generating report...");
 		results = thread.pcall(generateReportClosure, new Object[] {testParent});
 		if (results[0] == Boolean.TRUE) {
-			File f = new File("testsuite/testreport.html");
-			System.out.println(f.getCanonicalPath());
-			FileWriter writer = new FileWriter(f);
-			writer.write((String) results[1]);
-			writer.close();
 			Long testsOk = new Long(((Double) results[2]).longValue());
 			Long testsFail = new Long(((Double) results[3]).longValue());
-			System.out.println(String.format("Test result: %4d ok. %4d failed.", new Object[] { testsOk, testsFail}));
-			System.out.println("Detailed test results can be read at testsuite/testreport.html");
+			System.out.println(String.format("Test result: %d ok. %d failed.", new Object[] { testsOk, testsFail}));
+			System.out.print(results[1]);
 			if (testsFail > 0) {
 				System.exit(1);
 			}
 		} else {
-			System.out.println("Could not generate reports: " +  results[1]);
+			System.out.println("Could not generate test report: " +  results[1]);
 			((Throwable) (results[3])).printStackTrace();
 			System.out.println(results[2]);
 		}

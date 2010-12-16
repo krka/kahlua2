@@ -127,32 +127,9 @@ called `debug.traceback ([thread,] [message] [, level])`.
 ==Compat options==
 Kahlua implements no compat-options, i.e. no support for `arg` as in Lua 5.0
 
-==Compiler==
-Kahlua currently does not have its own compiler,
-but it has support for using [http://sourceforge.net/projects/luaj/ LuaJ]s
-compiler. This is very easy to do, just add LuaJ to the classpath, and run
-{{{
-LuaCompiler.register(state)
-}}}
-You will then get access to loadstring inside Lua.
-Also take a look at the source code inside testsuite/src for examples on how to
-use it.
-
-Kahlua can also natively load precompiled Lua 5.1b bytecode.
-Use luac -o output.lbc input.lua to compile a lua source file to bytecode.
-You can then use `LuaPrototype.loadBytecode` to get a lua closure.
-
 ==Thread safety==
-Kahlua is not thread safe in any way.
-Do not attempt to use a `LuaState` concurrently from different threads.
-Also do not try to move a `LuaFunction` or `JavaFunction` into a different state.
-Sharing of booleans, numbers, strings and tables is safe,
-but you must manually ensure that no thread is writing to a `LuaTable` while
-another is reading (or writing), since the data structure is not thread safe.
-
-However, you can create as many `LuaState`s as you want to run in different
-threads if they do not communicate directly. All `LuaState`s are completely
-independent of one another and do not share any writeable static fields.
+Kahlua is mostly thread safe. Tables, strings and numbers can be used by multiple threads,
+but KahluaThreads and Coroutines should not be used from two java threads at the same time.
 
 =Java API=
 It's quite easy to add Kahlua to your Java application.
