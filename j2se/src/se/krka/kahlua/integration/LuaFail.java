@@ -72,4 +72,9 @@ public class LuaFail extends LuaReturn {
 	public int size() {
 		return 0;
 	}
+
+	@Override
+	public String toString() {
+		return getErrorString() + "\n" + getLuaStackTrace();
+	}
 }
