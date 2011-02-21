@@ -7,4 +7,6 @@ public interface Platform {
     KahluaTable newTable();
 
     KahluaTable newEnvironment();
+
+	void setupEnvironment(KahluaTable env);
 }

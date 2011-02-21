@@ -102,6 +102,10 @@ public final class KahluaTableImpl implements KahluaTable {
 		return delegate.isEmpty();
 	}
 
+	public void wipe() {
+		delegate.clear();
+	}
+
 	public String toString() {
         return "table 0x" + System.identityHashCode(this);
     }

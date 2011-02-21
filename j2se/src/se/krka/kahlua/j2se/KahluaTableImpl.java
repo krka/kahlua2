@@ -125,6 +125,11 @@ public class KahluaTableImpl implements KahluaTable {
 	}
 
 	@Override
+	public void wipe() {
+		delegate.clear();
+	}
+
+	@Override
     public String toString() {
         return "table 0x" + System.identityHashCode(this);
     }

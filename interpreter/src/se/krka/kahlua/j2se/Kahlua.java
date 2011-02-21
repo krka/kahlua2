@@ -2,6 +2,9 @@ package se.krka.kahlua.j2se;
 
 import se.krka.kahlua.Version;
 import se.krka.kahlua.converter.KahluaConverterManager;
+import se.krka.kahlua.converter.KahluaEnumConverter;
+import se.krka.kahlua.converter.KahluaNumberConverter;
+import se.krka.kahlua.converter.KahluaTableConverter;
 import se.krka.kahlua.integration.LuaCaller;
 import se.krka.kahlua.integration.LuaReturn;
 import se.krka.kahlua.j2se.interpreter.InteractiveShell;
@@ -22,7 +25,6 @@ public class Kahlua {
 	private final KahluaConverterManager converterManager = new KahluaConverterManager();
 	private final J2SEPlatform platform = new J2SEPlatform();
 	private final KahluaTable env = platform.newEnvironment();
-	private final KahluaThread thread = new KahluaThread(platform, env);
 	private final LuaCaller caller = new LuaCaller(converterManager);
 
 	public Kahlua() {
@@ -38,7 +40,7 @@ public class Kahlua {
 
 	public void execute(Reader reader, String name, String... args) throws IOException {
 		LuaClosure closure = LuaCompiler.loadis(reader, name, env);
-		LuaReturn result = caller.protectedCall(thread, closure, args);
+		LuaReturn result = caller.protectedCall(newThread(), closure, args);
 		if (!result.isSuccess()) {
 			System.err.println(result.getErrorString());
 			System.err.println(result.getLuaStackTrace());
@@ -49,6 +51,10 @@ public class Kahlua {
 
 	public static void main(String[] args) throws IOException {
 		final Kahlua kahlua = new Kahlua();
+		KahluaNumberConverter.install(kahlua.getConverterManager());
+		KahluaEnumConverter.install(kahlua.getConverterManager());
+		new KahluaTableConverter(kahlua.getPlatform()).install(kahlua.getConverterManager());
+
 		boolean interactive = false;
 		boolean printVersion = false;
 
@@ -151,6 +157,14 @@ public class Kahlua {
 
 	public KahluaTable getEnvironment() {
 		return env;
+	}
+
+	public LuaCaller getCaller() {
+		return caller;
+	}
+
+	public KahluaThread newThread() {
+		return new KahluaThread(platform, env);
 	}
 
 	private static interface ExceptionRunnable<T extends Throwable> {

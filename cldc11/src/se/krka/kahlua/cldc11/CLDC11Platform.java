@@ -23,20 +23,23 @@ public class CLDC11Platform implements Platform {
 
     public KahluaTable newEnvironment() {
         KahluaTable env = newTable();
-
-        env.rawset("_G", env);
-		env.rawset("_VERSION", Version.VERSION + " (CLDC 1.1)");
-
-        BaseLib.register(env);
-        MathLib.register(env);
-        StringLib.register(this, env);
-        CoroutineLib.register(this, env);
-        TableLib.register(this, env);
-
-        KahluaThread workerThread = KahluaUtil.getWorkerThread(this, env);
-        KahluaUtil.setupLibrary(env, workerThread, "/stdlib");
-
+		setupEnvironment(env);
         return env;
     }
+
+	public void setupEnvironment(KahluaTable env) {
+		env.wipe();
+		env.rawset("_G", env);
+		env.rawset("_VERSION", Version.VERSION + " (CLDC 1.1)");
+
+		BaseLib.register(env);
+		MathLib.register(env);
+		StringLib.register(this, env);
+		CoroutineLib.register(this, env);
+		TableLib.register(this, env);
+
+		KahluaThread workerThread = KahluaUtil.getWorkerThread(this, env);
+		KahluaUtil.setupLibrary(env, workerThread, "/stdlib");
+	}
 
 }

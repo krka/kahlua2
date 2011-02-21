@@ -24,15 +24,35 @@ public class InteractiveShell {
     private final AtomicInteger counter = new AtomicInteger();
     private final ArrayList<InternalInterpreterFrame> interpreters;
     private final JMenuItem exit = new JMenuItem("Exit");
+	private final JFrame frame;
 
-    public static void main(final String[] args) {
-		new InteractiveShell(new Kahlua());
+	public static void main(final String[] args) {
+		Kahlua kahlua = new Kahlua();
+		KahluaNumberConverter.install(kahlua.getConverterManager());
+		KahluaEnumConverter.install(kahlua.getConverterManager());
+		new KahluaTableConverter(kahlua.getPlatform()).install(kahlua.getConverterManager());
+
+		new InteractiveShell(kahlua);
 	}
 
 	public InteractiveShell(final Kahlua kahlua) {
-        KahluaNumberConverter.install(kahlua.getConverterManager());
-        KahluaEnumConverter.install(kahlua.getConverterManager());
-        new KahluaTableConverter(kahlua.getPlatform()).install(kahlua.getConverterManager());
+		this(kahlua, createFrame());
+		exit.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				frame.dispose();
+			}
+		});
+	}
+
+	private static JFrame createFrame() {
+		final JFrame frame = new JFrame("Interactive shell");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		return frame;
+	}
+
+	public InteractiveShell(final Kahlua kahlua, final JFrame frame) {
+		this.frame = frame;
 
 		KahluaTable staticBase = kahlua.getPlatform().newTable();
 		kahlua.getEnvironment().rawset("Java", staticBase);
@@ -44,15 +64,6 @@ public class InteractiveShell {
 
         exposer.exposeGlobalFunctions(new Sleeper());
 
-		final JFrame frame = new JFrame("Interactive shell");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-		addExitListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				frame.dispose();
-			}
-		});
         final JDesktopPane mdi = new JDesktopPane();
         frame.getContentPane().add(mdi);
 
@@ -155,12 +166,6 @@ public class InteractiveShell {
         });
         mainMenu.add(newInterpreter);
 
-        exit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frame.dispose();
-            }
-        });
         mainMenu.add(exit);
 
 
@@ -196,10 +201,6 @@ public class InteractiveShell {
 		getWindow(0).getInterpreter().getTerminal().appendInfo("Welcome to the Kahlua interpreter\n");
 	}
 
-    public void addExitListener(ActionListener listener) {
-        exit.addActionListener(listener);
-    }
-
     private static void tile(JDesktopPane mdi,
                              List<InternalInterpreterFrame> interpreters,
                              int numX, int numY) {
@@ -234,4 +235,8 @@ public class InteractiveShell {
     public InternalInterpreterFrame getWindow(int index) {
         return interpreters.get(index);
     }
+
+	public JMenuItem getExit() {
+		return exit;
+	}
 }

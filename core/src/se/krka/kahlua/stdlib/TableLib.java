@@ -32,7 +32,8 @@ public final class TableLib implements JavaFunction {
 	private static final int NEWARRAY = 3;
     private static final int PAIRS = 4;
 	private static final int ISEMPTY = 5;
-	private static final int NUM_FUNCTIONS = 6;
+	private static final int WIPE = 6;
+	private static final int NUM_FUNCTIONS = 7;
 
 	private static final String[] names;
 	private static final TableLib[] functions;
@@ -45,6 +46,7 @@ public final class TableLib implements JavaFunction {
 		names[NEWARRAY] = "newarray";
 		names[PAIRS] = "pairs";
         names[ISEMPTY] = "isempty";
+        names[WIPE] = "wipe";
 		functions = new TableLib[NUM_FUNCTIONS];
 		for (int i = 0; i < NUM_FUNCTIONS; i++) {
 			functions[i] = new TableLib(i);
@@ -87,9 +89,17 @@ public final class TableLib implements JavaFunction {
                 return pairs(callFrame, nArguments);
 			case ISEMPTY:
 				return isempty(callFrame, nArguments);
+			case WIPE:
+				return wipe(callFrame, nArguments);
 			default:
 				return 0;
 		}
+	}
+
+	private int wipe(LuaCallFrame callFrame, int nArguments) {
+		KahluaTable table = getTable(callFrame, nArguments);
+		table.wipe();
+		return 0;
 	}
 
 	private int isempty(LuaCallFrame callFrame, int nArguments) {

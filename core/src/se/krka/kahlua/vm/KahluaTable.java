@@ -37,4 +37,6 @@ public interface KahluaTable {
     KahluaTableIterator iterator();
 
 	boolean isEmpty();
+
+	void wipe();
 }

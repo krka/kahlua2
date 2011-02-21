@@ -73,6 +73,13 @@ public class KahluaArray implements KahluaTable {
 		return len() == 0;
 	}
 
+	public void wipe() {
+		for (int i = 0; i < data.length; i++) {
+			data[i] = null;
+		}
+		len = 0;
+	}
+
 	public Object rawget(int index) {
         if (index < 1 || index > len) {
             return null;
