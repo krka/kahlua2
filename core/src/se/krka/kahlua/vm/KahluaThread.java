@@ -92,7 +92,7 @@ public class KahluaThread {
     public KahluaThread(Platform platform, KahluaTable environment) {
 		this(System.out, platform, environment);
 	}
-	
+
 	public KahluaThread(PrintStream stream, Platform platform, KahluaTable environment) {
         this.platform = platform;
 		out = stream;
@@ -179,7 +179,7 @@ public class KahluaThread {
 		int[] opcodes = prototype.code;
 
 		int returnBase = callFrame.returnBase;
-		
+
 		while (true) {
 			try {
 				int a, b, c;
@@ -955,10 +955,14 @@ public class KahluaThread {
 	private final Object getCompMetaOp(Object a, Object b, String meta_op) {
 		KahluaTable meta1 = (KahluaTable) getmetatable(a, true);
 		KahluaTable meta2 = (KahluaTable) getmetatable(b, true);
-		if (meta1 != meta2 || meta1 == null) {
+		if (meta1 == null || meta2 == null)
+			return null;
+		Object meta_operator1 = meta1.rawget(meta_op);
+		Object meta_operator2 = meta2.rawget(meta_op);
+		if (meta_operator1 != meta_operator2 || meta_operator1 == null) {
 			return null;
 		}
-		return meta1.rawget(meta_op);
+		return meta_operator1;
 	}
 
 	private final Object getBinMetaOp(Object a, Object b, String meta_op) {

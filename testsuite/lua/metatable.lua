@@ -49,7 +49,7 @@ do
 	local ok, errmsg = pcall(function() return t.hello end)
 	testAssert(not ok, "expected recursive metatable error")
 	testAssert(endswith(errmsg, "loop in gettable"), "wrong error message: " .. errmsg)
-	
+
 	local ok, errmsg = pcall(function() t.hello = "world" end)
 	testAssert(not ok, "expected recursive metatable error")
 	testAssert(endswith(errmsg, "loop in settable"), "wrong error message: " .. errmsg)
@@ -60,13 +60,13 @@ do
 	local ok, errmsg = pcall(function() return t1 + t2 end)
 	testAssert(not ok)
 	--assert(endswith(errmsg, "no meta function was found for __add"))
-	
+
 	local ok, errmsg = pcall(function() local x = (-t1) end)
 	testAssert(not ok)
 
 	local ok, errmsg = pcall(function() return t1 <= t2 end)
 	testAssert(not ok)
-	
+
 	local ok, errmsg = pcall(function() return t1 == t2 end)
 	testAssert(ok)
 end
@@ -108,6 +108,29 @@ do
 	testAssert(not (t1 == t2))
 	testAssert(not (t1 ~= t1))
 	testAssert(t1 ~= t2)
+end
+
+do
+	local function compare_true(a, b) return true end
+	local function other_compare_true(a,b) return true end
+	local meta1 = {__lt = compare_true, __eq = compare_true}
+	local meta2 = {__lt = compare_true, __eq = compare_true}
+	local meta3 = {__lt = other_compare_true, __eq = other_compare_true}
+	local t1 = setmetatable({}, meta1)
+	local t2 = setmetatable({}, meta2)
+	local t3 = setmetatable({}, meta3)
+	local ok, result = pcall(function() return(t1 == t2) end)
+	testAssert(ok) -- No error raised
+	testAssert(result) -- Expected result
+	local ok, result = pcall(function() return(t1 < t2) end)
+	testAssert(ok) -- No error raised
+	testAssert(result) -- Expected result
+	local ok, errmsg = pcall(function() return(t1 < t3) end)
+	testAssert(not ok) -- _lt should raise an error if the metamethods differ
+	assert(endswith(errmsg, "not defined for operand"))
+	local ok, result = pcall(function() return(t1 == t3) end)
+	testAssert(ok) -- __eq must not rise any errors if the metamethods differ
+	testAssert(not result) -- __eq should return false instead
 end
 
 do
