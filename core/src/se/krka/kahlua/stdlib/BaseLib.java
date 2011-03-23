@@ -355,10 +355,10 @@ public final class BaseLib implements JavaFunction {
 
 	public static void setmetatable(KahluaThread thread, Object o, KahluaTable newMeta, boolean raw) {
 		KahluaUtil.luaAssert(o != null, "Expected table, got nil");
-		final Object oldMeta = thread.getmetatable(o, raw);
+		final Object oldMeta = thread.getmetatable(o, true);
 
 		if (!raw && oldMeta != null && thread.tableGet(oldMeta, "__metatable") != null) {
-			throw new RuntimeException("Can not set metatable of protected object");
+			throw new RuntimeException("cannot change a protected metatable");
 		}
 
         thread.setmetatable(o, newMeta);

@@ -152,3 +152,15 @@ do
 	testAssert(t2 ~= t1)
 end
 
+do
+	local table = {}
+	local meta1 = {}
+	local meta2 = {}
+	setmetatable(table,meta1)
+	meta1.__metatable='FORBIDEN'
+	testAssert(getmetatable(table)=='FORBIDEN')
+	local ok, errormsg = pcall(function () setmetatable(table, meta2) end)
+	testAssert(not ok)
+	assert(endswith(errormsg, "cannot change a protected metatable"), errormsg)
+end
+
