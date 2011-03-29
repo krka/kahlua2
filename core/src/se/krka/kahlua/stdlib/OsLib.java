@@ -185,6 +185,14 @@ public class OsLib implements JavaFunction {
         return buffer.toString();
     }
 	
+	private static String format2Digits(int value){
+		String retval = Integer.toString(value);
+		if(value<10){
+			retval = "0"+retval;
+		}
+		return retval;
+	}
+	
 	private static String strftime(char format, Calendar cal) {
         switch(format) {
             case 'a': return shortDayNames[cal.get(Calendar.DAY_OF_WEEK)-1];
@@ -193,21 +201,21 @@ public class OsLib implements JavaFunction {
             case 'B': return longMonthNames[cal.get(Calendar.MONTH)];
             case 'c': return cal.getTime().toString();
             case 'C': return Integer.toString(cal.get(Calendar.YEAR) / 100);
-            case 'd': return Integer.toString(cal.get(Calendar.DAY_OF_MONTH));
+            case 'd': return format2Digits(cal.get(Calendar.DAY_OF_MONTH));
             case 'D': return formatTime("%m/%d/%y",cal);
             case 'e': return cal.get(Calendar.DAY_OF_MONTH) < 10 ? 
             				" " + strftime('d',cal) : strftime('d',cal);
             case 'h': return strftime('b',cal);
-            case 'H': return Integer.toString(cal.get(Calendar.HOUR_OF_DAY));
-            case 'I': return Integer.toString(cal.get(Calendar.HOUR));
+            case 'H': return format2Digits(cal.get(Calendar.HOUR_OF_DAY));
+            case 'I': return format2Digits(cal.get(Calendar.HOUR));
             case 'j': return Integer.toString(getDayOfYear(cal));
-            case 'm': return Integer.toString(cal.get(Calendar.MONTH) + 1);
-            case 'M': return Integer.toString(cal.get(Calendar.MINUTE));
+            case 'm': return format2Digits(cal.get(Calendar.MONTH) + 1);
+            case 'M': return format2Digits(cal.get(Calendar.MINUTE));
             case 'n': return "\n";
             case 'p': return cal.get(Calendar.AM_PM) == Calendar.AM ? "AM" : "PM";
             case 'r': return formatTime("%I:%M:%S %p",cal);
             case 'R': return formatTime("%H:%M",cal);
-            case 'S': return Integer.toString(cal.get(Calendar.SECOND));
+            case 'S': return format2Digits(cal.get(Calendar.SECOND));
             case 'U': return Integer.toString(getWeekOfYear(cal, true, false));
             case 'V': return Integer.toString(getWeekOfYear(cal, false, true));
             case 'w': return Integer.toString(cal.get(Calendar.DAY_OF_WEEK) - 1);
