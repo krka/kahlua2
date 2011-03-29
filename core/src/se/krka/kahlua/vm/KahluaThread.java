@@ -491,7 +491,7 @@ public class KahluaThread {
 						}
 					} else {
 						boolean resBool;
-						if (bo == co) {
+						if (bo == co && opcode == OP_EQ) {
 							resBool = true;
 						} else {
 							boolean invert = false;

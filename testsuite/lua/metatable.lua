@@ -134,6 +134,46 @@ do
 end
 
 do
+	local lt = function(a, b) return a.val < b.val end
+	local le = function(a, b) return a.val <= b.val end
+	local eq = function(a, b) return a.val == b.val end
+	local meta1 = {__lt = lt, __le = le, __eq = eq }
+	local t1 = setmetatable({val=1}, meta1)
+	local meta2 = {__lt = lt, __le = le, __eq = eq }
+	local t2 = setmetatable({val=2}, meta1)
+	-- comparing t1 with t1
+	local ok, res = pcall(function() return(t1 < t1) end)
+	testAssert(ok)
+	testAssert(res==false)
+	local ok, res = pcall(function() return(t1 <= t1) end)
+	testAssert(ok)
+	testAssert(res==true)
+	local ok, res = pcall(function() return(t1 == t1) end)
+	testAssert(ok)
+	testAssert(res==true)
+	-- comparing t1 with t2
+	local ok, res = pcall(function() return(t1 < t2) end)
+	testAssert(ok)
+	testAssert(res==true)
+	local ok, res = pcall(function() return(t1 <= t2) end)
+	testAssert(ok)
+	testAssert(res==true)
+	local ok, res = pcall(function() return(t1 == t2) end)
+	testAssert(ok)
+	testAssert(res==false)
+	-- comparing t2 with t1
+	local ok, res = pcall(function() return(t2 < t1) end)
+	testAssert(ok)
+	testAssert(res==false)
+	local ok, res = pcall(function() return(t2 <= t1) end)
+	testAssert(ok)
+	testAssert(res==false)
+	local ok, res = pcall(function() return(t2 == t1) end)
+	testAssert(ok)
+	testAssert(res==false)
+end
+
+do
 	testAssert("a" ~= nil)
 end
 
