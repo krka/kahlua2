@@ -199,11 +199,16 @@
 		<zip zipfile="${build.dir}/kahlua-release-${DSTAMP}.zip">
 			<fileset dir="${baseDir}">
 				<include name="build.xml" />
+				<include name="version.properties" />
 				
 				<include name="resources/**" />
 				<include name="lib/**" />
 				<include name="docs/**" />
 				<include name="src/**" />
+				<include name="core/**" />
+				<include name="j2se/**" />
+				<include name="interpreter/**" />
+				<include name="cldc11/**" />
 
 				<include name="testsuite/**" />
 				<exclude name="testsuite/bin/**" />
