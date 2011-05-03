@@ -2,7 +2,10 @@ function assert(c, ...)
 	if c then
 		return c, ...
 	end
-	error(... or "assertion failed!")
+	if select("#", ...) == 0 then
+		error("assertion failed")
+	end
+	error(...)
 end
 
 local function ipairs_iterator(t, index)
