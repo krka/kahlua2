@@ -37,7 +37,7 @@ public class RequireTest {
         assertEquals("Great success\n", outputString);
     }
 
-	private String setNewLines(String s) {
+	public static String setNewLines(String s) {
 		return s.replace("\r\n", "\n");
 	}
 

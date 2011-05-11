@@ -78,13 +78,20 @@ public class LuaCompiler implements JavaFunction {
 		return 0;
 	}
 	
-	private int loadstream(LuaCallFrame callFrame, int nArguments) {
+	public static int loadstream(LuaCallFrame callFrame, int nArguments) {
 		try {
 			KahluaUtil.luaAssert(nArguments >= 2, "not enough arguments");
-			InputStream is = (InputStream) callFrame.get(0);
-			KahluaUtil.luaAssert(is != null, "No inputstream given");
+			Object input = callFrame.get(0);
+			KahluaUtil.luaAssert(input != null, "No input given");
 			String name = (String) callFrame.get(1);
-			return callFrame.push(loadis(is, name, null, callFrame.getEnvironment()));
+			if (input instanceof Reader) {
+				return callFrame.push(loadis((Reader) input, name, null, callFrame.getEnvironment()));
+			}
+			if (input instanceof InputStream) {
+				return callFrame.push(loadis((InputStream) input, name, null, callFrame.getEnvironment()));
+			}
+			KahluaUtil.fail("Invalid type to loadstream: " + input.getClass());
+			return 0;
 		} catch (RuntimeException e) {
 			return callFrame.push(null, e.getMessage());
 		} catch (IOException e) {
