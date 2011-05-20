@@ -736,7 +736,7 @@ public final class StringLib implements JavaFunction {
 	private int stringChar(LuaCallFrame callFrame, int nArguments) {
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < nArguments; i++) {
-			int num = getDoubleArg(callFrame, 1, names[CHAR]).intValue();
+			int num = getDoubleArg(callFrame, i + 1, names[CHAR]).intValue();
 			sb.append((char) num);
 		}
 		return callFrame.push(sb.toString());
