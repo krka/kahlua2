@@ -382,3 +382,8 @@ testAssertEqual(ok, false)
 
 local ok, err = pcall(function() return {} .. {} end)
 testAssertEqual(ok, false)
+
+local ok, err = pcall(function() return ("cxxMMMCDLVI"):gsub("%l+","(%1)") end)
+testAssertEqual(ok, false)
+testAssert("", err:find("invalid capture index", 1, 1) ~= nil, "got " .. err)
+

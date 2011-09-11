@@ -1494,6 +1494,9 @@ public final class StringLib implements JavaFunction {
 					buf.append(s.getStringSubString(len));
 				} else {
 					Object o = ms.getCapture(c - '1');
+					if (o == null) {
+						throw new KahluaException("invalid capture index");
+					}
 					buf.append(KahluaUtil.tostring(o, null));
 				}
 			}
