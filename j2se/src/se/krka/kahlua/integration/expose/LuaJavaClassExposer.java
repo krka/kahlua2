@@ -100,14 +100,19 @@ public class LuaJavaClassExposer {
         return (Map<Class<?>, ClassDebugInformation>) classMap;
     }
 
-    public void exposeClass(Class<?> clazz) {
-        if (clazz != null && !isExposed(clazz)) {
+	public void exposeClass(Class<?> clazz) {
+		if (clazz != null && !isExposed(clazz)) {
 			shouldExposeCache.clear();
-            readDebugData(clazz);
-            setupMetaTables(clazz);
+			readDebugData(clazz);
+			setupMetaTables(clazz);
 
-            populateMethods(clazz);
-        }
+			populateMethods(clazz);
+		}
+	}
+
+	public void exposeClassUsingJavaEquals(Class<?> clazz) {
+		exposeClass(clazz);
+		addJavaEquals(getMetaTable(clazz));
     }
 
     private KahluaTable getMetaTable(Class<?> clazz) {
@@ -278,7 +283,7 @@ public class LuaJavaClassExposer {
 		return false;
 	}
 
-    private void setupMetaTables(Class<?> clazz) {
+	private void setupMetaTables(Class<?> clazz) {
         Class<?> superClazz = clazz.getSuperclass();
         exposeClass(superClazz);
 
@@ -290,11 +295,22 @@ public class LuaJavaClassExposer {
 		if (superMetaTable != null) {
 			metatable.rawset("__newindex", superMetaTable.rawget("__newindex"));
 		}
-        indexTable.setMetatable(superMetaTable);
+		indexTable.setMetatable(superMetaTable);
         classMetatables.rawset(clazz, metatable);
     }
 
-    public void exposeGlobalFunctions(Object object) {
+	private void addJavaEquals(KahluaTable metatable) {
+		metatable.rawset("__eq", new JavaFunction() {
+			@Override
+			public int call(LuaCallFrame callFrame, int nArguments) {
+				boolean equals = callFrame.get(0).equals(callFrame.get(1));
+				callFrame.push(equals);
+				return 1;
+			}
+		});
+	}
+
+	public void exposeGlobalFunctions(Object object) {
         Class<?> clazz = object.getClass();
         readDebugData(clazz);
         for (Method method : clazz.getMethods()) {

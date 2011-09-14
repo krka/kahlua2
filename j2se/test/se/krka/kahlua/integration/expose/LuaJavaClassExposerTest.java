@@ -72,6 +72,77 @@ public class LuaJavaClassExposerTest {
 
 	}
 
+	@Test
+	public void usingJavaEqualsSuccess() throws IOException {
+		Platform platform = J2SEPlatform.getInstance();
+		KahluaTable env = platform.newEnvironment();
+		KahluaConverterManager manager = new KahluaConverterManager();
+
+		LuaJavaClassExposer exposer = new LuaJavaClassExposer(manager, platform, env);
+		exposer.exposeClassUsingJavaEquals(EqualsClass.class);
+
+		LuaClosure closure = LuaCompiler.loadstring("local o1, o2 = ...; return o1 == o2", null, env);
+		KahluaThread t = KahluaUtil.getWorkerThread(platform, env);
+		LuaCaller caller = new LuaCaller(manager);
+		LuaReturn res = caller.protectedCall(t, closure, new EqualsClass(1), new EqualsClass(1));
+		assertEquals(true, res.isSuccess());
+		assertEquals(true, res.get(0));
+	}
+
+	@Test
+	public void usingJavaEqualsFail() throws IOException {
+		Platform platform = J2SEPlatform.getInstance();
+		KahluaTable env = platform.newEnvironment();
+		KahluaConverterManager manager = new KahluaConverterManager();
+
+		LuaJavaClassExposer exposer = new LuaJavaClassExposer(manager, platform, env);
+		exposer.exposeClassUsingJavaEquals(EqualsClass.class);
+
+		LuaClosure closure = LuaCompiler.loadstring("local o1, o2 = ...; return o1 == o2", null, env);
+		KahluaThread t = KahluaUtil.getWorkerThread(platform, env);
+		LuaCaller caller = new LuaCaller(manager);
+		LuaReturn res = caller.protectedCall(t, closure, new EqualsClass(1), new EqualsClass(2));
+		assertEquals(true, res.isSuccess());
+		assertEquals(false, res.get(0));
+	}
+
+	@Test
+	public void usingJavaIdentitySuccess() throws IOException {
+		Platform platform = J2SEPlatform.getInstance();
+		KahluaTable env = platform.newEnvironment();
+		KahluaConverterManager manager = new KahluaConverterManager();
+
+		LuaJavaClassExposer exposer = new LuaJavaClassExposer(manager, platform, env);
+		exposer.exposeClass(EqualsClass.class);
+
+		LuaClosure closure = LuaCompiler.loadstring("local o1, o2 = ...; return o1 == o2", null, env);
+		KahluaThread t = KahluaUtil.getWorkerThread(platform, env);
+		LuaCaller caller = new LuaCaller(manager);
+		EqualsClass instance = new EqualsClass(1);
+		LuaReturn res = caller.protectedCall(t, closure, instance, instance);
+		assertEquals(true, res.isSuccess());
+		assertEquals(true, res.get(0));
+	}
+
+	@Test
+	public void usingJavaIdentityFail() throws IOException {
+		Platform platform = J2SEPlatform.getInstance();
+		KahluaTable env = platform.newEnvironment();
+		KahluaConverterManager manager = new KahluaConverterManager();
+
+		LuaJavaClassExposer exposer = new LuaJavaClassExposer(manager, platform, env);
+		exposer.exposeClass(EqualsClass.class);
+
+		LuaClosure closure = LuaCompiler.loadstring("local o1, o2 = ...; return o1 == o2", null, env);
+		KahluaThread t = KahluaUtil.getWorkerThread(platform, env);
+		LuaCaller caller = new LuaCaller(manager);
+		LuaReturn res = caller.protectedCall(t, closure, new EqualsClass(1), new EqualsClass(1));
+		assertEquals(true, res.isSuccess());
+		assertEquals(false, res.get(0));
+	}
+
+
+
 	static interface MyInterface {
 		@LuaMethod
 		String foo();
@@ -82,6 +153,31 @@ public class LuaJavaClassExposerTest {
 		@Override
 		public String foo() {
 			return "Hello world";
+		}
+	}
+
+	static class EqualsClass {
+		private final int value;
+
+		public EqualsClass(int value) {
+			this.value = value;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+
+			EqualsClass that = (EqualsClass) o;
+
+			if (value != that.value) return false;
+
+			return true;
+		}
+
+		@Override
+		public int hashCode() {
+			return value;
 		}
 	}
 }
