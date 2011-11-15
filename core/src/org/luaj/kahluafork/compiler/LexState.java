@@ -377,7 +377,6 @@ public class LexState {
 			check_next("+-"); /* optional exponent sign */
 		while (isalnum(current) || current == '_')
 			save_and_next();
-		save('\0');
 		String str = new String(buff, 0, nbuff);
 		str2d(str, token);
 	}
