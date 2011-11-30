@@ -11,7 +11,7 @@ end
 local function ipairs_iterator(t, index)
 	local nextIndex = index + 1
 	local nextValue = t[nextIndex]
-	if nextValue then
+	if nextValue ~= nil then
 		return nextIndex, nextValue
 	end
 end
