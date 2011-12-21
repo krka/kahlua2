@@ -23,10 +23,7 @@
 package se.krka.kahlua.integration.expose;
 
 import se.krka.kahlua.integration.annotations.LuaMethod;
-import se.krka.kahlua.j2se.KahluaTableImpl;
 import se.krka.kahlua.vm.JavaFunction;
-import se.krka.kahlua.vm.KahluaTable;
-import se.krka.kahlua.vm.KahluaTableIterator;
 import se.krka.kahlua.vm.LuaCallFrame;
 
 import java.util.Iterator;
