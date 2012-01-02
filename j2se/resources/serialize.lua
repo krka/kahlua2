@@ -56,6 +56,11 @@ local function stringSerialize(buf, value)
 end
 typeSerialize["string"] = stringSerialize
 
+local function numberSerialize(buf, value)
+   append(buf, string.format("%.17g", value))
+end
+typeSerialize["number"] = numberSerialize
+
 local keywords = {}
 keywords["and"] = 1
 keywords["or"] = 1
