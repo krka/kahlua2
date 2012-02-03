@@ -28,7 +28,9 @@ import se.krka.kahlua.vm.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.Reader;
 
 public class Test {
 	private static KahluaThread getThread(File dir) throws FileNotFoundException, IOException {
@@ -98,7 +100,8 @@ public class Test {
 		for (int i = 0; i < children.length; i++) {
 			File child = children[i];
 			if (child != null && !child.getName().contains("testhelper") && child.getName().endsWith(".lua")) {
-				LuaClosure closure = LuaCompiler.loadis(new FileInputStream(child), child.getName(), thread.getEnvironment());
+				final Reader stream = new InputStreamReader(new FileInputStream(child), "UTF-8");
+				LuaClosure closure = LuaCompiler.loadis(stream, child.getName(), thread.getEnvironment());
 				//LuaClosure closure = LuaPrototype.loadByteCode(new FileInputStream(child), thread.getEnvironment());
 				System.out.println("Running " + child + "...");
 				verifyCorrectStack(thread);
