@@ -1,10 +1,7 @@
 package se.krka.kahlua.cldc11;
 
 import se.krka.kahlua.Version;
-import se.krka.kahlua.stdlib.BaseLib;
-import se.krka.kahlua.stdlib.CoroutineLib;
-import se.krka.kahlua.stdlib.StringLib;
-import se.krka.kahlua.stdlib.TableLib;
+import se.krka.kahlua.stdlib.*;
 import se.krka.kahlua.vm.*;
 
 public class CLDC11Platform implements Platform {
@@ -34,9 +31,11 @@ public class CLDC11Platform implements Platform {
 
 		BaseLib.register(env);
 		MathLib.register(env);
+		RandomLib.register(this, env);
 		StringLib.register(this, env);
 		CoroutineLib.register(this, env);
 		TableLib.register(this, env);
+		OsLib.register(this, env);
 
 		KahluaThread workerThread = KahluaUtil.getWorkerThread(this, env);
 		KahluaUtil.setupLibrary(env, workerThread, "/stdlib");
