@@ -73,6 +73,10 @@ public class OsLib implements JavaFunction {
 	//private static final String ISDST = "isdst";
 
 	private static TimeZone tzone = TimeZone.getDefault();
+
+	public static void setDefaultTimeZone (TimeZone tz) {
+		tzone = tz;
+	}
 	
 	public static final int TIME_DIVIDEND = 1000; // number to divide by for converting from milliseconds.
 	public static final double TIME_DIVIDEND_INVERTED = 1.0 / TIME_DIVIDEND; // number to divide by for converting from milliseconds.
