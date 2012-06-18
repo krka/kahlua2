@@ -127,6 +127,19 @@ end
 
 
 do
+	local static_random = newrandom()
+
+	function math.random(upper, lower)
+		return static_random:random(upper, lower)
+	end
+
+	function math.randomseed(seed)
+		return static_random:seed(seed)
+	end
+end
+
+
+do
 	local error = error
 	local ccreate = coroutine.create
 	local cresume = coroutine.resume
@@ -149,4 +162,3 @@ do
 		end
 	end
 end
-
