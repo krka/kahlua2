@@ -19,7 +19,7 @@ local nov1 = {year = 2008, month = 11, day = 1, hour = 2, min = 8, sec = 0, wday
 local halloween = 1225440000  -- seconds since the epoch for halloween 2008, 8am in UTC
 
 do
-	local res = os.date(tbl, halloween)
+	local res = os.date("!*t", halloween)
 	testAssertEquals(res.year, 2008)
 	testAssertEquals(res.month, 10)
 	testAssertEquals(res.day, 31)
@@ -29,13 +29,13 @@ do
 	testAssertEquals(res.wday, 6)
 	testAssertEquals(res.yday, 304)
 	
-	testAssertEquals(res.year, tonumber(os.date("%Y", halloween)))
-	testAssertEquals(res.month, tonumber(os.date("%m", halloween)))
-	testAssertEquals(res.day, tonumber(os.date("%d", halloween)))
-	testAssertEquals(res.yday, tonumber(os.date("%j", halloween)))
-	testAssertEquals(res.hour, tonumber(os.date("%H", halloween)))
-	testAssertEquals(res.min, tonumber(os.date("%M", halloween)))
-	testAssertEquals(res.sec, tonumber(os.date("%S", halloween)))
+	testAssertEquals(res.year, tonumber(os.date("!%Y", halloween)))
+	testAssertEquals(res.month, tonumber(os.date("!%m", halloween)))
+	testAssertEquals(res.day, tonumber(os.date("!%d", halloween)))
+	testAssertEquals(res.yday, tonumber(os.date("!%j", halloween)))
+	testAssertEquals(res.hour, tonumber(os.date("!%H", halloween)))
+	testAssertEquals(res.min, tonumber(os.date("!%M", halloween)))
+	testAssertEquals(res.sec, tonumber(os.date("!%S", halloween)))
 end
 
 testAssert(os.difftime(os.time(christmas), os.time(newyearseve)) < 0,1)
