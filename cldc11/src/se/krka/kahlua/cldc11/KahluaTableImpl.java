@@ -49,8 +49,8 @@ public final class KahluaTableImpl implements KahluaTable {
     }
 
     public Object rawget(Object key) {
-	if (key != null) return delegate.get(key);
-	return null;
+        if (key != null) return delegate.get(key);
+        return null;
     }
 
     public void rawset(int key, Object value) {
